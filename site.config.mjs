@@ -17,8 +17,10 @@ export const siteConfig = {
   /* ---------------------------------------------------------------------
    * 1. 域名与站点
    * ------------------------------------------------------------------- */
-  // [必改] 你的正式域名（部署到腾讯云 EdgeOne 后绑定的域名，结尾不要带 /）
-  url: 'https://www.example.com',
+  // 正式域名（结尾不要带 /）
+  // ⚠️ 目前先用 Cloudflare Pages 分配的地址。绑定自定义域名后，把这里改成
+  //    你自己的域名（例如 https://lvqingqii.xj18.cc）并重新构建即可。
+  url: 'https://lvqingqii-guanwang.pages.dev',
 
   // 是否允许搜索引擎收录。上线前建议先设为 false，内容确认后再改 true 并重新构建。
   indexingEnabled: true,

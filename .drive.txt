@@ -1,0 +1,5 @@
+goto|https://console.cloud.tencent.com/edgeone/pages
+wait|9000
+url
+shot|.shots/eo-01.png
+dump
