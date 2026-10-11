@@ -1,0 +1,54 @@
+---
+/**
+ * Breadcrumbs.astro — 面包屑
+ */
+import { localizePath } from '../i18n/index.mjs'
+import Icon from './Icon.astro'
+
+interface Crumb {
+  label: string
+  href?: string
+}
+
+interface Props {
+  lang: 'zh' | 'en'
+  items: Crumb[]
+  dark?: boolean
+  class?: string
+}
+
+const { lang, items, dark = false, class: className = '' } = Astro.props
+---
+
+<nav
+  aria-label={lang === 'en' ? 'Breadcrumb' : '面包屑导航'}
+  class:list={['flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px]', className]}
+>
+  {
+    items.map((item, i) => (
+      <>
+        {i > 0 && (
+          <Icon
+            name="chevron-right"
+            class:list={['size-3.5 shrink-0', dark ? 'text-white/25' : 'text-ink-300']}
+          />
+        )}
+        {item.href && i < items.length - 1 ? (
+          <a
+            href={localizePath(item.href, lang)}
+            class:list={[
+              'transition',
+              dark ? 'text-white/50 hover:text-white' : 'text-ink-400 hover:text-brand-600',
+            ]}
+          >
+            {item.label}
+          </a>
+        ) : (
+          <span class:list={[dark ? 'text-white/80' : 'text-ink-700', 'font-medium']}>
+            {item.label}
+          </span>
+        )}
+      </>
+    ))
+  }
+</nav>

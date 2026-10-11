@@ -1,0 +1,153 @@
+---
+/**
+ * BaseLayout.astro — 全站基础骨架
+ * ---------------------------------------------------------------------------
+ * 负责 <head> 的全部 SEO 输出（含双语 hreflang 与 JSON-LD）、全局样式、
+ * 以及页头 / 页脚 / 悬浮联系条。
+ */
+import '../styles/global.css'
+import siteConfig from '../../site.config.mjs'
+import { langMeta, t, localizePath } from '../i18n/index.mjs'
+import { abs, alternates, organizationJsonLd, websiteJsonLd } from '../lib/seo.mjs'
+import Header from '../components/Header.astro'
+import Footer from '../components/Footer.astro'
+import FloatingContact from '../components/FloatingContact.astro'
+
+interface Props {
+  /** 当前语言 */
+  lang: 'zh' | 'en'
+  /** 页面标题（不含品牌名，组件会自动拼接） */
+  title: string
+  description: string
+  /** 中性路径，如 /products/（用于 canonical / hreflang / 语言切换） */
+  pathname: string
+  /** 分享图，默认用品牌 OG 图 */
+  image?: string
+  /** 附加 JSON-LD 对象数组 */
+  jsonLd?: Record<string, unknown>[]
+  /** 是否禁止收录（如 404、感谢页） */
+  noindex?: boolean
+  /** body 附加类名 */
+  bodyClass?: string
+  /** 深色页头（首页 Hero 上方为深色时使用） */
+  darkHeader?: boolean
+  /** 页头是否透明浮在内容上 */
+  transparentHeader?: boolean
+}
+
+const {
+  lang,
+  title,
+  description,
+  pathname,
+  image = '/brand/og-default.jpg',
+  jsonLd = [],
+  noindex = false,
+  bodyClass = '',
+  darkHeader = false,
+  transparentHeader = false,
+} = Astro.props
+
+const meta = langMeta[lang]
+const brand = lang === 'en' ? siteConfig.brand.shortNameEn : siteConfig.brand.shortNameZh
+const fullTitle = title.includes(brand) ? title : `${title} | ${brand}`
+
+/**
+ * 社交分享图：多数平台（微信 / Facebook / X）不支持 GIF / SVG 作为 og:image，
+ * 产品图有不少是 GIF，这里统一回落到默认封面，避免分享出去是空白或破图。
+ */
+const DEFAULT_OG = '/brand/og-default.jpg'
+const socialImage = image && !/\.(gif|svg)$/i.test(image) ? image : DEFAULT_OG
+
+const canonical = abs(localizePath(pathname, lang))
+const alts = alternates(pathname)
+const ogImage = abs(socialImage)
+
+/* 全站注入：组织 + 站点 */
+const globalJsonLd = [organizationJsonLd(lang), websiteJsonLd(lang)]
+const allJsonLd = [...globalJsonLd, ...jsonLd]
+
+const robots = noindex || !siteConfig.indexingEnabled ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+---
+
+<!doctype html>
+<html lang={meta.htmlLang} class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    {/* 双语 hreflang：告诉搜索引擎中英文版本的对应关系 */}
+    {alts.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
+
+    <meta name="robots" content={robots} />
+    {siteConfig.indexingEnabled && !noindex && <meta name="googlebot" content="index, follow" />}
+
+    {/* 主题色 & 图标 */}
+    <meta name="theme-color" content={darkHeader ? '#05080e' : '#ffffff'} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    {/* Open Graph */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={brand} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={meta.ogLocale} />
+    {lang === 'zh' ? <meta property="og:locale:alternate" content="en_US" /> : <meta property="og:locale:alternate" content="zh_CN" />}
+
+    {/* Twitter / X */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {/* 站长验证（site.config.mjs 里填写后自动出现） */}
+    {siteConfig.verification.google && <meta name="google-site-verification" content={siteConfig.verification.google} />}
+    {siteConfig.verification.bing && <meta name="msvalidate.01" content={siteConfig.verification.bing} />}
+    {siteConfig.verification.baidu && <meta name="baidu-site-verification" content={siteConfig.verification.baidu} />}
+
+    {/* 结构化数据 */}
+    {allJsonLd.map((obj) => (
+      <script type="application/ld+json" set:html={JSON.stringify(obj)} />
+    ))}
+
+    {/* 联系方式的机器可读副本，方便浏览器/爬虫直接取用 */}
+    <meta name="format-detection" content="telephone=yes" />
+    <meta name="author" content={siteConfig.brand.legalNameZh} />
+  </head>
+
+  <body class={`min-h-screen bg-white antialiased ${bodyClass}`}>
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-ink-900 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+    >
+      {t(lang, 'menu') === 'Menu' ? 'Skip to content' : '跳到主要内容'}
+    </a>
+
+    <Header {lang} {pathname} {darkHeader} {transparentHeader} />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer {lang} />
+
+    <FloatingContact {lang} />
+
+    {/* 滚动进场动画 */}
+    <script>
+      import '../scripts/reveal.ts'
+    </script>
+  </body>
+</html>

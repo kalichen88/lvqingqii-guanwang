@@ -1,0 +1,29 @@
+---
+/** Part finder (English) */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import FinderPage from '../../../components/pages/FinderPage.astro'
+import { collectionJsonLd, faqJsonLd } from '../../../lib/seo.mjs'
+import { faqs } from '../../../data/content.mjs'
+import { productCount } from '../../../data/products.mjs'
+
+const lang = 'en' as const
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: 'Part & Model Finder',
+    description: 'Search FILTERSUN part numbers by number, prefix, dimensions or category.',
+    url: '/search/',
+  }),
+  faqJsonLd(faqs.slice(0, 4).map((f) => ({ q: f.q.en, a: f.a.en }))),
+]
+---
+
+<BaseLayout
+  {lang}
+  title="Part Finder — Search FILTERSUN Part Numbers & Dimensions"
+  description={`Search ${productCount.toLocaleString()} catalogued FILTERSUN part numbers by number, prefix, dimensions or category, with photos and specifications.`}
+  pathname="/search/"
+  jsonLd={jsonLd}
+>
+  <FinderPage {lang} />
+</BaseLayout>

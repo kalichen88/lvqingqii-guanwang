@@ -1,0 +1,106 @@
+---
+/**
+ * SectionHeading.astro — 章节标题
+ */
+import Icon from './Icon.astro'
+
+interface Props {
+  eyebrow?: string
+  title: string
+  desc?: string
+  align?: 'left' | 'center'
+  /** 深色背景 */
+  dark?: boolean
+  /** 右侧动作链接 */
+  actionLabel?: string
+  actionHref?: string
+  class?: string
+  /** 标题最大宽度类 */
+  titleClass?: string
+}
+
+const {
+  eyebrow,
+  title,
+  desc,
+  align = 'left',
+  dark = false,
+  actionLabel,
+  actionHref,
+  class: className = '',
+  titleClass = 'max-w-3xl',
+} = Astro.props
+
+const centered = align === 'center'
+---
+
+<div
+  class:list={[
+    'flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between',
+    centered && 'lg:flex-col lg:items-center',
+    className,
+  ]}
+>
+  <div class:list={[centered && 'text-center', 'max-w-4xl']}>
+    {
+      eyebrow && (
+        <span
+          class:list={[
+            'eyebrow',
+            centered && 'eyebrow-plain justify-center',
+            dark && 'text-brand-300',
+          ]}
+        >
+          {eyebrow}
+        </span>
+      )
+    }
+
+    <h2
+      class:list={[
+        'mt-3 text-[28px] font-semibold leading-[1.16] tracking-tight md:text-[38px] lg:text-[42px]',
+        dark && 'text-white',
+        titleClass,
+        centered && 'mx-auto',
+      ]}
+      data-reveal
+    >
+      {title}
+    </h2>
+
+    {
+      desc && (
+        <p
+          class:list={[
+            'mt-4 text-[15px] leading-relaxed md:text-[16px]',
+            dark ? 'text-white/55' : 'text-ink-500',
+            centered ? 'mx-auto max-w-2xl' : 'max-w-2xl',
+          ]}
+          data-reveal
+          style="--reveal-delay:80ms"
+        >
+          {desc}
+        </p>
+      )
+    }
+  </div>
+
+  {
+    actionLabel && actionHref && (
+      <a
+        href={actionHref}
+        class:list={[
+          'group inline-flex shrink-0 items-center gap-2 text-[14px] font-semibold transition',
+          dark ? 'text-brand-300 hover:text-white' : 'text-brand-600 hover:text-brand-700',
+        ]}
+        data-reveal
+      >
+        {actionLabel}
+        <Icon
+          name="arrow-right"
+          class="size-4 transition-transform duration-300 group-hover:translate-x-1"
+        />
+      </a>
+    )
+  }
+</div>

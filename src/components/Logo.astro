@@ -1,0 +1,112 @@
+---
+/**
+ * Logo.astro — 品牌标识
+ * ---------------------------------------------------------------------------
+ * 图形部分是一个「六边形 + 滤材褶皱」的抽象标记，替换成自己的 Logo 时：
+ *   1) 直接把 public/brand/logo.svg 换成你的文件，并用 <img> 引用；或
+ *   2) 改下面的 <svg> 内容。
+ * 文字部分读取 site.config.mjs 的品牌名，改配置即可全站同步。
+ */
+import siteConfig from '../../site.config.mjs'
+
+interface Props {
+  /** light=深色文字（白底使用）/ dark=白色文字 / inherit=跟随父级颜色（由 CSS 变量驱动） */
+  variant?: 'light' | 'dark' | 'inherit'
+  /** 是否显示品牌副标语 */
+  showTagline?: boolean
+  class?: string
+  compact?: boolean
+  /** 点击跳转地址 */
+  href?: string
+  /** 语言：英文站把英文名放在主位，更符合当地阅读习惯 */
+  lang?: 'zh' | 'en'
+}
+
+const {
+  variant = 'light',
+  showTagline = false,
+  class: className = '',
+  compact = false,
+  href = '/',
+  lang = 'zh',
+} = Astro.props
+
+const isDark = variant === 'dark'
+const isInherit = variant === 'inherit'
+const isEn = lang === 'en'
+
+/** 主副标题按语言互换 */
+const primary = isEn ? siteConfig.brand.shortNameEn : siteConfig.brand.shortNameZh
+const secondary = isEn ? siteConfig.brand.shortNameZh : siteConfig.brand.shortNameEn
+
+/** 主文字颜色 */
+const titleColor = isInherit ? 'text-current' : isDark ? 'text-white' : 'text-ink-900'
+/** 副文字颜色 */
+const subColor = isInherit
+  ? 'text-current opacity-55'
+  : isDark
+    ? 'text-white/45'
+    : 'text-ink-400'
+/** 标语颜色 */
+const taglineColor = isInherit
+  ? 'border-current/20 text-current opacity-60'
+  : isDark
+    ? 'border-white/15 text-white/55'
+    : 'border-ink-100 text-ink-400'
+---
+
+<a
+  href={href}
+  class={`group inline-flex items-center gap-3 ${className}`}
+  style={isInherit ? 'color: var(--nav-logo, currentColor)' : undefined}
+  aria-label={siteConfig.brand.shortNameZh}
+>
+  {/* 图形标记 */}
+  <span class="relative inline-flex shrink-0">
+    <svg
+      viewBox="0 0 40 40"
+      class={compact ? 'size-9' : 'size-10'}
+      role="img"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#4A82FF"></stop>
+          <stop offset="55%" stop-color="#2F6BFF"></stop>
+          <stop offset="100%" stop-color="#12C4B5"></stop>
+        </linearGradient>
+      </defs>
+      {/* 六边形底 */}
+      <path
+        d="M20 2.6 34.5 11v18L20 37.4 5.5 29V11L20 2.6Z"
+        fill="url(#logoGrad)"
+      />
+      {/* 滤材褶皱：三条由粗到细的竖线，示意逐级过滤 */}
+      <g stroke="#fff" stroke-linecap="round" fill="none">
+        <path d="M14 12.5v15" stroke-width="2.6" opacity="0.95"></path>
+        <path d="M20 14.5v11" stroke-width="2.1" opacity="0.8"></path>
+        <path d="M26 16.5v7" stroke-width="1.6" opacity="0.62"></path>
+      </g>
+    </svg>
+  </span>
+
+  {/* 文字 */}
+  <span class="flex min-w-0 flex-col leading-none">
+    <span
+      class={`truncate font-semibold tracking-tight ${compact ? 'text-[15px]' : 'text-[17px]'} ${titleColor}`}
+    >
+      {primary}
+    </span>
+    <span
+      class={`mt-1 truncate font-mono text-[10px] font-medium uppercase tracking-[0.2em] ${subColor}`}
+    >
+      {secondary}
+    </span>
+  </span>
+
+  {showTagline && (
+    <span class={`ml-3 hidden whitespace-nowrap border-l pl-3 text-[11px] leading-tight 2xl:block ${taglineColor}`}>
+      {isEn ? siteConfig.brand.taglineEn : siteConfig.brand.taglineZh}
+    </span>
+  )}
+</a>

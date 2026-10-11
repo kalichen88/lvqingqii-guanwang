@@ -1,0 +1,125 @@
+---
+/**
+ * PageHero.astro — 二级页统一页头横幅（浅色）
+ * ---------------------------------------------------------------------------
+ * 白底 + 淡蓝光晕 + 渐隐蓝图网格，取代原先各页各自实现的深色 Hero，
+ * 保证全站二级页视觉一致、只需维护一处。
+ *
+ * 用法：
+ *   <PageHero lang={lang} eyebrow="产品中心" title="…" desc="…"
+ *     crumbs={[{label:'首页',href:'/'},{label:'产品中心'}]}
+ *     stats={[{value: 623, label: '已收录件号'}]} >
+ *     <Fragment slot="actions">…按钮…</Fragment>
+ *     <Fragment slot="aside">…右侧自定义内容（优先于 stats）…</Fragment>
+ *   </PageHero>
+ */
+import { localizePath } from '../i18n/index.mjs'
+import { t } from '../i18n/index.mjs'
+import Breadcrumbs from './Breadcrumbs.astro'
+import Icon from './Icon.astro'
+
+interface Stat {
+  value: number | string
+  label: string
+  suffix?: string
+}
+
+interface Props {
+  lang: 'zh' | 'en'
+  eyebrow?: string
+  title: string
+  desc?: string
+  crumbs?: { label: string; href?: string }[]
+  stats?: Stat[]
+  /** 标题下的图标标记 */
+  icon?: string
+  /** 统计区列数 */
+  statCols?: 2 | 3 | 4
+  class?: string
+}
+
+const {
+  lang,
+  eyebrow,
+  title,
+  desc,
+  crumbs,
+  stats,
+  icon,
+  statCols = 2,
+  class: className = '',
+} = Astro.props
+
+const hasAside = Astro.slots.has('aside')
+const gridCols = statCols === 4 ? 'grid-cols-2 md:grid-cols-4' : statCols === 3 ? 'grid-cols-3' : 'grid-cols-2'
+---
+
+<section class:list={['page-hero', className]}>
+  <div class="shell relative py-10 md:py-14 lg:py-16">
+    {crumbs && crumbs.length > 0 && <Breadcrumbs {lang} items={crumbs} />}
+
+    <div class="mt-6 grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-12">
+      <div class={hasAside || stats ? 'lg:col-span-7' : 'lg:col-span-9'}>
+        {
+          icon && (
+            <span class="mb-5 flex size-11 items-center justify-center rounded-2xl bg-white text-brand-600 shadow-soft ring-1 ring-ink-100">
+              <Icon name={icon} class="size-6" />
+            </span>
+          )
+        }
+
+        {eyebrow && <span class="eyebrow">{eyebrow}</span>}
+
+        <h1
+          class:list={[
+            'text-[30px] font-semibold leading-[1.14] text-ink-900 md:text-[42px]',
+            eyebrow || icon ? 'mt-3' : 'mt-0',
+          ]}
+          data-reveal
+        >
+          {title}
+        </h1>
+
+        {
+          desc && (
+            <p class="mt-5 max-w-2xl text-[15px] leading-[1.9] text-ink-500" data-reveal>
+              {desc}
+            </p>
+          )
+        }
+
+        {
+          Astro.slots.has('actions') && (
+            <div class="mt-8 flex flex-wrap gap-3" data-reveal>
+              <slot name="actions" />
+            </div>
+          )
+        }
+
+        <slot name="below" />
+      </div>
+
+      {
+        hasAside ? (
+          <div class="lg:col-span-5" data-reveal="right">
+            <slot name="aside" />
+          </div>
+        ) : stats && stats.length > 0 ? (
+          <div class="lg:col-span-5" data-reveal="right">
+            <div class:list={['grid gap-px overflow-hidden rounded-2xl bg-ink-100 shadow-soft ring-1 ring-ink-100', gridCols]}>
+              {stats.map((s) => (
+                <div class="bg-white px-5 py-5 md:py-6">
+                  <p class="tnum text-[24px] font-semibold leading-none tracking-tight text-ink-900 md:text-[28px]">
+                    {typeof s.value === 'number' ? s.value.toLocaleString() : s.value}
+                    {s.suffix && <span class="text-brand-500">{s.suffix}</span>}
+                  </p>
+                  <p class="mt-2 text-[11.5px] leading-snug text-ink-400">{s.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null
+      }
+    </div>
+  </div>
+</section>

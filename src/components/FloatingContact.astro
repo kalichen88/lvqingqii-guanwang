@@ -1,0 +1,154 @@
+---
+/**
+ * FloatingContact.astro — 悬浮联系组件
+ * ---------------------------------------------------------------------------
+ * 桌面：右侧竖排悬浮条（电话 / 微信二维码 / WhatsApp / 询价 / 回到顶部）
+ * 移动：底部三键操作条（打电话 / 微信 / 询价）
+ *
+ * 微信二维码图片放在 public/brand/wechat-qr.png，替换即可。
+ */
+import siteConfig from '../../site.config.mjs'
+import { t, localizePath } from '../i18n/index.mjs'
+import Icon from './Icon.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+}
+
+const { lang } = Astro.props
+const isEn = lang === 'en'
+const c = siteConfig.contact
+const tel = `tel:${c.salesPhone.replace(/[^\d+]/g, '')}`
+const wa = `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(
+  isEn ? 'Hello, I would like to enquire about FILTERSUN filters.' : '你好，我想咨询富滤盛滤清器。',
+)}`
+const quote = localizePath('/contact/#quote', lang)
+const wechatQr = '/brand/wechat-qr.png'
+---
+
+<!-- ==================== 桌面：右侧悬浮条 ==================== -->
+<div
+  class="fixed right-5 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-2 lg:flex"
+  data-float-bar
+>
+  <!-- 电话 -->
+  <a
+    href={tel}
+    class="group relative flex size-12 items-center justify-center rounded-xl bg-white text-ink-600 shadow-lift ring-1 ring-ink-100 transition hover:bg-brand-500 hover:text-white hover:ring-brand-500"
+    aria-label={t(lang, 'phone')}
+  >
+    <Icon name="phone" class="size-5" />
+    <span
+      class="pointer-events-none absolute right-full mr-3 whitespace-nowrap rounded-lg bg-ink-900 px-3 py-1.5 text-[12.5px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100"
+    >
+      {isEn ? 'Call sales' : '销售热线'} · <span class="tnum">{c.salesPhone}</span>
+    </span>
+  </a>
+
+  <!-- 微信 -->
+  <div class="group relative">
+    <button
+      type="button"
+      class="flex size-12 items-center justify-center rounded-xl bg-white text-ink-600 shadow-lift ring-1 ring-ink-100 transition hover:bg-[#07C160] hover:text-white hover:ring-[#07C160]"
+      aria-label={t(lang, 'wechat')}
+    >
+      <Icon name="wechat" class="size-5" />
+    </button>
+    <div
+      class="pointer-events-none absolute right-full top-1/2 mr-3 w-52 -translate-y-1/2 scale-95 rounded-2xl bg-white p-4 opacity-0 shadow-deep ring-1 ring-ink-100 transition-all duration-250 group-hover:scale-100 group-hover:opacity-100 group-focus-within:scale-100 group-focus-within:opacity-100"
+    >
+      <img
+        src={wechatQr}
+        alt={isEn ? 'WeChat QR code' : '微信二维码'}
+        width="180"
+        height="180"
+        loading="lazy"
+        class="aspect-square w-full rounded-lg bg-ink-50 object-contain"
+      />
+      <p class="mt-2.5 text-center text-[12.5px] font-semibold text-ink-800">
+        {isEn ? 'Scan to add us on WeChat' : '扫码加微信，快速报价'}
+      </p>
+      <p class="mt-1 text-center text-[11.5px] text-ink-400">
+        {isEn ? 'WeChat ID' : '微信号'}：<span class="font-mono">{c.wechatId}</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- WhatsApp -->
+  <a
+    href={wa}
+    target="_blank"
+    rel="noopener nofollow"
+    class="group relative flex size-12 items-center justify-center rounded-xl bg-white text-ink-600 shadow-lift ring-1 ring-ink-100 transition hover:bg-[#25D366] hover:text-white hover:ring-[#25D366]"
+    aria-label="WhatsApp"
+  >
+    <Icon name="whatsapp" class="size-5" />
+    <span
+      class="pointer-events-none absolute right-full mr-3 whitespace-nowrap rounded-lg bg-ink-900 px-3 py-1.5 text-[12.5px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100"
+    >
+      WhatsApp
+    </span>
+  </a>
+
+  <!-- 询价 -->
+  <a
+    href={quote}
+    class="group relative flex size-12 items-center justify-center rounded-xl bg-brand-500 text-white shadow-glow transition hover:bg-brand-600"
+    aria-label={t(lang, 'getQuote')}
+  >
+    <Icon name="mail" class="size-5" />
+    <span
+      class="pointer-events-none absolute right-full mr-3 whitespace-nowrap rounded-lg bg-ink-900 px-3 py-1.5 text-[12.5px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100"
+    >
+      {t(lang, 'getQuote')}
+    </span>
+  </a>
+
+  <!-- 回到顶部 -->
+  <button
+    type="button"
+    data-to-top
+    class="mt-1 flex size-12 translate-y-2 items-center justify-center rounded-xl bg-brand-500 text-white opacity-0 shadow-lift transition-all duration-300 hover:bg-brand-600 data-[show=true]:translate-y-0 data-[show=true]:opacity-100"
+    aria-label={isEn ? 'Back to top' : '回到顶部'}
+  >
+    <Icon name="chevron-up" class="size-5" />
+  </button>
+</div>
+
+<!-- ==================== 移动端：底部操作条 ==================== -->
+<div
+  class="fixed inset-x-0 bottom-0 z-40 border-t border-ink-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+>
+  <div class="grid grid-cols-3 divide-x divide-ink-100">
+    <a href={tel} class="flex flex-col items-center gap-1 py-2.5 active:bg-ink-50">
+      <Icon name="phone" class="size-[18px] text-brand-500" />
+      <span class="text-[11.5px] font-medium text-ink-600">{isEn ? 'Call' : '打电话'}</span>
+    </a>
+    <a href={quote} class="flex flex-col items-center gap-1 py-2.5 active:bg-ink-50">
+      <Icon name="mail" class="size-[18px] text-brand-500" />
+      <span class="text-[11.5px] font-medium text-ink-600">{isEn ? 'Enquire' : '在线询价'}</span>
+    </a>
+    <a href={wa} target="_blank" rel="noopener nofollow" class="flex flex-col items-center gap-1 py-2.5 active:bg-ink-50">
+      <Icon name="whatsapp" class="size-[18px] text-[#25D366]" />
+      <span class="text-[11.5px] font-medium text-ink-600">WhatsApp</span>
+    </a>
+  </div>
+</div>
+
+<!-- 移动端底部条占位，避免内容被遮挡 -->
+<div class="h-[62px] lg:hidden" aria-hidden="true"></div>
+
+<script>
+  /* 回到顶部按钮：滚动一定距离后出现 */
+  const btn = document.querySelector<HTMLElement>('[data-to-top]')
+  if (btn) {
+    const apply = () => {
+      btn.dataset.show = window.scrollY > 600 ? 'true' : 'false'
+    }
+    apply()
+    window.addEventListener('scroll', apply, { passive: true })
+    btn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    })
+  }
+</script>

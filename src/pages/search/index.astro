@@ -1,0 +1,29 @@
+---
+/** 件号查询（中文） */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import FinderPage from '../../components/pages/FinderPage.astro'
+import { collectionJsonLd, faqJsonLd } from '../../lib/seo.mjs'
+import { faqs } from '../../data/content.mjs'
+import { productCount } from '../../data/products.mjs'
+
+const lang = 'zh' as const
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: '件号 / 机型查询',
+    description: '富滤盛件号在线查询工具，支持件号、前缀、规格尺寸与品类关键词检索。',
+    url: '/search/',
+  }),
+  faqJsonLd(faqs.slice(0, 4).map((f) => ({ q: f.q.zh, a: f.a.zh }))),
+]
+---
+
+<BaseLayout
+  {lang}
+  title="件号查询_滤芯件号与规格在线检索"
+  description={`富滤盛件号在线查询工具，已收录 ${productCount.toLocaleString()} 个件号，支持按件号、前缀、规格尺寸与品类关键词实时检索，附实物图与规格参数。`}
+  pathname="/search/"
+  jsonLd={jsonLd}
+>
+  <FinderPage {lang} />
+</BaseLayout>

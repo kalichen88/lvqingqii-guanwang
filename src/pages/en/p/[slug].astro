@@ -1,0 +1,41 @@
+---
+/** Product detail (English) /en/p/<slug>/ */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import ProductDetailPage from '../../../components/pages/ProductDetailPage.astro'
+import { pageProducts } from '../../../data/products.mjs'
+import { groupBySlug } from '../../../data/groups.mjs'
+import { productJsonLd, breadcrumbJsonLd } from '../../../lib/seo.mjs'
+
+export function getStaticPaths() {
+  return pageProducts.map((product) => ({
+    params: { slug: product.slug },
+    props: { product },
+  }))
+}
+
+const { product } = Astro.props
+const lang = 'en' as const
+const group = groupBySlug[product.group]
+const typeLabel = product.typeEn || product.type
+
+const jsonLd = [
+  productJsonLd(lang, product, group),
+  breadcrumbJsonLd(lang, [
+    { label: 'Home', href: '/' },
+    { label: 'Products', href: '/products/' },
+    ...(group ? [{ label: group.nameEn, href: `/products/${group.slug}/` }] : []),
+    { label: product.partNo, href: `/p/${product.slug}/` },
+  ]),
+]
+---
+
+<BaseLayout
+  {lang}
+  title={`${product.partNo} ${typeLabel}${product.spec ? ` — ${product.spec}` : ''} | Genuine FILTERSUN`}
+  description={`${product.partNo} genuine FILTERSUN ${typeLabel}${product.spec ? `, dimensions ${product.spec}` : ''}. Authorized distributor — dimensions, fitment check and volume pricing. Export supported.`}
+  pathname={`/p/${product.slug}/`}
+  image={product.image ?? undefined}
+  jsonLd={jsonLd}
+>
+  <ProductDetailPage {lang} product={product} />
+</BaseLayout>

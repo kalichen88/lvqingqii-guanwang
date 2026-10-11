@@ -1,0 +1,99 @@
+---
+/**
+ * NotFoundPage.astro — 404（浅色版）
+ * ---------------------------------------------------------------------------
+ * 不止告诉用户「找不到」，还把最可能的出口直接给出来，减少跳出。
+ */
+import siteConfig from '../../../site.config.mjs'
+import { t, localizePath } from '../../i18n/index.mjs'
+import { groups } from '../../data/products.mjs'
+import { applications } from '../../data/applications.mjs'
+import Icon from '../Icon.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+}
+const { lang } = Astro.props
+const isEn = lang === 'en'
+const p = (path: string) => localizePath(path, lang)
+const c = siteConfig.contact
+---
+
+<section class="page-hero flex min-h-[68vh] items-center py-20">
+  <div class="shell relative">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="partno text-[64px] font-semibold leading-none text-ink-100 md:text-[96px]">404</p>
+      <h1 class="mt-4 text-[28px] font-semibold text-ink-900 md:text-[36px]">
+        {t(lang, 'notFoundTitle')}
+      </h1>
+      <p class="mx-auto mt-4 max-w-lg text-[14.5px] leading-relaxed text-ink-500">
+        {t(lang, 'notFoundDesc')}
+      </p>
+
+      <!-- 直接搜索 -->
+      <form action={p('/search/')} method="get" class="mx-auto mt-8 max-w-lg">
+        <div class="flex items-center gap-2 rounded-2xl bg-white p-2 shadow-lift ring-1 ring-ink-200 transition focus-within:ring-2 focus-within:ring-brand-500">
+          <Icon name="search" class="ml-3 size-5 shrink-0 text-ink-400" />
+          <input
+            type="search"
+            name="q"
+            placeholder={isEn ? 'Search a part number…' : '搜索件号，如 FS641A'}
+            class="h-11 min-w-0 flex-1 border-0 bg-transparent text-[15px] text-ink-900 placeholder:text-ink-400 focus:outline-none"
+            aria-label={t(lang, 'finderTitle')}
+          />
+          <button type="submit" class="btn btn-primary btn-sm shrink-0">{t(lang, 'search')}</button>
+        </div>
+      </form>
+
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <a href={p('/')} class="btn btn-primary">
+          <Icon name="arrow-left" class="size-4" />
+          {t(lang, 'backHome')}
+        </a>
+        <a href={p('/products/')} class="btn btn-ghost">
+          <Icon name="grid" class="size-4" />
+          {isEn ? 'All products' : '全部产品'}
+        </a>
+        <a href={`tel:${c.salesPhone.replace(/[^\d+]/g, '')}`} class="btn btn-ghost">
+          <Icon name="phone" class="size-4" />
+          <span class="tnum">{c.salesPhone}</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- 热门入口 -->
+    <div class="mx-auto mt-16 max-w-4xl">
+      <p class="text-center text-[11.5px] uppercase tracking-[0.16em] text-ink-400">
+        {isEn ? 'Popular destinations' : '常去的地方'}
+      </p>
+      <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          groups.slice(0, 3).map((g) => (
+            <a
+              href={p(`/products/${g.slug}/`)}
+              class="group flex items-center gap-3 rounded-xl bg-white px-4 py-3.5 shadow-soft ring-1 ring-ink-100 transition hover:ring-brand-300"
+            >
+              <Icon name={g.icon} class="size-4 shrink-0 text-brand-500" />
+              <span class="truncate text-[13.5px] font-medium text-ink-700 group-hover:text-brand-700">
+                {isEn ? g.nameEn : g.nameZh}
+              </span>
+            </a>
+          ))
+        }
+        {
+          applications.slice(0, 3).map((a) => (
+            <a
+              href={p(`/applications/${a.slug}/`)}
+              class="group flex items-center gap-3 rounded-xl bg-white px-4 py-3.5 shadow-soft ring-1 ring-ink-100 transition hover:ring-brand-300"
+            >
+              <Icon name={a.icon} class="size-4 shrink-0 text-brand-500" />
+              <span class="truncate text-[13.5px] font-medium text-ink-700 group-hover:text-brand-700">
+                {isEn ? a.nameEn : a.nameZh}
+              </span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>

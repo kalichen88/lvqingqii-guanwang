@@ -1,0 +1,106 @@
+# ============================================================================
+# 自动同步厂家件号目录
+# ============================================================================
+# 作用：定期从富滤盛官网重新抓取件号目录（件号 / 规格 / 品类 / 实物图），
+#       有变化时自动提交到本仓库。
+#
+# 提交后会自动触发你在 腾讯云 EdgeOne Pages / Cloudflare Pages 里配置的
+# Git 集成构建 —— 不需要在这个工作流里写部署步骤。
+#
+# 触发方式：
+#   1) 定时：每周一 03:00（北京时间）自动跑一次
+#   2) 手动：仓库 → Actions → 本工作流 → Run workflow
+#
+# 注意：如果厂家站点做了反爬或限定国内 IP，抓取可能失败；
+#       失败时工作流会报错但不会清空已有目录（脚本内建 20% 安全阀）。
+# ============================================================================
+
+name: 同步厂家件号目录
+
+on:
+  schedule:
+    # cron 使用 UTC。'0 19 * * 0' = 每周日 19:00 UTC = 北京时间周一 03:00
+    - cron: '0 19 * * 0'
+  workflow_dispatch:
+    inputs:
+      pages:
+        description: '每个分类最大抓取页数（每页 20 条，默认 200）'
+        required: false
+        default: '200'
+      force:
+        description: '忽略数量骤降安全阀（谨慎使用）'
+        type: boolean
+        required: false
+        default: false
+
+# 同一时间只跑一个同步，避免两次抓取互相覆盖
+concurrency:
+  group: catalog-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+        with:
+          # 需要能 push 回本仓库
+          persist-credentials: true
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 同步件号目录
+        run: |
+          ARGS="--pages=${{ github.event.inputs.pages || '200' }}"
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+          echo "运行：node scripts/sync-catalog.mjs $ARGS"
+          node scripts/sync-catalog.mjs $ARGS
+
+      - name: 校验站点仍可构建
+        run: pnpm build
+
+      - name: 提交变更
+        id: commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "本次同步没有产生变更。"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git commit -m "chore(catalog): 同步厂家件号目录 $(date -u +'%Y-%m-%d')"
+            git push
+            echo "已提交并推送，将自动触发 EdgeOne / Cloudflare Pages 构建。"
+          fi
+
+      - name: 输出变更摘要
+        if: steps.commit.outputs.changed == 'true'
+        run: |
+          echo "### 件号目录已同步" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat src/data/sync-report.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

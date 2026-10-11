@@ -1,0 +1,44 @@
+---
+/** 件号详情（中文） /p/<slug>/ */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import ProductDetailPage from '../../components/pages/ProductDetailPage.astro'
+import { pageProducts } from '../../data/products.mjs'
+import { groupBySlug } from '../../data/groups.mjs'
+import { productJsonLd, breadcrumbJsonLd } from '../../lib/seo.mjs'
+
+export function getStaticPaths() {
+  // 只为「有实质内容」的件号生成详情页，策略见 site.config.mjs → productPagePolicy
+  return pageProducts.map((product) => ({
+    params: { slug: product.slug },
+    props: { product },
+  }))
+}
+
+const { product } = Astro.props
+const lang = 'zh' as const
+const group = groupBySlug[product.group]
+
+const spec = product.spec ? `，规格 ${product.spec}` : ''
+const title = `${product.partNo} ${product.type}${product.spec ? ` ${product.spec}` : ''}`
+
+const jsonLd = [
+  productJsonLd(lang, product, group),
+  breadcrumbJsonLd(lang, [
+    { label: '首页', href: '/' },
+    { label: '产品中心', href: '/products/' },
+    ...(group ? [{ label: group.nameZh, href: `/products/${group.slug}/` }] : []),
+    { label: product.partNo, href: `/p/${product.slug}/` },
+  ]),
+]
+---
+
+<BaseLayout
+  {lang}
+  title={`${product.partNo} ${product.type}_规格${product.spec ? ' ' + product.spec : ''}_现货报价`}
+  description={`${product.partNo} 富滤盛${product.type}${spec}。授权代理正品供应，提供规格尺寸、适用机型核对与批量报价，支持出口。`}
+  pathname={`/p/${product.slug}/`}
+  image={product.image ?? undefined}
+  jsonLd={jsonLd}
+>
+  <ProductDetailPage {lang} product={product} />
+</BaseLayout>

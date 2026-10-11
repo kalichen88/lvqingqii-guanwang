@@ -1,0 +1,107 @@
+---
+/**
+ * ApplicationsIndexPage.astro — 应用领域总览
+ */
+import { localizePath, t } from '../../i18n/index.mjs'
+import { applications } from '../../data/applications.mjs'
+import { groupBySlug, groupStats } from '../../data/products.mjs'
+import Icon from '../Icon.astro'
+import PageHero from '../PageHero.astro'
+import InquiryForm from '../InquiryForm.astro'
+import SectionHeading from '../SectionHeading.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+}
+const { lang } = Astro.props
+const isEn = lang === 'en'
+const p = (path: string) => localizePath(path, lang)
+
+const crumbs = [
+  { label: t(lang, 'home'), href: '/' },
+  { label: t(lang, 'navSolutions') },
+]
+---
+
+<PageHero
+  {lang}
+  eyebrow={isEn ? 'Applications' : '应用领域'}
+  title={isEn ? 'Whatever the machine, the filter still decides how long it lasts' : '不管什么设备，滤芯都在决定它能撑多久'}
+  desc={isEn
+    ? 'Pick your industry to see the recommended filter set, the usual failure points and the part numbers we keep in stock for it.'
+    : '选择你的行业，查看推荐的滤芯配置、常见故障点，以及我们为该场景常备的件号。'}
+  crumbs={crumbs}
+/>
+
+<section class="section bg-white">
+  <div class="shell">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        applications.map((a, i) => {
+          const gs = a.groups.map((s) => groupBySlug[s]).filter(Boolean)
+          return (
+            <a
+              href={p(`/applications/${a.slug}/`)}
+              class="card card-hover group flex flex-col overflow-hidden"
+              data-reveal
+              style={`--reveal-delay:${(i % 3) * 55}ms`}
+            >
+              <div class="relative aspect-[16/9] overflow-hidden bg-ink-50">
+                <img
+                  src={a.image}
+                  alt={isEn ? a.nameEn : a.nameZh}
+                  width="700"
+                  height="394"
+                  loading="lazy"
+                  decoding="async"
+                  class="size-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+                />
+                <span class="absolute left-4 top-4 flex size-10 items-center justify-center rounded-xl bg-white text-brand-600 shadow-lift ring-1 ring-ink-100">
+                  <Icon name={a.icon} class="size-5" />
+                </span>
+              </div>
+
+              <div class="flex flex-1 flex-col p-5">
+                <h2 class="text-[16.5px] font-semibold text-ink-900 transition group-hover:text-brand-600">
+                  {isEn ? a.nameEn : a.nameZh}
+                </h2>
+                <p class="mt-2 text-[13px] leading-relaxed text-ink-500">{isEn ? a.leadEn : a.leadZh}</p>
+
+                <div class="mt-4 flex flex-wrap gap-1.5">
+                  {gs.map((g) => (
+                    <span class="chip">
+                      {isEn ? g.shortEn : g.shortZh}
+                      <span class="tnum opacity-50">{groupStats[g.slug]?.count ?? 0}</span>
+                    </span>
+                  ))}
+                </div>
+
+                <span class="mt-auto inline-flex items-center gap-1.5 pt-5 text-[13px] font-semibold text-brand-600">
+                  {isEn ? 'View solution' : '查看该领域方案'}
+                  <Icon name="arrow-right" class="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+              </div>
+            </a>
+          )
+        })
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section bg-ink-50">
+  <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="lg:col-span-5">
+      <SectionHeading
+        eyebrow={isEn ? 'Not listed?' : '没有你的行业？'}
+        title={isEn ? 'Tell us the machine, not the industry' : '说不清行业也没关系，说设备就行'}
+        desc={isEn
+          ? 'Filters are matched by machine and part number, not by industry label. Send us the model or a photo and we will take it from there.'
+          : '滤芯是按设备和件号匹配的，不是按行业标签。把机型或照片发给我们，剩下的我们来做。'}
+      />
+    </div>
+    <div class="lg:col-span-7">
+      <InquiryForm {lang} />
+    </div>
+  </div>
+</section>

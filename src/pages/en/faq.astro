@@ -1,0 +1,20 @@
+---
+/** FAQ (English) */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import FaqPage from '../../components/pages/FaqPage.astro'
+import { faqJsonLd } from '../../lib/seo.mjs'
+import { faqs } from '../../data/content.mjs'
+
+const lang = 'en' as const
+const jsonLd = [faqJsonLd(faqs.map((f) => ({ q: f.q.en, a: f.a.en })))]
+---
+
+<BaseLayout
+  {lang}
+  title="FAQ — Genuine Parts, MOQ, Lead Time and Warranty"
+  description="Answers on authorized distribution, genuine-part guarantees, part number matching, minimum order quantity, lead times and stock, warranty and product liability insurance, export documentation and custom builds."
+  pathname="/faq/"
+  jsonLd={jsonLd}
+>
+  <FaqPage {lang} />
+</BaseLayout>

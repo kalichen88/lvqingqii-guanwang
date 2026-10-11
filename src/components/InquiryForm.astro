@@ -1,0 +1,316 @@
+---
+/**
+ * InquiryForm.astro — 询价表单
+ * ---------------------------------------------------------------------------
+ * 纯前端组件 + 渐进增强：
+ *   - site.config.mjs 里 forms.endpoint 留空时，退化为「打开邮件客户端」并展示电话/微信；
+ *   - 填写了 endpoint（EdgeOne 边缘函数或第三方表单服务）则走 fetch 提交。
+ */
+import siteConfig from '../../site.config.mjs'
+import { t } from '../i18n/index.mjs'
+import Icon from './Icon.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+  /** 预填件号（件号详情页用） */
+  presetPartNo?: string
+  /** 紧凑布局（侧栏 / 页面底部） */
+  compact?: boolean
+  title?: string
+  desc?: string
+  class?: string
+}
+
+const {
+  lang,
+  presetPartNo = '',
+  compact = false,
+  title,
+  desc,
+  class: className = '',
+} = Astro.props
+
+const isEn = lang === 'en'
+const c = siteConfig.contact
+const endpoint = siteConfig.forms?.endpoint ?? ''
+const formId = `inquiry-${Math.random().toString(36).slice(2, 9)}`
+
+const field =
+  'h-11 w-full rounded-xl border-0 bg-white px-3.5 text-[14px] text-ink-800 ring-1 ring-ink-200 transition placeholder:text-ink-300 focus:ring-2 focus:ring-brand-500'
+const label = 'mb-1.5 block text-[12.5px] font-medium text-ink-600'
+---
+
+<div
+  class:list={['overflow-hidden rounded-2xl bg-ink-50 ring-1 ring-ink-100', className]}
+  id="quote"
+>
+  <div class:list={[compact ? 'p-5' : 'p-6 md:p-8']}>
+    <div class="mb-6">
+      <h3 class="text-[19px] font-semibold text-ink-900 md:text-[21px]">
+        {title ?? t(lang, 'formTitle')}
+      </h3>
+      <p class="mt-2 text-[13.5px] leading-relaxed text-ink-500">
+        {desc ?? t(lang, 'formDesc')}
+      </p>
+    </div>
+
+    <form
+      id={formId}
+      class="space-y-4"
+      data-inquiry-form
+      data-endpoint={endpoint}
+      data-lang={lang}
+      data-mailto={c.email}
+      data-phone={c.salesPhone}
+      data-success-path={siteConfig.forms?.successPath ?? ''}
+      novalidate
+    >
+      <!-- 蜜罐字段：机器人会填，正常用户看不到 -->
+      <input type="text" name="_company_website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+
+      <div class:list={['grid gap-4', compact ? 'grid-cols-1' : 'sm:grid-cols-2']}>
+        <div>
+          <label class={label} for={`${formId}-name`}>
+            {t(lang, 'formName')} <span class="text-brand-500">*</span>
+          </label>
+          <input
+            id={`${formId}-name`}
+            class={field}
+            type="text"
+            name="name"
+            required
+            autocomplete="name"
+            placeholder={isEn ? 'John Smith' : '张先生 / 李工'}
+          />
+        </div>
+
+        <div>
+          <label class={label} for={`${formId}-phone`}>
+            {t(lang, 'formPhone')} <span class="text-brand-500">*</span>
+          </label>
+          <input
+            id={`${formId}-phone`}
+            class={field}
+            type="tel"
+            name="phone"
+            required
+            autocomplete="tel"
+            placeholder={isEn ? '+86 138 0000 0000' : '138 0000 0000'}
+          />
+        </div>
+      </div>
+
+      <div class:list={['grid gap-4', compact ? 'grid-cols-1' : 'sm:grid-cols-2']}>
+        <div>
+          <label class={label} for={`${formId}-company`}>{t(lang, 'formCompany')}</label>
+          <input
+            id={`${formId}-company`}
+            class={field}
+            type="text"
+            name="company"
+            autocomplete="organization"
+          />
+        </div>
+
+        <div>
+          <label class={label} for={`${formId}-email`}>{t(lang, 'formEmail')}</label>
+          <input
+            id={`${formId}-email`}
+            class={field}
+            type="email"
+            name="email"
+            autocomplete="email"
+            placeholder={isEn ? 'you@company.com' : '可选，方便发报价单'}
+          />
+        </div>
+      </div>
+
+      <div class:list={['grid gap-4', compact ? 'grid-cols-1' : 'sm:grid-cols-[1fr_140px]']}>
+        <div>
+          <label class={label} for={`${formId}-part`}>{t(lang, 'formPartNo')}</label>
+          <input
+            id={`${formId}-part`}
+            class={`${field} partno`}
+            type="text"
+            name="partNo"
+            value={presetPartNo}
+            placeholder={isEn ? 'e.g. FS641A, Komatsu PC200-8' : '如 FS641A、小松 PC200-8'}
+          />
+        </div>
+
+        <div>
+          <label class={label} for={`${formId}-qty`}>{t(lang, 'formQuantity')}</label>
+          <input
+            id={`${formId}-qty`}
+            class={field}
+            type="text"
+            name="quantity"
+            placeholder={isEn ? 'e.g. 50 pcs' : '如 50 只'}
+          />
+        </div>
+      </div>
+
+      <div>
+        <label class={label} for={`${formId}-msg`}>{t(lang, 'formMessage')}</label>
+        <textarea
+          id={`${formId}-msg`}
+          class="min-h-[96px] w-full resize-y rounded-xl border-0 bg-white px-3.5 py-3 text-[14px] leading-relaxed text-ink-800 ring-1 ring-ink-200 transition placeholder:text-ink-300 focus:ring-2 focus:ring-brand-500"
+          name="message"
+          rows="3"
+          placeholder={
+            isEn
+              ? 'Machine model, OEM reference, delivery deadline…'
+              : '设备机型、原件号、交期要求等，写得越具体报价越准'
+          }
+        ></textarea>
+      </div>
+
+      <div class="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between">
+        <button type="submit" class="btn btn-primary btn-lg w-full sm:w-auto" data-submit-btn>
+          <Icon name="mail" class="size-4" />
+          <span data-submit-label>{t(lang, 'formSubmit')}</span>
+        </button>
+        <a
+          href={`tel:${c.salesPhone.replace(/[^\d+]/g, '')}`}
+          class="inline-flex items-center justify-center gap-2 text-[13.5px] font-medium text-ink-600 transition hover:text-brand-600 sm:justify-start"
+        >
+          <Icon name="phone" class="size-4 text-brand-500" />
+          {t(lang, 'formOrCall')}
+          <span class="tnum font-semibold">{c.salesPhone}</span>
+        </a>
+      </div>
+
+      <p class="text-[12px] leading-relaxed text-ink-400">{t(lang, 'formPrivacy')}</p>
+
+      <!-- 提交结果提示 -->
+      <div
+        class="hidden items-start gap-2.5 rounded-xl p-3.5 text-[13.5px] leading-relaxed"
+        data-form-status
+        role="status"
+        aria-live="polite"
+      >
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  /** 询价表单：收集 → 校验 → 提交（或退化到邮件） */
+  const forms = document.querySelectorAll<HTMLFormElement>('[data-inquiry-form]')
+
+  const messages = {
+    zh: {
+      submitting: '提交中…',
+      success: '提交成功，我们已收到您的询价，将在 1 个工作日内联系您。',
+      error: '提交失败，请稍后重试，或直接拨打服务热线。',
+      invalid: '请填写称呼和联系电话。',
+      mailto: '已为你打开邮件客户端。如果没反应，请直接拨打',
+      fallbackNote: '（未配置表单接收地址，已改用邮件方式）',
+    },
+    en: {
+      submitting: 'Sending…',
+      success: 'Thank you — your enquiry has been received. We will contact you within one business day.',
+      error: 'Submission failed. Please retry, or call our hotline directly.',
+      invalid: 'Please provide your name and phone number.',
+      mailto: 'Your email client has been opened. If nothing happened, please call',
+      fallbackNote: '(No form endpoint configured — falling back to email.)',
+    },
+  }
+
+  function setStatus(form: HTMLFormElement, type: 'success' | 'error' | 'info', text: string) {
+    const box = form.querySelector<HTMLElement>('[data-form-status]')
+    if (!box) return
+    box.classList.remove('hidden', 'bg-brand-50', 'text-brand-700', 'bg-red-50', 'text-red-700')
+    box.classList.add('flex')
+    if (type === 'success') box.classList.add('bg-brand-50', 'text-brand-700')
+    else if (type === 'error') box.classList.add('bg-red-50', 'text-red-700')
+    else box.classList.add('bg-white', 'text-ink-600', 'ring-1', 'ring-ink-200')
+    box.innerHTML = `<span class="mt-px">●</span><span>${text}</span>`
+  }
+
+  forms.forEach((form) => {
+    const lang = (form.dataset.lang as 'zh' | 'en') || 'zh'
+    const msg = messages[lang]
+    const btn = form.querySelector<HTMLButtonElement>('[data-submit-btn]')
+    const btnLabel = form.querySelector<HTMLElement>('[data-submit-label]')
+
+    /* 支持从别的页面带件号跳过来：/contact/?part=FS641A#quote */
+    const partFromUrl = new URLSearchParams(location.search).get('part')
+    if (partFromUrl) {
+      const input = form.querySelector<HTMLInputElement>('input[name="partNo"]')
+      if (input && !input.value) {
+        input.value = partFromUrl
+        // 顺手把焦点放到电话上（件号已填好，下一步就是联系方式）
+        window.setTimeout(() => {
+          form.querySelector<HTMLInputElement>('input[name="phone"]')?.focus({ preventScroll: true })
+        }, 400)
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      const fd = new FormData(form)
+      // 蜜罐命中：静默忽略
+      if (fd.get('_company_website')) return
+
+      const name = String(fd.get('name') ?? '').trim()
+      const phone = String(fd.get('phone') ?? '').trim()
+      if (!name || !phone) {
+        setStatus(form, 'error', msg.invalid)
+        form.querySelector<HTMLInputElement>('input[name="name"]')?.focus()
+        return
+      }
+
+      const payload = {
+        name,
+        phone,
+        email: String(fd.get('email') ?? '').trim(),
+        company: String(fd.get('company') ?? '').trim(),
+        partNo: String(fd.get('partNo') ?? '').trim(),
+        quantity: String(fd.get('quantity') ?? '').trim(),
+        message: String(fd.get('message') ?? '').trim(),
+        page: location.href,
+        lang,
+        submittedAt: new Date().toISOString(),
+      }
+
+      const endpoint = form.dataset.endpoint?.trim()
+      const original = btnLabel?.textContent ?? ''
+      if (btn) btn.disabled = true
+      if (btnLabel) btnLabel.textContent = msg.submitting
+
+      try {
+        if (endpoint) {
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          })
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          setStatus(form, 'success', msg.success)
+          form.reset()
+          const sp = form.dataset.successPath
+          if (sp) setTimeout(() => (location.href = sp), 900)
+        } else {
+          // 无后端：退化为邮件
+          const body = Object.entries(payload)
+            .filter(([, v]) => v)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join('\n')
+          const subject =
+            lang === 'en'
+              ? `Filter enquiry — ${payload.partNo || payload.name}`
+              : `滤清器询价 — ${payload.partNo || payload.name}`
+          location.href = `mailto:${form.dataset.mailto || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+          setStatus(form, 'info', `${msg.mailto} ${form.dataset.phone ?? ''} ${msg.fallbackNote}`)
+        }
+      } catch {
+        setStatus(form, 'error', msg.error)
+      } finally {
+        if (btn) btn.disabled = false
+        if (btnLabel) btnLabel.textContent = original
+      }
+    })
+  })
+</script>

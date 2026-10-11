@@ -1,0 +1,18 @@
+---
+/** 品牌与品质（中文） */
+import BaseLayout from '../layouts/BaseLayout.astro'
+import QualityPage from '../components/pages/QualityPage.astro'
+import siteConfig from '../../site.config.mjs'
+
+const lang = 'zh' as const
+const pr = siteConfig.principal
+---
+
+<BaseLayout
+  {lang}
+  title="品牌与品质_富滤盛工厂实力_认证与专利"
+  description={`${pr.nameZh}通过 IATF 16949、ISO 9001、ISO 14001、ISO 45001 体系认证及 TÜV GMC 认证，拥有 ${pr.facts.patents}+ 项国家专利、${pr.facts.plantAreaSqm}㎡ 生产面积，产品出口 ${pr.facts.exportCountries}+ 国家和地区。`}
+  pathname="/quality/"
+>
+  <QualityPage {lang} />
+</BaseLayout>

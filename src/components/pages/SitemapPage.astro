@@ -1,0 +1,166 @@
+---
+/**
+ * SitemapPage.astro — 站内 HTML 网站地图
+ * ---------------------------------------------------------------------------
+ * 面向用户与爬虫的入口页，集中列出全部重要页面与全部件号（按大类分批）。
+ */
+import { t, localizePath } from '../../i18n/index.mjs'
+import { groups, groupStats, products } from '../../data/products.mjs'
+import { applications } from '../../data/applications.mjs'
+import { news } from '../../data/content.mjs'
+import Icon from '../Icon.astro'
+import Breadcrumbs from '../Breadcrumbs.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+}
+const { lang } = Astro.props
+const isEn = lang === 'en'
+const p = (path: string) => localizePath(path, lang)
+
+const mainPages = [
+  { label: t(lang, 'navProducts'), href: p('/products/') },
+  { label: t(lang, 'navSolutions'), href: p('/applications/') },
+  { label: t(lang, 'navSearch'), href: p('/search/') },
+  { label: t(lang, 'navService'), href: p('/service/') },
+  { label: t(lang, 'navQuality'), href: p('/quality/') },
+  { label: t(lang, 'navAbout'), href: p('/about/') },
+  { label: t(lang, 'navNews'), href: p('/news/') },
+  { label: t(lang, 'navFaq'), href: p('/faq/') },
+  { label: t(lang, 'navContact'), href: p('/contact/') },
+]
+
+/** 件号按大类分组，每类最多列 200 个，只列出已生成详情页的件号 */
+const perGroup = groups.map((g) => ({
+  group: g,
+  items: products.filter((x) => x.group === g.slug && x.hasPage).slice(0, 200),
+  total: groupStats[g.slug]?.count ?? 0,
+  pageTotal: products.filter((x) => x.group === g.slug && x.hasPage).length,
+}))
+
+const crumbs = [
+  { label: t(lang, 'home'), href: '/' },
+  { label: isEn ? 'Sitemap' : '网站地图' },
+]
+---
+
+<section class="page-hero py-12">
+  <div class="shell relative">
+    <Breadcrumbs {lang} items={crumbs} />
+    <h1 class="mt-6 text-[28px] font-semibold text-ink-900 md:text-[36px]">
+      {isEn ? 'Sitemap' : '网站地图'}
+    </h1>
+    <p class="mt-3 max-w-2xl text-[14px] leading-relaxed text-ink-500">
+      {isEn
+        ? 'Every section of this site in one place. Product groups link to their full part-number lists.'
+        : '本站全部栏目集中在此。产品大类可进入完整的件号清单。'}
+    </p>
+  </div>
+</section>
+
+<section class="section-tight bg-white">
+  <div class="shell space-y-12">
+    <!-- 主要页面 -->
+    <div>
+      <h2 class="text-[18px] font-semibold text-ink-900">{isEn ? 'Main pages' : '主要栏目'}</h2>
+      <div class="mt-4 flex flex-wrap gap-2">
+        {
+          mainPages.map((pg) => (
+            <a href={pg.href} class="chip chip-brand hover:opacity-80">
+              {pg.label}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- 产品大类 -->
+    <div>
+      <h2 class="text-[18px] font-semibold text-ink-900">{t(lang, 'navProducts')}</h2>
+      <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          groups.map((g) => (
+            <a href={p(`/products/${g.slug}/`)} class="group flex items-center gap-3 rounded-xl bg-ink-50 px-4 py-3.5 transition hover:bg-brand-50">
+              <Icon name={g.icon} class="size-4 shrink-0 text-brand-500" />
+              <span class="min-w-0 flex-1 truncate text-[13.5px] font-medium text-ink-700 group-hover:text-brand-700">
+                {isEn ? g.nameEn : g.nameZh}
+              </span>
+              <span class="tnum text-[11.5px] text-ink-400">{groupStats[g.slug]?.count ?? 0}</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- 应用领域 -->
+    <div>
+      <h2 class="text-[18px] font-semibold text-ink-900">{t(lang, 'navSolutions')}</h2>
+      <div class="mt-4 flex flex-wrap gap-2">
+        {
+          applications.map((a) => (
+            <a href={p(`/applications/${a.slug}/`)} class="chip hover:opacity-80">
+              {isEn ? a.nameEn : a.nameZh}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- 文章 -->
+    <div>
+      <h2 class="text-[18px] font-semibold text-ink-900">{t(lang, 'navNews')}</h2>
+      <ul class="mt-4 space-y-2">
+        {
+          news.map((n) => (
+            <li>
+              <a href={p(`/news/${n.slug}/`)} class="text-[13.5px] text-ink-600 transition hover:text-brand-600">
+                {n.title[lang]}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <!-- 件号索引 -->
+    <div>
+      <h2 class="text-[18px] font-semibold text-ink-900">
+        {isEn ? 'Part number index' : '件号索引'}
+      </h2>
+      <p class="mt-2 text-[12.5px] text-ink-400">
+        {isEn
+          ? 'Showing up to 200 numbers per group. Use the part finder for the complete list.'
+          : '每个大类最多列出 200 个件号，完整清单请使用件号查询。'}
+      </p>
+
+      <div class="mt-6 space-y-8">
+        {
+          perGroup.map(({ group, items, total, pageTotal }) => (
+            <div>
+              <div class="flex items-center gap-3">
+                <h3 class="text-[15px] font-semibold text-ink-900">{isEn ? group.nameEn : group.nameZh}</h3>
+                <span class="tnum text-[12px] text-ink-400">
+                  {items.length} / {pageTotal} {isEn ? 'pages' : '页'} · {total} {isEn ? 'numbers' : '件号'}
+                </span>
+                <span class="h-px flex-1 bg-ink-100" />
+                <a href={p(`/products/${group.slug}/`)} class="text-[12.5px] font-medium text-brand-600 hover:text-brand-700">
+                  {isEn ? 'Full list' : '完整清单'}
+                </a>
+              </div>
+              <div class="mt-3 flex flex-wrap gap-1.5">
+                {items.map((x) => (
+                  <a
+                    href={p(`/p/${x.slug}/`)}
+                    class="partno rounded-md bg-ink-50 px-2 py-1 text-[11.5px] text-ink-600 transition hover:bg-brand-50 hover:text-brand-700"
+                  >
+                    {x.partNo}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>

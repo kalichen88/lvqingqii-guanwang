@@ -1,0 +1,38 @@
+---
+/** Product group (English) /en/products/<group>/ */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import GroupPage from '../../../components/pages/GroupPage.astro'
+import { groups, groupStats } from '../../../data/products.mjs'
+import { collectionJsonLd, breadcrumbJsonLd } from '../../../lib/seo.mjs'
+
+export function getStaticPaths() {
+  return groups.map((group) => ({ params: { group: group.slug }, props: { group } }))
+}
+
+const { group } = Astro.props
+const lang = 'en' as const
+const stat = groupStats[group.slug]
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: group.nameEn,
+    description: group.descEn,
+    url: `/products/${group.slug}/`,
+  }),
+  breadcrumbJsonLd(lang, [
+    { label: 'Home', href: '/' },
+    { label: 'Products', href: '/products/' },
+    { label: group.nameEn, href: `/products/${group.slug}/` },
+  ]),
+]
+---
+
+<BaseLayout
+  {lang}
+  title={`${group.nameEn} — ${stat?.count ?? 0} Part Numbers`}
+  description={`${group.descEn.slice(0, 110)}… ${stat?.count ?? 0} part numbers across ${stat?.typeCount ?? 0} categories, with dimensions and photos.`}
+  pathname={`/products/${group.slug}/`}
+  jsonLd={jsonLd}
+>
+  <GroupPage {lang} {group} />
+</BaseLayout>

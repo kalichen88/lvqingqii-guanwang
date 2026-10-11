@@ -1,0 +1,380 @@
+---
+/**
+ * GroupPage.astro — 产品大类详情页
+ * ---------------------------------------------------------------------------
+ * 包含：大类介绍 + 品类锚点导航 + 实时筛选 + 全量件号表（服务端渲染全部行，
+ * 便于搜索引擎抓取每个件号链接）+ 应用领域 + 相关大类。
+ */
+import siteConfig from '../../../site.config.mjs'
+import { t, localizePath } from '../../i18n/index.mjs'
+import { getByGroup, getTypesOfGroup, groupStats, groups } from '../../data/products.mjs'
+import { applicationBySlug } from '../../data/applications.mjs'
+import Icon from '../Icon.astro'
+import ProductCard from '../ProductCard.astro'
+import PageHero from '../PageHero.astro'
+import InquiryForm from '../InquiryForm.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+  group: (typeof groups)[number]
+}
+
+const { lang, group } = Astro.props
+const isEn = lang === 'en'
+const p = (path: string) => localizePath(path, lang)
+
+const products = getByGroup(group.slug)
+const stat = groupStats[group.slug]
+const types = getTypesOfGroup(group.slug)
+
+/** 有图的件号优先，取 8 个做卡片展示 */
+const featured = [...products]
+  .sort((a, b) => Number(Boolean(b.image)) - Number(Boolean(a.image)))
+  .slice(0, 8)
+
+/** 按品类分组，用于锚点表格 */
+const byType = types.map((tp) => ({
+  ...tp,
+  items: products.filter((x) => x.type === tp.zh),
+}))
+
+const relatedApps = group.applications.map((s) => applicationBySlug[s]).filter(Boolean)
+const otherGroups = groups.filter((g) => g.slug !== group.slug).slice(0, 3)
+
+const crumbs = [
+  { label: t(lang, 'home'), href: '/' },
+  { label: t(lang, 'productsTitle'), href: '/products/' },
+  { label: isEn ? group.nameEn : group.nameZh },
+]
+
+const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g, '-').toLowerCase()
+---
+
+<!-- ================= Hero ================= -->
+<PageHero
+  {lang}
+  icon={group.icon}
+  eyebrow={isEn ? `Product group ${group.no}` : `产品大类 ${group.no}`}
+  title={isEn ? group.nameEn : group.nameZh}
+  desc={isEn ? group.descEn : group.descZh}
+  crumbs={crumbs}
+>
+  <div slot="below">
+    <p class="mt-6 text-[15px] font-medium text-brand-600">
+      {isEn ? group.taglineEn : group.taglineZh}
+    </p>
+    <ul class="mt-5 flex flex-wrap gap-x-6 gap-y-3">
+      {
+        (isEn ? group.highlightsEn : group.highlightsZh).map((h) => (
+          <li class="inline-flex items-center gap-2 text-[13px] text-ink-600">
+            <Icon name="check" class="size-3.5 text-brand-500" strokeWidth={2.4} />
+            {h}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <div slot="aside" class="space-y-4">
+    <div class="overflow-hidden rounded-2xl shadow-lift ring-1 ring-ink-100">
+      <img
+        src={group.image}
+        alt={isEn ? group.nameEn : group.nameZh}
+        width="800"
+        height="450"
+        class="aspect-[16/9] w-full object-cover"
+      />
+    </div>
+    <div class="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-ink-100 shadow-soft ring-1 ring-ink-100">
+      {
+        [
+          { v: stat?.count ?? 0, l: { zh: '已收录件号', en: 'Part numbers' } },
+          { v: stat?.typeCount ?? 0, l: { zh: '细分品类', en: 'Categories' } },
+          { v: stat?.withImage ?? 0, l: { zh: '带实物图', en: 'With photos' } },
+          { v: group.catids.length, l: { zh: '对应厂家分类', en: 'Factory categories' } },
+        ].map((s) => (
+          <div class="bg-white px-5 py-4">
+            <p class="tnum text-[22px] font-semibold text-ink-900">{s.v.toLocaleString()}</p>
+            <p class="mt-1 text-[11.5px] text-ink-400">{s.l[lang]}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</PageHero>
+
+<!-- ================= 代表件号 ================= -->
+{
+  featured.length > 0 && (
+    <section class="section-tight bg-white">
+      <div class="shell">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <span class="eyebrow">{isEn ? 'Featured' : '代表件号'}</span>
+            <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
+              {isEn ? 'Popular numbers in this group' : '该大类常用件号'}
+            </h2>
+          </div>
+          <a href="#catalog" class="btn btn-ghost btn-sm">
+            <Icon name="list" class="size-4" />
+            {isEn ? 'Jump to full list' : '跳到完整清单'}
+          </a>
+        </div>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {featured.map((prod, i) => (
+            <div data-reveal style={`--reveal-delay:${(i % 4) * 50}ms`}>
+              <ProductCard {lang} product={prod} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<!-- ================= 完整件号表 ================= -->
+<section class="section bg-ink-50" id="catalog">
+  <div class="shell">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <span class="eyebrow">{isEn ? 'Full catalogue' : '完整件号清单'}</span>
+        <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
+          {isEn ? `${products.length} part numbers` : `共 ${products.length} 个件号`}
+        </h2>
+        <p class="mt-2 text-[13.5px] text-ink-500">
+          {isEn ? 'Click any number to see full details and enquire.' : '点击任意件号查看详情并直接询价。'}
+        </p>
+      </div>
+
+      <div class="w-full max-w-sm">
+        <div class="relative">
+          <Icon name="search" class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-400" />
+          <input
+            type="search"
+            data-table-filter
+            placeholder={isEn ? 'Filter within this group…' : '在本大类内筛选件号 / 规格…'}
+            class="h-11 w-full rounded-xl border-0 bg-white pl-10 pr-3 text-[14px] text-ink-800 ring-1 ring-ink-200 placeholder:text-ink-400 focus:ring-2 focus:ring-brand-500"
+          />
+        </div>
+        <p class="mt-2 text-right text-[12px] text-ink-400" data-filter-count></p>
+      </div>
+    </div>
+
+    {
+      types.length > 1 && (
+        <div class="mt-6 flex flex-wrap gap-2">
+          {types.map((tp) => (
+            <a href={`#${anchor(tp.zh)}`} class="chip chip-brand hover:opacity-80">
+              {isEn ? tp.en : tp.zh}
+              <span class="tnum opacity-60">{tp.count}</span>
+            </a>
+          ))}
+        </div>
+      )
+    }
+
+    <div class="mt-8 space-y-8">
+      {
+        byType.map((tp) => (
+          <div id={anchor(tp.zh)} class="scroll-mt-24" data-table-section>
+            <div class="mb-3 flex items-center gap-3">
+              <h3 class="text-[15.5px] font-semibold text-ink-900">{isEn ? tp.en : tp.zh}</h3>
+              <span class="tnum text-[12.5px] text-ink-400">{tp.count}</span>
+              <span class="h-px flex-1 bg-ink-200" />
+            </div>
+
+            <div class="overflow-hidden rounded-2xl bg-white ring-1 ring-ink-100">
+              <div class="max-h-[560px] overflow-auto">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th class="w-[52px]">{t(lang, 'image')}</th>
+                      <th class="w-[140px]">{t(lang, 'partNo')}</th>
+                      <th>{t(lang, 'spec')}</th>
+                      <th class="w-[150px]">{t(lang, 'type')}</th>
+                      <th class="w-[100px]" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tp.items.map((prod) => (
+                      <tr data-row data-search={`${prod.partNo} ${prod.spec} ${prod.type} ${prod.typeEn}`.toLowerCase()}>
+                        <td>
+                          {prod.image ? (
+                            <img
+                              src={prod.image}
+                              alt={prod.partNo}
+                              width="40"
+                              height="40"
+                              loading="lazy"
+                              class="size-10 rounded-md bg-ink-50 object-contain p-0.5"
+                            />
+                          ) : (
+                            <span class="flex size-10 items-center justify-center rounded-md bg-ink-50 text-ink-300">
+                              <Icon name={group.icon} class="size-4" strokeWidth={1.4} />
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          {prod.hasPage ? (
+                            <a
+                              href={p(`/p/${prod.slug}/`)}
+                              class="partno text-[13.5px] font-medium text-ink-900 transition hover:text-brand-600"
+                            >
+                              {prod.partNo}
+                            </a>
+                          ) : (
+                            <span class="partno text-[13.5px] font-medium text-ink-800">{prod.partNo}</span>
+                          )}
+                        </td>
+                        <td class="tnum text-[12.5px] text-ink-500">{prod.spec || '—'}</td>
+                        <td class="text-[12.5px] text-ink-400">{isEn ? prod.typeEn : prod.type}</td>
+                        <td>
+                          {prod.hasPage ? (
+                            <a
+                              href={p(`/p/${prod.slug}/`)}
+                              class="inline-flex items-center gap-1 whitespace-nowrap text-[12.5px] font-medium text-brand-600 hover:text-brand-700"
+                            >
+                              {t(lang, 'viewDetails')}
+                              <Icon name="arrow-right" class="size-3.5" />
+                            </a>
+                          ) : (
+                            <a
+                              href={`${p('/contact/')}?part=${encodeURIComponent(prod.partNo)}#quote`}
+                              class="inline-flex items-center gap-1 whitespace-nowrap text-[12.5px] font-medium text-ink-500 hover:text-brand-600"
+                            >
+                              {isEn ? 'Enquire' : '询价'}
+                              <Icon name="mail" class="size-3.5" />
+                            </a>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="mt-8 rounded-2xl bg-white p-6 text-center ring-1 ring-ink-100">
+      <p class="text-[14px] text-ink-500">
+        {isEn
+          ? 'Cannot find the number you need? Send it to us and we will check with the factory.'
+          : '没找到需要的件号？发给我们，我们向厂家核实后回复。'}
+      </p>
+      <a href={p('/contact/#quote')} class="btn btn-primary mt-5">
+        <Icon name="mail" class="size-4" />
+        {isEn ? 'Send an enquiry' : '提交询价'}
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 应用领域 ================= -->
+{
+  relatedApps.length > 0 && (
+    <section class="section bg-white">
+      <div class="shell">
+        <span class="eyebrow">{isEn ? 'Applications' : '应用领域'}</span>
+        <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
+          {isEn ? 'Where these filters are used' : '这些滤芯用在哪里'}
+        </h2>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {relatedApps.map((a) => (
+            <a href={p(`/applications/${a.slug}/`)} class="card card-hover group flex items-start gap-4 p-5">
+              <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-ink-50 text-ink-500 transition group-hover:bg-brand-500 group-hover:text-white">
+                <Icon name={a.icon} class="size-5" />
+              </span>
+              <span class="min-w-0">
+                <span class="block text-[15px] font-semibold text-ink-900 group-hover:text-brand-600">
+                  {isEn ? a.nameEn : a.nameZh}
+                </span>
+                <span class="mt-1 block line-clamp-2 text-[12.5px] leading-relaxed text-ink-400">
+                  {isEn ? a.leadEn : a.leadZh}
+                </span>
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<!-- ================= 相关大类 + 询价 ================= -->
+<section class="section bg-ink-50">
+  <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="lg:col-span-5">
+      <span class="eyebrow">{isEn ? 'Other groups' : '其他大类'}</span>
+      <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
+        {isEn ? 'Keep browsing' : '继续浏览'}
+      </h2>
+
+      <div class="mt-6 space-y-3">
+        {
+          otherGroups.map((g) => (
+            <a href={p(`/products/${g.slug}/`)} class="card card-hover group flex items-center gap-4 p-4">
+              <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition group-hover:bg-brand-500 group-hover:text-white">
+                <Icon name={g.icon} class="size-5" />
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate text-[14.5px] font-semibold text-ink-900 group-hover:text-brand-600">
+                  {isEn ? g.nameEn : g.nameZh}
+                </span>
+                <span class="mt-0.5 block truncate text-[12px] text-ink-400">
+                  {groupStats[g.slug]?.count ?? 0} {t(lang, 'productsCount')}
+                </span>
+              </span>
+              <Icon name="chevron-right" class="size-4 shrink-0 text-ink-300" />
+            </a>
+          ))
+        }
+        <a href={p('/products/')} class="btn btn-ghost w-full">
+          <Icon name="grid" class="size-4" />
+          {isEn ? 'All product groups' : '查看全部大类'}
+        </a>
+      </div>
+    </div>
+
+    <div class="lg:col-span-7">
+      <InquiryForm {lang} />
+    </div>
+  </div>
+</section>
+
+<script>
+  /* 表格内实时筛选：按 data-search 全文匹配行 */
+  const input = document.querySelector<HTMLInputElement>('[data-table-filter]')
+  const counter = document.querySelector<HTMLElement>('[data-filter-count]')
+  const sections = document.querySelectorAll<HTMLElement>('[data-table-section]')
+
+  if (input) {
+    const allRows = [...document.querySelectorAll<HTMLElement>('[data-row]')]
+
+    const apply = () => {
+      const q = input.value.trim().toLowerCase()
+      let visible = 0
+
+      for (const row of allRows) {
+        const hit = !q || (row.dataset.search ?? '').includes(q)
+        row.hidden = !hit
+        if (hit) visible++
+      }
+
+      // 隐藏没有命中行的品类区块
+      for (const section of sections) {
+        const any = [...section.querySelectorAll<HTMLElement>('[data-row]')].some((r) => !r.hidden)
+        section.hidden = !any
+      }
+
+      if (counter) counter.textContent = q ? `${visible} / ${allRows.length}` : ''
+    }
+
+    input.addEventListener('input', apply)
+    apply()
+  }
+</script>

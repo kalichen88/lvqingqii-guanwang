@@ -1,0 +1,28 @@
+---
+/** 新闻列表（中文） */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import NewsIndexPage from '../../components/pages/NewsIndexPage.astro'
+import { collectionJsonLd } from '../../lib/seo.mjs'
+import { news } from '../../data/content.mjs'
+
+const lang = 'zh' as const
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: '新闻资讯 — 滤清器选型与运维',
+    description: '滤清器选型指南、运维要点与采购防坑经验。',
+    url: '/news/',
+    items: news.map((n) => ({ name: n.title.zh, href: `/news/${n.slug}/` })),
+  }),
+]
+---
+
+<BaseLayout
+  {lang}
+  title="新闻资讯_滤清器选型指南与运维笔记"
+  description="滤清器选型指南、运维要点与采购防坑经验：空气滤芯更换周期、液压滤芯精度选择、国六重卡柴油滤清器、空压机油气分离器压差、车队库存规划等。"
+  pathname="/news/"
+  jsonLd={jsonLd}
+>
+  <NewsIndexPage {lang} />
+</BaseLayout>

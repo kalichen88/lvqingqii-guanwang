@@ -1,0 +1,34 @@
+---
+/** Article detail (English) */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import NewsPostPage from '../../../components/pages/NewsPostPage.astro'
+import { news } from '../../../data/content.mjs'
+import { articleJsonLd, breadcrumbJsonLd } from '../../../lib/seo.mjs'
+
+export function getStaticPaths() {
+  return news.map((post) => ({ params: { slug: post.slug }, props: { post } }))
+}
+
+const { post } = Astro.props
+const lang = 'en' as const
+
+const jsonLd = [
+  articleJsonLd(lang, post),
+  breadcrumbJsonLd(lang, [
+    { label: 'Home', href: '/' },
+    { label: 'News', href: '/news/' },
+    { label: post.title.en, href: `/news/${post.slug}/` },
+  ]),
+]
+---
+
+<BaseLayout
+  {lang}
+  title={post.title.en}
+  description={post.summary.en}
+  pathname={`/news/${post.slug}/`}
+  image={post.cover}
+  jsonLd={jsonLd}
+>
+  <NewsPostPage {lang} {post} />
+</BaseLayout>

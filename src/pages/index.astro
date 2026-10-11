@@ -1,0 +1,33 @@
+---
+/** 首页（中文，默认语言，路径 /） */
+import BaseLayout from '../layouts/BaseLayout.astro'
+import HomePage from '../components/pages/HomePage.astro'
+import siteConfig from '../../site.config.mjs'
+import { faqs } from '../data/content.mjs'
+import { faqJsonLd } from '../lib/seo.mjs'
+
+const lang = 'zh' as const
+
+const jsonLd = [
+  faqJsonLd(faqs.slice(0, 6).map((f) => ({ q: f.q.zh, a: f.a.zh }))),
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: siteConfig.brand.shortNameZh,
+    description: siteConfig.brand.positioningZh,
+    inLanguage: 'zh-CN',
+  },
+]
+---
+
+<BaseLayout
+  {lang}
+  title={siteConfig.brand.shortNameZh + '_工程机械滤清器_滤芯件号查询_富滤盛授权代理'}
+  description="富滤盛（FILTERSUN）授权代理，供应工程机械、商用车、空压机、工业滤芯，已收录 1500+ 件号并支持件号/机型查询、现货直发、工程师选型支持与出口报关。"
+  pathname="/"
+  jsonLd={jsonLd}
+  darkHeader={false}
+  transparentHeader={true}
+>
+  <HomePage {lang} />
+</BaseLayout>

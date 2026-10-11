@@ -1,0 +1,221 @@
+---
+/**
+ * QualityPage.astro — 品牌与品质
+ */
+import siteConfig from '../../../site.config.mjs'
+import { t, localizePath } from '../../i18n/index.mjs'
+import { qualityContent, productFeatures } from '../../data/content.mjs'
+import Icon from '../Icon.astro'
+import PageHero from '../PageHero.astro'
+import SectionHeading from '../SectionHeading.astro'
+import InquiryForm from '../InquiryForm.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+}
+const { lang } = Astro.props
+const isEn = lang === 'en'
+const p = (path: string) => localizePath(path, lang)
+const pr = siteConfig.principal
+
+const crumbs = [
+  { label: t(lang, 'home'), href: '/' },
+  { label: t(lang, 'navQuality') },
+]
+
+const honors = [
+  '202011/648a157ef4fad9',
+  '202011/6ba1e477139e3',
+  '202011/549875c5edb4bfe',
+  '202011/775195c1729c24',
+  '202011/0c6b070ebc230e3',
+  '202011/fc543eaa9d44d03',
+  '202011/192fafc17ab196b',
+  '202011/9b3984a1284ca86',
+]
+
+const factory = [
+  { src: '/media/factory/1258ce5d1737594.jpg', label: { zh: '生产车间', en: 'Production floor' } },
+  { src: '/media/factory/c002b39ef339a07.jpg', label: { zh: '车间设备', en: 'Workshop equipment' } },
+  { src: '/media/factory/978d796e67dd442.jpg', label: { zh: '车间设备', en: 'Workshop equipment' } },
+  { src: '/media/factory/22b0b72ca20e915.jpg', label: { zh: '车间设备', en: 'Workshop equipment' } },
+  { src: '/media/factory/1bdb5aca568b6db.jpg', label: { zh: '生产车间', en: 'Production floor' } },
+  { src: '/media/factory/5a4877badb1c9.jpg', label: { zh: '企业环境', en: 'Facility' } },
+]
+---
+
+<PageHero
+  {lang}
+  eyebrow={qualityContent.eyebrow[lang]}
+  title={qualityContent.title[lang]}
+  desc={qualityContent.desc[lang]}
+  crumbs={crumbs}
+  statCols={4}
+  stats={[
+    { value: pr.facts.yearsExperience, suffix: '+', label: isEn ? 'Years in filtration' : '年行业经验' },
+    { value: pr.facts.plantAreaSqm, suffix: '㎡', label: isEn ? 'Production area' : '生产面积' },
+    { value: pr.facts.patents, suffix: '+', label: isEn ? 'Patents' : '国家专利' },
+    { value: pr.facts.exportCountries, suffix: '+', label: isEn ? 'Export markets' : '出口国家地区' },
+  ]}
+/>
+
+<!-- 品质四要素 -->
+<section class="section bg-white">
+  <div class="shell">
+    <SectionHeading
+      eyebrow={isEn ? 'Quality system' : '品质体系'}
+      title={isEn ? 'Four things that decide whether a filter is any good' : '决定一只滤芯好坏的四个环节'}
+      desc={isEn
+        ? 'Media, construction, process control and accountability — in that order.'
+        : '滤材、结构、过程控制、责任承担——按这个顺序。'}
+    />
+
+    <div class="mt-12 grid gap-4 md:grid-cols-2">
+      {
+        qualityContent.features.map((f, i) => (
+          <div class="card flex gap-5 p-6" data-reveal style={`--reveal-delay:${(i % 2) * 60}ms`}>
+            <span class="font-mono text-[13px] font-medium tracking-[0.16em] text-brand-500">{f.no}</span>
+            <span>
+              <h3 class="text-[17px] font-semibold text-ink-900">{f.title[lang]}</h3>
+              <p class="mt-2.5 text-[13.5px] leading-relaxed text-ink-500">{f.desc[lang]}</p>
+            </span>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<!-- 认证 -->
+<section class="section bg-ink-50">
+  <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="lg:col-span-5">
+      <span class="eyebrow">{isEn ? 'Certifications' : '体系认证'}</span>
+      <h2 class="mt-3 text-[26px] font-semibold leading-tight text-ink-900 md:text-[34px]" data-reveal>
+        {isEn ? 'Audited, not self-declared' : '不是自己说的，是审核过的'}
+      </h2>
+      <p class="mt-5 text-[14.5px] leading-[1.9] text-ink-500" data-reveal>
+        {
+          isEn
+            ? 'The factory is certified to the same automotive quality standards its OEM customers require. We can share certificates and test reports on request.'
+            : '工厂通过的正是主机厂配套所要求的汽车行业质量体系。需要时我们可以提供证书与检测报告复印件。'
+        }
+      </p>
+
+      <ul class="mt-8 space-y-3">
+        {
+          pr.certifications.map((cert) => (
+            <li class="flex items-center gap-3.5 rounded-xl bg-white px-5 py-4 ring-1 ring-ink-100">
+              <Icon name="certificate" class="size-5 shrink-0 text-brand-500" />
+              <span class="text-[14px] font-medium text-ink-800">{cert}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="lg:col-span-7">
+      <span class="eyebrow">{isEn ? 'Honours & patents' : '荣誉与专利'}</span>
+      <h2 class="mt-3 text-[26px] font-semibold leading-tight text-ink-900 md:text-[34px]">
+        {isEn ? 'A sample of the paper trail' : '一部分资质存档'}
+      </h2>
+
+      <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {
+          honors.map((h, i) => (
+            <div class="overflow-hidden rounded-xl bg-white ring-1 ring-ink-100" data-reveal style={`--reveal-delay:${(i % 4) * 45}ms`}>
+              <img
+                src={`/media/honors/${h.split('/')[1]}.jpg`}
+                alt={isEn ? 'Certificate' : '证书'}
+                width="400"
+                height="560"
+                loading="lazy"
+                class="aspect-[5/7] w-full object-cover transition-transform duration-500 hover:scale-105"
+              />
+            </div>
+          ))
+        }
+      </div>
+      <p class="mt-4 text-[12px] text-ink-400">
+        {isEn ? 'Certificates shown are held by the manufacturer.' : '以上证书由生产厂家持有。'}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 产品共性 -->
+<section class="section bg-white">
+  <div class="shell">
+    <SectionHeading
+      eyebrow={isEn ? 'Product features' : '产品特性'}
+      title={isEn ? 'What every filter in the range shares' : '全系产品共有的特性'}
+      align="center"
+    />
+    <div class="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {
+        productFeatures.map((f, i) => (
+          <div class="card p-6" data-reveal style={`--reveal-delay:${(i % 3) * 55}ms`}>
+            <span class="font-mono text-[11px] tracking-[0.2em] text-brand-500">{f.no}</span>
+            <h3 class="mt-3 text-[16px] font-semibold text-ink-900">{f.title[lang]}</h3>
+            <p class="mt-2.5 text-[13px] leading-relaxed text-ink-500">{f.desc[lang]}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<!-- 工厂实拍 -->
+<section class="section-tight bg-ink-50">
+  <div class="shell">
+    <SectionHeading
+      eyebrow={isEn ? 'Facility' : '工厂实拍'}
+      title={isEn ? 'Three production bases' : '三大生产基地'}
+      desc={isEn
+        ? pr.basesEn.join(' · ')
+        : pr.basesZh.join(' · ')}
+    />
+    <div class="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        factory.map((f, i) => (
+          <figure class="group overflow-hidden rounded-2xl" data-reveal style={`--reveal-delay:${(i % 3) * 50}ms`}>
+            <img
+              src={f.src}
+              alt={f.label[lang]}
+              width="800"
+              height="533"
+              loading="lazy"
+              class="aspect-[3/2] w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+            />
+            <figcaption class="mt-3 text-[12.5px] text-ink-400">{f.label[lang]}</figcaption>
+          </figure>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<!-- 适合谁 + 询价 -->
+<section class="section bg-white">
+  <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="lg:col-span-5">
+      <span class="eyebrow">{isEn ? 'Who we supply' : '我们服务谁'}</span>
+      <h2 class="mt-3 text-[26px] font-semibold leading-tight text-ink-900 md:text-[32px]">
+        {isEn ? 'From single machines to OEM lines' : '从单台设备到主机厂配套'}
+      </h2>
+      <div class="mt-8 grid gap-3 sm:grid-cols-2">
+        {
+          qualityContent.audiences.map((a) => (
+            <div class="flex items-center gap-3 rounded-xl bg-ink-50 px-4 py-3.5">
+              <Icon name={a.icon} class="size-4 shrink-0 text-brand-500" />
+              <span class="text-[13.5px] font-medium text-ink-700">{isEn ? a.en : a.zh}</span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+    <div class="lg:col-span-7">
+      <InquiryForm {lang} />
+    </div>
+  </div>
+</section>

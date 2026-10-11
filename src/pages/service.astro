@@ -1,0 +1,17 @@
+---
+/** 服务与支持（中文） */
+import BaseLayout from '../layouts/BaseLayout.astro'
+import ServicePage from '../components/pages/ServicePage.astro'
+import { serviceContent } from '../data/content.mjs'
+
+const lang = 'zh' as const
+---
+
+<BaseLayout
+  {lang}
+  title="服务与支持_选型报价_现货发货_质保与出口"
+  description="从需求确认、选型报价到备货发货与使用跟踪的四步服务流程；3000+ 件号常备现货，工作日 16:00 前确认当日发出，支持出口报关与定制开发。"
+  pathname="/service/"
+>
+  <ServicePage {lang} />
+</BaseLayout>

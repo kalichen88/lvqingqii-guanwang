@@ -1,0 +1,270 @@
+---
+/**
+ * Footer.astro — 全站页脚（浅色版）
+ * ---------------------------------------------------------------------------
+ * 结构：顶部行动区 → 四栏导航 → 底部合规区。
+ * 整体使用浅灰底 + 细分割线，避免大面积深色，与全站白色系保持一致。
+ */
+import siteConfig from '../../site.config.mjs'
+import { t, localizePath } from '../i18n/index.mjs'
+import { groups } from '../data/groups.mjs'
+import { applications } from '../data/applications.mjs'
+import Logo from './Logo.astro'
+import Icon from './Icon.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+}
+
+const { lang } = Astro.props
+const isEn = lang === 'en'
+const c = siteConfig.contact
+const p = (path: string) => localizePath(path, lang)
+const year = new Date().getFullYear()
+const since = siteConfig.compliance.since
+
+const tel = (v: string) => `tel:${v.replace(/[^\d+]/g, '')}`
+const wa = `https://wa.me/${c.whatsapp}`
+
+const companyLinks = [
+  { label: t(lang, 'navAbout'), href: p('/about/') },
+  { label: t(lang, 'navQuality'), href: p('/quality/') },
+  { label: t(lang, 'navNews'), href: p('/news/') },
+  { label: t(lang, 'navContact'), href: p('/contact/') },
+]
+
+const supportLinks = [
+  { label: t(lang, 'navSearch'), href: p('/search/') },
+  { label: t(lang, 'navService'), href: p('/service/') },
+  { label: t(lang, 'navFaq'), href: p('/faq/') },
+  { label: isEn ? 'Request a quote' : '在线询价', href: p('/contact/#quote') },
+]
+---
+
+<footer class="relative overflow-hidden border-t border-ink-100 bg-ink-50">
+  <!-- 顶部渐隐光晕 -->
+  <div
+    class="pointer-events-none absolute -top-32 left-1/2 h-[380px] w-[900px] -translate-x-1/2 rounded-full opacity-[0.18] blur-3xl"
+    style="background: radial-gradient(closest-side, #2F6BFF, transparent 72%)"
+    aria-hidden="true"
+  >
+  </div>
+
+  <div class="relative">
+    <!-- ============ 顶部行动区 ============ -->
+    <div class="border-b border-ink-100">
+      <div class="shell flex flex-col gap-6 py-9 lg:flex-row lg:items-center lg:justify-between">
+        <div class="max-w-xl">
+          <h2 class="text-[22px] font-semibold leading-snug text-ink-900 md:text-[26px]">
+            {isEn ? 'Need a quotation or a fitment check?' : '需要报价，或者不确定选哪个件号？'}
+          </h2>
+          <p class="mt-2 text-[14px] leading-relaxed text-ink-500">
+            {
+              isEn
+                ? 'Send the part number, machine model or a photo of the old filter. We reply within one business day.'
+                : '把件号、设备机型，或旧滤芯照片发给我们，一个工作日内回复报价与货期。'
+            }
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <a href={p('/contact/#quote')} class="btn btn-primary">
+            <Icon name="mail" class="size-4" />
+            {t(lang, 'getQuote')}
+          </a>
+          <a href={tel(c.salesPhone)} class="btn btn-ghost">
+            <Icon name="phone" class="size-4" />
+            <span class="tnum">{c.salesPhone}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 主体四栏 ============ -->
+    <div class="shell grid gap-10 py-12 md:grid-cols-2 lg:grid-cols-12 lg:gap-8 lg:py-14">
+      <!-- 品牌 -->
+      <div class="lg:col-span-4">
+        <Logo variant="light" href={p('/')} {lang} />
+        <p class="mt-5 max-w-sm text-[13.5px] leading-relaxed text-ink-500">
+          {isEn ? siteConfig.brand.positioningEn : siteConfig.brand.positioningZh}
+        </p>
+
+        <div class="mt-6 flex flex-wrap gap-2">
+          {
+            siteConfig.principal.certifications.slice(0, 3).map((cert) => (
+              <span class="chip">{cert}</span>
+            ))
+          }
+        </div>
+
+        <div class="mt-6 flex items-center gap-2.5">
+          <a
+            href={wa}
+            target="_blank"
+            rel="noopener nofollow"
+            class="inline-flex size-9 items-center justify-center rounded-lg bg-white text-ink-500 shadow-soft ring-1 ring-ink-100 transition hover:text-brand-600 hover:ring-brand-300"
+            aria-label="WhatsApp"
+          >
+            <Icon name="whatsapp" class="size-4" />
+          </a>
+          <a
+            href={`mailto:${c.email}`}
+            class="inline-flex size-9 items-center justify-center rounded-lg bg-white text-ink-500 shadow-soft ring-1 ring-ink-100 transition hover:text-brand-600 hover:ring-brand-300"
+            aria-label={t(lang, 'email')}
+          >
+            <Icon name="mail" class="size-4" />
+          </a>
+          <a
+            href={tel(c.salesPhone)}
+            class="inline-flex size-9 items-center justify-center rounded-lg bg-white text-ink-500 shadow-soft ring-1 ring-ink-100 transition hover:text-brand-600 hover:ring-brand-300"
+            aria-label={t(lang, 'phone')}
+          >
+            <Icon name="phone" class="size-4" />
+          </a>
+        </div>
+      </div>
+
+      <!-- 产品大类 -->
+      <div class="lg:col-span-3">
+        <h3 class="text-[13px] font-semibold uppercase tracking-[0.14em] text-ink-900">
+          {t(lang, 'footerProducts')}
+        </h3>
+        <ul class="mt-5 space-y-2.5">
+          {
+            groups.map((g) => (
+              <li>
+                <a
+                  href={p(`/products/${g.slug}/`)}
+                  class="group inline-flex items-center gap-2 text-[13.5px] text-ink-500 transition hover:text-brand-600"
+                >
+                  <span class="h-px w-0 bg-brand-500 transition-all duration-300 group-hover:w-3" />
+                  {isEn ? g.nameEn : g.nameZh}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <!-- 应用 + 公司 -->
+      <div class="lg:col-span-3">
+        <h3 class="text-[13px] font-semibold uppercase tracking-[0.14em] text-ink-900">
+          {isEn ? 'Applications' : '应用领域'}
+        </h3>
+        <ul class="mt-5 space-y-2.5">
+          {
+            applications.slice(0, 5).map((a) => (
+              <li>
+                <a
+                  href={p(`/applications/${a.slug}/`)}
+                  class="text-[13.5px] text-ink-500 transition hover:text-brand-600"
+                >
+                  {isEn ? a.nameEn : a.nameZh}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+
+        <h3 class="mt-8 text-[13px] font-semibold uppercase tracking-[0.14em] text-ink-900">
+          {t(lang, 'footerAbout')}
+        </h3>
+        <ul class="mt-5 space-y-2.5">
+          {
+            [...companyLinks, ...supportLinks.slice(0, 2)].map((l) => (
+              <li>
+                <a href={l.href} class="text-[13.5px] text-ink-500 transition hover:text-brand-600">
+                  {l.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <!-- 联系方式 -->
+      <div class="lg:col-span-2">
+        <h3 class="text-[13px] font-semibold uppercase tracking-[0.14em] text-ink-900">
+          {t(lang, 'footerContact')}
+        </h3>
+        <ul class="mt-5 space-y-4 text-[13.5px]">
+          <li class="flex gap-2.5">
+            <Icon name="phone" class="mt-0.5 size-4 shrink-0 text-brand-500" />
+            <span>
+              <a href={tel(c.salesPhone)} class="tnum block font-semibold text-ink-900 transition hover:text-brand-600">
+                {c.salesPhone}
+              </a>
+              {c.landline && (
+                <a href={tel(c.landline)} class="tnum mt-1 block text-ink-500 transition hover:text-brand-600">
+                  {c.landline}
+                </a>
+              )}
+              <span class="mt-1 block text-[12px] text-ink-400">{isEn ? 'Sales' : '销售热线'}</span>
+            </span>
+          </li>
+          <li class="flex gap-2.5">
+            <Icon name="mail" class="mt-0.5 size-4 shrink-0 text-brand-500" />
+            <a href={`mailto:${c.email}`} class="break-all text-ink-600 transition hover:text-brand-600">
+              {c.email}
+            </a>
+          </li>
+          <li class="flex gap-2.5">
+            <Icon name="wechat" class="mt-0.5 size-4 shrink-0 text-brand-500" />
+            <span class="text-ink-600">
+              <span class="text-[12px] text-ink-400">{isEn ? 'WeChat' : '微信'}：</span>
+              <span class="font-mono">{c.wechatId}</span>
+            </span>
+          </li>
+          <li class="flex gap-2.5">
+            <Icon name="location" class="mt-0.5 size-4 shrink-0 text-brand-500" />
+            <span class="leading-relaxed text-ink-600">{isEn ? c.addressEn : c.addressZh}</span>
+          </li>
+          <li class="flex gap-2.5">
+            <Icon name="clock" class="mt-0.5 size-4 shrink-0 text-brand-500" />
+            <span class="text-ink-600">{isEn ? c.hoursEn : c.hoursZh}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ 底部合规区 ============ -->
+    <div class="border-t border-ink-100 bg-white">
+      <div class="shell flex flex-col gap-4 py-6 text-[12.5px] text-ink-400 lg:flex-row lg:items-center lg:justify-between">
+        <div class="space-y-1.5">
+          <p>
+            © {since}–{year} {isEn ? siteConfig.brand.legalNameEn : siteConfig.brand.legalNameZh}.
+            <span class="ml-1">{t(lang, 'footerRights')}</span>
+          </p>
+          <p class="max-w-2xl leading-relaxed">
+            {t(lang, 'footerPrincipal')}
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+          {
+            siteConfig.compliance.icpZh && (
+              <a
+                href="https://beian.miit.gov.cn/"
+                target="_blank"
+                rel="noopener nofollow"
+                class="transition hover:text-brand-600"
+              >
+                {siteConfig.compliance.icpZh}
+              </a>
+            )
+          }
+          {
+            siteConfig.compliance.policeZh && (
+              <span class="inline-flex items-center gap-1.5">
+                <Icon name="shield" class="size-3.5" />
+                {siteConfig.compliance.policeZh}
+              </span>
+            )
+          }
+          <a href={p('/sitemap/')} class="transition hover:text-brand-600">
+            {isEn ? 'Sitemap' : '网站地图'}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

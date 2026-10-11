@@ -1,0 +1,77 @@
+---
+/**
+ * FaqPage.astro — 常见问题
+ */
+import { t, localizePath } from '../../i18n/index.mjs'
+import { faqs } from '../../data/content.mjs'
+import Icon from '../Icon.astro'
+import PageHero from '../PageHero.astro'
+import FaqList from '../FaqList.astro'
+import InquiryForm from '../InquiryForm.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+}
+const { lang } = Astro.props
+const isEn = lang === 'en'
+const p = (path: string) => localizePath(path, lang)
+
+const crumbs = [
+  { label: t(lang, 'home'), href: '/' },
+  { label: t(lang, 'navFaq') },
+]
+
+const items = faqs.map((f) => ({ q: f.q[lang], a: f.a[lang] }))
+---
+
+<PageHero
+  {lang}
+  eyebrow={isEn ? 'FAQ' : '常见问题'}
+  title={isEn ? 'Everything buyers ask before the first order' : '第一次下单前，客户会问的问题'}
+  desc={isEn
+    ? 'If your question is not here, ask us directly — a person answers, usually within a few hours during working time.'
+    : '如果这里没有你的问题，直接问我们——是真人回复，工作时间通常几小时内就有答复。'}
+  crumbs={crumbs}
+/>
+
+<section class="section bg-white">
+  <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="lg:col-span-8">
+      <FaqList items={items} {lang} />
+
+      <div class="mt-8 rounded-2xl bg-ink-50 p-6 ring-1 ring-ink-100">
+        <div class="flex items-start gap-4">
+          <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white text-brand-600 ring-1 ring-ink-100">
+            <Icon name="headset" class="size-5" />
+          </span>
+          <div>
+            <h2 class="text-[16.5px] font-semibold text-ink-900">
+              {isEn ? 'Still not answered?' : '还是没解决？'}
+            </h2>
+            <p class="mt-2 text-[13.5px] leading-relaxed text-ink-500">
+              {isEn
+                ? 'Send the part number or a photo of the old filter. We would rather spend five minutes checking than have you order the wrong part.'
+                : '把件号或旧滤芯照片发过来。我们宁愿花五分钟帮你核对，也不想让你订错件。'}
+            </p>
+            <div class="mt-4 flex flex-wrap gap-3">
+              <a href={p('/contact/#quote')} class="btn btn-primary btn-sm">
+                <Icon name="mail" class="size-4" />
+                {isEn ? 'Send an enquiry' : '提交询价'}
+              </a>
+              <a href={p('/search/')} class="btn btn-ghost btn-sm">
+                <Icon name="search" class="size-4" />
+                {t(lang, 'navSearch')}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-4">
+      <div class="lg:sticky lg:top-28">
+        <InquiryForm {lang} compact />
+      </div>
+    </div>
+  </div>
+</section>

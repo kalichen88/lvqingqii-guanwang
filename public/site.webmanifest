@@ -1,0 +1,27 @@
+{
+  "name": "滤清器企业官网 | Authorized Filter Distributor",
+  "short_name": "FILTERSUN 代理",
+  "description": "富滤盛（FILTERSUN）授权代理：工程机械、商用车、空压机与工业滤清器正品供应与选型支持。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#05080e",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["business", "shopping", "industrial"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

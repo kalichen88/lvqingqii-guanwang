@@ -1,0 +1,16 @@
+---
+/** Service & Support (English) */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import ServicePage from '../../components/pages/ServicePage.astro'
+
+const lang = 'en' as const
+---
+
+<BaseLayout
+  {lang}
+  title="Service & Support — Selection, Stock, Warranty and Export"
+  description="A four-step service flow from requirement to follow-up: part number matching and quotation, same-day dispatch from 3,000+ stocked numbers, technical support, CPIC-insured warranty and export documentation."
+  pathname="/service/"
+>
+  <ServicePage {lang} />
+</BaseLayout>

@@ -1,0 +1,172 @@
+---
+/**
+ * ServicePage.astro — 服务与支持
+ */
+import siteConfig from '../../../site.config.mjs'
+import { t, localizePath } from '../../i18n/index.mjs'
+import { serviceContent, faqs } from '../../data/content.mjs'
+import Icon from '../Icon.astro'
+import PageHero from '../PageHero.astro'
+import SectionHeading from '../SectionHeading.astro'
+import FaqList from '../FaqList.astro'
+import InquiryForm from '../InquiryForm.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+}
+const { lang } = Astro.props
+const isEn = lang === 'en'
+const p = (path: string) => localizePath(path, lang)
+const c = siteConfig.contact
+
+const crumbs = [
+  { label: t(lang, 'home'), href: '/' },
+  { label: t(lang, 'navService') },
+]
+
+const serviceFaqs = faqs.filter((f) => /起订|交期|质保|出口|样品|定制/.test(f.q.zh)).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
+---
+
+<PageHero
+  {lang}
+  eyebrow={serviceContent.eyebrow[lang]}
+  title={serviceContent.title[lang]}
+  desc={serviceContent.desc[lang]}
+  crumbs={crumbs}
+/>
+
+<!-- 服务流程 -->
+<section class="section bg-white">
+  <div class="shell">
+    <SectionHeading
+      eyebrow={isEn ? 'Process' : '服务流程'}
+      title={isEn ? 'Four steps, no back-and-forth' : '四步走完，不用来回扯皮'}
+      align="center"
+    />
+
+    <div class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {
+        serviceContent.steps.map((s, i) => (
+          <div class="relative" data-reveal style={`--reveal-delay:${i * 80}ms`}>
+            <div class="flex items-center gap-3">
+              <span class="flex size-12 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-glow">
+                <Icon name={s.icon} class="size-6" />
+              </span>
+              <span class="font-mono text-[22px] font-semibold text-ink-100">{s.no}</span>
+            </div>
+            <h3 class="mt-5 text-[17px] font-semibold text-ink-900">{s.title[lang]}</h3>
+            <p class="mt-2.5 text-[13.5px] leading-relaxed text-ink-500">{s.desc[lang]}</p>
+            <span class="chip chip-brand mt-4">{s.time[lang]}</span>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<!-- 服务能力 -->
+<section class="section bg-ink-50">
+  <div class="shell">
+    <SectionHeading
+      eyebrow={isEn ? 'Capabilities' : '服务能力'}
+      title={isEn ? 'What we actually do for you' : '具体能帮你做什么'}
+      desc={isEn
+        ? 'Every item below is something a customer has actually needed — not a marketing list.'
+        : '下面每一条，都是客户真实提出过的需求，不是写在宣传册上的词。'}
+    />
+
+    <div class="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {
+        serviceContent.capabilities.map((item, i) => (
+          <div class="card card-hover group p-6" data-reveal style={`--reveal-delay:${(i % 3) * 55}ms`}>
+            <span class="flex size-11 items-center justify-center rounded-xl bg-ink-50 text-ink-500 ring-1 ring-ink-100 transition group-hover:bg-brand-500 group-hover:text-white group-hover:ring-brand-500">
+              <Icon name={item.icon} class="size-5" />
+            </span>
+            <h3 class="mt-5 text-[16.5px] font-semibold text-ink-900">{item.title[lang]}</h3>
+            <p class="mt-2.5 text-[13.5px] leading-relaxed text-ink-500">{item.desc[lang]}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<!-- 交付与仓储 -->
+<section class="section bg-white">
+  <div class="shell grid gap-14 lg:grid-cols-12 lg:gap-12">
+    <div class="lg:col-span-6" data-reveal="left">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2 overflow-hidden rounded-2xl">
+          <img src="/media/factory/1bdb5aca568b6db.jpg" alt={isEn ? 'Warehouse and production' : '仓储与生产'} width="1200" height="800" loading="lazy" class="aspect-[16/9] w-full object-cover" />
+        </div>
+        <div class="overflow-hidden rounded-2xl">
+          <img src="/media/factory/22b0b72ca20e915.jpg" alt={isEn ? 'Workshop' : '车间'} width="600" height="600" loading="lazy" class="aspect-square w-full object-cover" />
+        </div>
+        <div class="flex flex-col justify-center rounded-2xl bg-brand-500 p-6">
+          <p class="tnum text-[30px] font-semibold leading-none text-white">3,000+</p>
+          <p class="mt-2 text-[12.5px] leading-relaxed text-white/75">
+            {isEn ? 'fast-moving part numbers held in stock' : '常用件号常备现货'}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-6 lg:pl-4">
+      <span class="eyebrow">{isEn ? 'Delivery' : '交付与仓储'}</span>
+      <h2 class="mt-3 text-[26px] font-semibold leading-tight text-ink-900 md:text-[34px]" data-reveal>
+        {isEn ? 'Stock is the only promise that matters' : '说现货就得真有货'}
+      </h2>
+      <p class="mt-5 text-[14.5px] leading-[1.9] text-ink-500" data-reveal>
+        {
+          isEn
+            ? 'Anyone can quote a low price. What customers actually pay for is not waiting two weeks for a filter that stops a machine. We hold more than 3,000 fast-moving numbers and dispatch same day when the order is confirmed before 16:00.'
+            : '报价谁都会报。客户真正在意的是：不要因为一只滤芯等两周，让设备停在那里。我们常备 3000 多个常用件号，工作日 16:00 前确认订单当日发出。'
+        }
+      </p>
+
+      <dl class="mt-8 grid gap-px overflow-hidden rounded-2xl bg-ink-100 ring-1 ring-ink-100 sm:grid-cols-2">
+        {
+          [
+            { k: { zh: '现货件号', en: 'Stocked numbers' }, v: '3,000+' },
+            { k: { zh: '当日发货截止', en: 'Same-day cut-off' }, v: isEn ? '16:00' : '16:00' },
+            { k: { zh: '调货周期', en: 'Transfer lead time' }, v: isEn ? '2–5 days' : '2–5 个工作日' },
+            { k: { zh: '定制品周期', en: 'Custom lead time' }, v: isEn ? '7–15 days' : '7–15 个工作日' },
+            { k: { zh: '工作时间', en: 'Business hours' }, v: isEn ? c.hoursEn : c.hoursZh },
+            { k: { zh: '出口方式', en: 'Export terms' }, v: 'FOB / CIF / DDP' },
+          ].map((row) => (
+            <div class="bg-white px-5 py-4">
+              <dt class="text-[11.5px] text-ink-400">{row.k[lang]}</dt>
+              <dd class="mt-1.5 text-[14.5px] font-semibold text-ink-900">{row.v}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <div class="mt-8 flex flex-wrap gap-3" data-reveal>
+        <a href={p('/contact/#quote')} class="btn btn-primary">
+          <Icon name="mail" class="size-4" />
+          {isEn ? 'Check stock & price' : '查询库存与价格'}
+        </a>
+        <a href={p('/faq/')} class="btn btn-ghost">
+          {isEn ? 'Read the FAQ' : '查看常见问题'}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ + 询价 -->
+<section class="section bg-ink-50">
+  <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="lg:col-span-6">
+      <span class="eyebrow">{isEn ? 'FAQ' : '常见问题'}</span>
+      <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[32px]">
+        {isEn ? 'Ordering, lead time and warranty' : '关于订货、交期与质保'}
+      </h2>
+      <FaqList items={serviceFaqs} {lang} class="mt-8" />
+    </div>
+    <div class="lg:col-span-6">
+      <InquiryForm {lang} />
+    </div>
+  </div>
+</section>

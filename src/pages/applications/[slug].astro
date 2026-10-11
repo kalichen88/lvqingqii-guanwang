@@ -1,0 +1,41 @@
+---
+/** 应用领域详情（中文） */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import ApplicationPage from '../../components/pages/ApplicationPage.astro'
+import { applications } from '../../data/applications.mjs'
+import { collectionJsonLd, breadcrumbJsonLd } from '../../lib/seo.mjs'
+
+export function getStaticPaths() {
+  return applications.map((application) => ({
+    params: { slug: application.slug },
+    props: { application },
+  }))
+}
+
+const { application } = Astro.props
+const lang = 'zh' as const
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: `${application.nameZh}滤芯方案`,
+    description: application.descZh,
+    url: `/applications/${application.slug}/`,
+  }),
+  breadcrumbJsonLd(lang, [
+    { label: '首页', href: '/' },
+    { label: '应用领域', href: '/applications/' },
+    { label: application.nameZh, href: `/applications/${application.slug}/` },
+  ]),
+]
+---
+
+<BaseLayout
+  {lang}
+  title={`${application.nameZh}滤清器_滤芯选型与现货供应`}
+  description={`${application.descZh.slice(0, 72)}…`}
+  pathname={`/applications/${application.slug}/`}
+  image={application.image}
+  jsonLd={jsonLd}
+>
+  <ApplicationPage {lang} {application} />
+</BaseLayout>

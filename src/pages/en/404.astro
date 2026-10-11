@@ -1,0 +1,17 @@
+---
+/** 404 (English) */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import NotFoundPage from '../../components/pages/NotFoundPage.astro'
+
+const lang = 'en' as const
+---
+
+<BaseLayout
+  {lang}
+  title="Page not found"
+  description="The page you requested does not exist or has moved. Go back home, use the part finder, or contact us directly."
+  pathname="/404"
+  noindex={true}
+>
+  <NotFoundPage {lang} />
+</BaseLayout>

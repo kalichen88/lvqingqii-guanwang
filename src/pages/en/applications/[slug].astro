@@ -1,0 +1,41 @@
+---
+/** Application detail (English) */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import ApplicationPage from '../../../components/pages/ApplicationPage.astro'
+import { applications } from '../../../data/applications.mjs'
+import { collectionJsonLd, breadcrumbJsonLd } from '../../../lib/seo.mjs'
+
+export function getStaticPaths() {
+  return applications.map((application) => ({
+    params: { slug: application.slug },
+    props: { application },
+  }))
+}
+
+const { application } = Astro.props
+const lang = 'en' as const
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: `${application.nameEn} Filtration`,
+    description: application.descEn,
+    url: `/applications/${application.slug}/`,
+  }),
+  breadcrumbJsonLd(lang, [
+    { label: 'Home', href: '/' },
+    { label: 'Applications', href: '/applications/' },
+    { label: application.nameEn, href: `/applications/${application.slug}/` },
+  ]),
+]
+---
+
+<BaseLayout
+  {lang}
+  title={`${application.nameEn} Filters — Selection & Stock`}
+  description={`${application.descEn.slice(0, 118)}…`}
+  pathname={`/applications/${application.slug}/`}
+  image={application.image}
+  jsonLd={jsonLd}
+>
+  <ApplicationPage {lang} {application} />
+</BaseLayout>

@@ -1,0 +1,29 @@
+---
+/** 产品中心（中文） */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import ProductsIndexPage from '../../components/pages/ProductsIndexPage.astro'
+import { collectionJsonLd } from '../../lib/seo.mjs'
+import { groups, groupStats } from '../../data/products.mjs'
+
+const lang = 'zh' as const
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: '产品中心 — 滤清器与滤芯全品类',
+    description:
+      '富滤盛授权代理产品目录，按工程机械、商用车、空压机、液压、工业、净化、油水分离、发电机农机 8 大类整理。',
+    url: '/products/',
+    items: groups.map((g) => ({ name: g.nameZh, href: `/products/${g.slug}/` })),
+  }),
+]
+---
+
+<BaseLayout
+  {lang}
+  title="产品中心_滤清器滤芯全品类目录_件号与规格查询"
+  description={`富滤盛授权代理产品目录，按 8 大应用类目整理，已收录 ${groups.length} 个大类共 ${groups.reduce((s, g) => s + (groupStats[g.slug]?.count ?? 0), 0)} 个件号，含规格尺寸与实物图。`}
+  pathname="/products/"
+  jsonLd={jsonLd}
+>
+  <ProductsIndexPage {lang} />
+</BaseLayout>

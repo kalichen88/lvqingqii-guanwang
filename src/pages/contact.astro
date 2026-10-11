@@ -1,0 +1,31 @@
+---
+/** 联系我们（中文） */
+import BaseLayout from '../layouts/BaseLayout.astro'
+import ContactPage from '../components/pages/ContactPage.astro'
+import siteConfig from '../../site.config.mjs'
+import { localPageJsonLd } from '../lib/local-business.mjs'
+
+const lang = 'zh' as const
+const c = siteConfig.contact
+
+const jsonLd = [
+  localPageJsonLd(lang),
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: '联系我们',
+    url: `${siteConfig.url.replace(/\/+$/, '')}/contact/`,
+    inLanguage: 'zh-CN',
+  },
+]
+---
+
+<BaseLayout
+  {lang}
+  title="联系我们_滤清器询价与技术支持"
+  description={`销售热线 ${c.salesPhone}，技术支持 ${c.techPhone}，微信 ${c.wechatId}，邮箱 ${c.email}。${c.hoursZh}。提供件号核对、批量报价与出口咨询。`}
+  pathname="/contact/"
+  jsonLd={jsonLd}
+>
+  <ContactPage {lang} />
+</BaseLayout>

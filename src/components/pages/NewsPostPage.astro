@@ -1,0 +1,200 @@
+---
+/**
+ * NewsPostPage.astro — 文章详情
+ */
+import siteConfig from '../../../site.config.mjs'
+import { t, localizePath } from '../../i18n/index.mjs'
+import { news, newsBySlug } from '../../data/content.mjs'
+import { getGroupSamples, groups } from '../../data/products.mjs'
+import Icon from '../Icon.astro'
+import Breadcrumbs from '../Breadcrumbs.astro'
+import ContentBlocks from '../ContentBlocks.astro'
+import InquiryForm from '../InquiryForm.astro'
+import ProductCard from '../ProductCard.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+  post: (typeof news)[number]
+}
+const { lang, post } = Astro.props
+const isEn = lang === 'en'
+const p = (path: string) => localizePath(path, lang)
+const c = siteConfig.contact
+
+const others = news.filter((n) => n.slug !== post.slug).slice(0, 3)
+
+/** 按文章分类推荐相关件号 */
+const suggestGroup = post.category.zh === '选型指南' ? 'construction' : post.category.zh === '运维要点' ? 'compressor' : 'industrial'
+const suggestions = getGroupSamples(suggestGroup, 4)
+const suggestGroupMeta = groups.find((g) => g.slug === suggestGroup)
+
+const crumbs = [
+  { label: t(lang, 'home'), href: '/' },
+  { label: t(lang, 'navNews'), href: '/news/' },
+  { label: post.title[lang] },
+]
+
+const tel = `tel:${c.salesPhone.replace(/[^\d+]/g, '')}`
+---
+
+<article>
+  <section class="page-hero pb-12 pt-10 md:pb-14">
+    <div class="shell relative">
+      <Breadcrumbs {lang} items={crumbs} />
+
+      <div class="mx-auto mt-7 max-w-3xl">
+        <div class="flex flex-wrap items-center gap-3 text-[12px] text-ink-400">
+          <span class="chip chip-brand">{post.category[lang]}</span>
+          <time datetime={post.date} class="tnum">{post.date}</time>
+        </div>
+
+        <h1 class="mt-5 text-[28px] font-semibold leading-[1.2] text-ink-900 md:text-[38px]" data-reveal>
+          {post.title[lang]}
+        </h1>
+
+        <p class="mt-5 text-[15.5px] leading-[1.85] text-ink-500" data-reveal>
+          {post.summary[lang]}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight bg-white">
+    <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-8">
+        <figure class="overflow-hidden rounded-2xl bg-ink-100">
+          <img
+            src={post.cover}
+            alt={post.title[lang]}
+            width="1200"
+            height="750"
+            class="aspect-[16/10] w-full object-cover"
+          />
+        </figure>
+
+        <ContentBlocks blocks={post.body} {lang} class="mt-10" />
+
+        <!-- 行动区 -->
+        <div class="mt-10 rounded-2xl bg-ink-50 p-6 ring-1 ring-ink-100">
+          <div class="flex flex-wrap items-center justify-between gap-5">
+            <div>
+              <p class="text-[15.5px] font-semibold text-ink-900">
+                {isEn ? 'Need help applying this to your machine?' : '想把这些用到你自己的设备上？'}
+              </p>
+              <p class="mt-1.5 text-[13px] text-ink-500">
+                {isEn
+                  ? 'Send the part number or machine model and we will check it for you.'
+                  : '把件号或设备机型发给我们，帮你核对。'}
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <a href={p('/contact/#quote')} class="btn btn-primary">
+                <Icon name="mail" class="size-4" />
+                {isEn ? 'Enquire' : '在线询价'}
+              </a>
+              <a href={tel} class="btn btn-ghost">
+                <Icon name="phone" class="size-4" />
+                <span class="tnum">{c.salesPhone}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 相关件号 -->
+        {
+          suggestions.length > 0 && (
+            <div class="mt-12">
+              <div class="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <span class="eyebrow">{isEn ? 'Related parts' : '相关件号'}</span>
+                  <h2 class="mt-3 text-[20px] font-semibold text-ink-900 md:text-[24px]">
+                    {isEn
+                      ? `Commonly ordered in ${suggestGroupMeta?.nameEn ?? ''}`
+                      : `${suggestGroupMeta?.nameZh ?? ''}常订件号`}
+                  </h2>
+                </div>
+                <a href={p(`/products/${suggestGroup}/`)} class="btn btn-ghost btn-sm">
+                  {isEn ? 'View group' : '查看大类'}
+                  <Icon name="arrow-right" class="size-3.5" />
+                </a>
+              </div>
+
+              <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {suggestions.map((s) => (
+                  <ProductCard {lang} product={s} compact />
+                ))}
+              </div>
+            </div>
+          )
+        }
+
+        <!-- 其他文章 -->
+        <div class="mt-12 border-t border-ink-100 pt-10">
+          <h2 class="text-[20px] font-semibold text-ink-900 md:text-[24px]">
+            {isEn ? 'Keep reading' : '继续阅读'}
+          </h2>
+          <div class="mt-6 space-y-3">
+            {
+              others.map((o) => (
+                <a
+                  href={p(`/news/${o.slug}/`)}
+                  class="group flex items-start gap-4 rounded-2xl bg-ink-50 p-4 transition hover:bg-brand-50"
+                >
+                  <div class="size-20 shrink-0 overflow-hidden rounded-xl bg-ink-100">
+                    <img src={o.cover} alt="" width="160" height="160" loading="lazy" class="size-full object-cover" />
+                  </div>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2.5 text-[11px] text-ink-400">
+                      <span>{o.category[lang]}</span>
+                      <span class="tnum">{o.date}</span>
+                    </div>
+                    <p class="mt-1.5 line-clamp-2 text-[14.5px] font-semibold leading-snug text-ink-900 group-hover:text-brand-700">
+                      {o.title[lang]}
+                    </p>
+                    <p class="mt-1 line-clamp-1 text-[12.5px] text-ink-400">{o.summary[lang]}</p>
+                  </div>
+                </a>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- 侧栏 -->
+      <aside class="lg:col-span-4">
+        <div class="space-y-6 lg:sticky lg:top-28">
+          <InquiryForm {lang} compact />
+
+          <div class="rounded-2xl bg-brand-500 p-6 text-white shadow-glow">
+            <p class="text-[11.5px] uppercase tracking-[0.14em] text-white/70">
+              {isEn ? 'Part finder' : '件号查询'}
+            </p>
+            <p class="mt-3 text-[15px] font-semibold leading-snug">
+              {isEn ? 'Look up a number before you ask' : '先自己查一下，可能更快'}
+            </p>
+            <p class="mt-2 text-[12.5px] leading-relaxed text-white/75">
+              {isEn
+                ? 'Over 1,500 part numbers with real dimensions.'
+                : '已收录 1500+ 件号，附真实规格尺寸。'}
+            </p>
+            <a href={p('/search/')} class="btn btn-sm mt-5 w-full bg-white text-brand-700 hover:bg-brand-50">
+              <Icon name="search" class="size-4" />
+              {t(lang, 'navSearch')}
+            </a>
+          </div>
+
+          <div class="rounded-2xl bg-ink-50 p-6 ring-1 ring-ink-100">
+            <p class="text-[11.5px] uppercase tracking-[0.14em] text-ink-400">
+              {isEn ? 'Categories' : '文章分类'}
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              {[...new Set(news.map((n) => n.category[lang]))].map((cat) => (
+                <span class="chip">{cat}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</article>

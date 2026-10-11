@@ -1,0 +1,18 @@
+---
+/** Brand & Quality (English) */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import QualityPage from '../../components/pages/QualityPage.astro'
+import siteConfig from '../../../site.config.mjs'
+
+const lang = 'en' as const
+const pr = siteConfig.principal
+---
+
+<BaseLayout
+  {lang}
+  title="Brand & Quality — Factory Strength, Certifications and Patents"
+  description={`${pr.nameEn} is certified to IATF 16949, ISO 9001, ISO 14001 and ISO 45001 with TÜV-verified GMC status, holds ${pr.facts.patents}+ patents, operates ${pr.facts.plantAreaSqm} m² of production space and exports to ${pr.facts.exportCountries}+ countries.`}
+  pathname="/quality/"
+>
+  <QualityPage {lang} />
+</BaseLayout>

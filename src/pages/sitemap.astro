@@ -1,0 +1,16 @@
+---
+/** 网站地图（中文） */
+import BaseLayout from '../layouts/BaseLayout.astro'
+import SitemapPage from '../components/pages/SitemapPage.astro'
+
+const lang = 'zh' as const
+---
+
+<BaseLayout
+  {lang}
+  title="网站地图_全部栏目与件号索引"
+  description="本站全部栏目导航与件号索引，按产品大类列出已收录件号，便于快速定位页面。"
+  pathname="/sitemap/"
+>
+  <SitemapPage {lang} />
+</BaseLayout>

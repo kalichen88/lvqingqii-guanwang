@@ -1,0 +1,184 @@
+---
+/**
+ * ApplicationPage.astro — 单个应用领域落地页
+ */
+import siteConfig from '../../../site.config.mjs'
+import { t, localizePath } from '../../i18n/index.mjs'
+import { applicationBySlug } from '../../data/applications.mjs'
+import { groupBySlug, getGroupSamples, groupStats } from '../../data/products.mjs'
+import Icon from '../Icon.astro'
+import ProductCard from '../ProductCard.astro'
+import PageHero from '../PageHero.astro'
+import InquiryForm from '../InquiryForm.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+  application: (typeof applicationBySlug)[string]
+}
+const { lang, application: app } = Astro.props
+const isEn = lang === 'en'
+const p = (path: string) => localizePath(path, lang)
+const c = siteConfig.contact
+
+const gs = app.groups.map((s) => groupBySlug[s]).filter(Boolean)
+/** 汇总该领域相关大类下的代表件号 */
+const samples = gs.flatMap((g) => getGroupSamples(g.slug, 3)).slice(0, 8)
+
+const crumbs = [
+  { label: t(lang, 'home'), href: '/' },
+  { label: t(lang, 'navSolutions'), href: '/applications/' },
+  { label: isEn ? app.nameEn : app.nameZh },
+]
+
+const tel = `tel:${c.salesPhone.replace(/[^\d+]/g, '')}`
+---
+
+<PageHero
+  {lang}
+  icon={app.icon}
+  eyebrow={isEn ? 'Industry solution' : '行业解决方案'}
+  title={isEn ? app.nameEn : app.nameZh}
+  desc={isEn ? app.descEn : app.descZh}
+  crumbs={crumbs}
+>
+  <p slot="below" class="mt-6 border-l-2 border-brand-500 pl-4 text-[15px] font-medium text-ink-700">
+    {isEn ? app.leadEn : app.leadZh}
+  </p>
+
+  <div slot="aside">
+    <div class="rounded-2xl bg-white p-6 shadow-lift ring-1 ring-ink-100">
+      <p class="text-[13px] font-semibold uppercase tracking-[0.14em] text-ink-500">
+        {isEn ? 'What we focus on here' : '我们在这个领域的重点'}
+      </p>
+      <ul class="mt-5 space-y-4">
+        {
+          (isEn ? app.pointsEn : app.pointsZh).map((pt) => (
+            <li class="flex items-start gap-3 text-[14px] leading-relaxed text-ink-600">
+              <Icon name="check" class="mt-1 size-4 shrink-0 text-brand-500" strokeWidth={2.4} />
+              {pt}
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-6 flex flex-wrap gap-3 border-t border-ink-100 pt-5">
+        <a href={p('/contact/#quote')} class="btn btn-primary btn-sm">
+          <Icon name="mail" class="size-4" />
+          {isEn ? 'Request a filter list' : '获取滤芯清单'}
+        </a>
+        <a href={tel} class="btn btn-ghost btn-sm">
+          <Icon name="phone" class="size-4" />
+          <span class="tnum">{c.salesPhone}</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</PageHero>
+
+<!-- 相关产品大类 -->
+<section class="section-tight bg-white">
+  <div class="shell">
+    <span class="eyebrow">{isEn ? 'Recommended groups' : '推荐产品大类'}</span>
+    <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
+      {isEn ? 'Filter groups that serve this industry' : '服务该行业的产品大类'}
+    </h2>
+
+    <div class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {
+        gs.map((g) => (
+          <a href={p(`/products/${g.slug}/`)} class="card card-hover group flex flex-col p-5">
+            <div class="flex items-center gap-3">
+              <span class="flex size-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition group-hover:bg-brand-500 group-hover:text-white">
+                <Icon name={g.icon} class="size-5" />
+              </span>
+              <span class="min-w-0">
+                <span class="block truncate text-[15px] font-semibold text-ink-900 group-hover:text-brand-600">
+                  {isEn ? g.nameEn : g.nameZh}
+                </span>
+                <span class="tnum mt-0.5 block text-[12px] text-ink-400">
+                  {groupStats[g.slug]?.count ?? 0} {t(lang, 'productsCount')}
+                </span>
+              </span>
+            </div>
+            <p class="mt-4 line-clamp-3 text-[13px] leading-relaxed text-ink-500">
+              {isEn ? g.taglineEn : g.taglineZh}
+            </p>
+            <span class="mt-auto inline-flex items-center gap-1.5 pt-5 text-[12.5px] font-semibold text-brand-600">
+              {isEn ? 'View parts' : '查看件号'}
+              <Icon name="arrow-right" class="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<!-- 代表件号 -->
+{
+  samples.length > 0 && (
+    <section class="section-tight bg-ink-50">
+      <div class="shell">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <span class="eyebrow">{isEn ? 'Sample part numbers' : '代表件号'}</span>
+            <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
+              {isEn ? 'Commonly ordered for this industry' : '该领域常订件号'}
+            </h2>
+          </div>
+          <a href={p('/search/')} class="btn btn-ghost btn-sm">
+            <Icon name="search" class="size-4" />
+            {t(lang, 'navSearch')}
+          </a>
+        </div>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {samples.map((s, i) => (
+            <div data-reveal style={`--reveal-delay:${(i % 4) * 45}ms`}>
+              <ProductCard {lang} product={s} compact />
+            </div>
+          ))}
+        </div>
+
+        <p class="mt-6 text-[12.5px] leading-relaxed text-ink-400">
+          {isEn
+            ? 'Sample numbers only — send us your machine model for a complete list.'
+            : '以上仅为代表件号，把设备机型发给我们可获取完整清单。'}
+        </p>
+      </div>
+    </section>
+  )
+}
+
+<!-- 询价 -->
+<section class="section bg-white">
+  <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="lg:col-span-5">
+      <InquiryForm {lang} />
+    </div>
+    <div class="lg:col-span-7">
+      <span class="eyebrow">{isEn ? 'Other industries' : '其他应用领域'}</span>
+      <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
+        {isEn ? 'Browse more industries' : '浏览更多领域'}
+      </h2>
+
+      <div class="mt-6 grid gap-2 sm:grid-cols-2">
+        {
+          Object.values(applicationBySlug)
+            .filter((a) => a.slug !== app.slug)
+            .slice(0, 10)
+            .map((a) => (
+              <a
+                href={p(`/applications/${a.slug}/`)}
+                class="group flex items-center gap-3 rounded-xl bg-ink-50 px-4 py-3 transition hover:bg-brand-50"
+              >
+                <Icon name={a.icon} class="size-4 shrink-0 text-ink-400 transition group-hover:text-brand-500" />
+                <span class="truncate text-[13.5px] font-medium text-ink-700 group-hover:text-brand-700">
+                  {isEn ? a.nameEn : a.nameZh}
+                </span>
+              </a>
+            ))
+        }
+      </div>
+    </div>
+  </div>
+</section>

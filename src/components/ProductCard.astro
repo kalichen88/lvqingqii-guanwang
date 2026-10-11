@@ -1,0 +1,121 @@
+---
+/**
+ * ProductCard.astro — 件号卡片
+ * ---------------------------------------------------------------------------
+ * 有本地图片就显示图片；没有则回退到与该品类匹配的图标占位图，
+ * 保证列表在任何数据完整度下都不出现破图。
+ */
+import { localizePath, t } from '../i18n/index.mjs'
+import { groupBySlug } from '../data/groups.mjs'
+import Icon from './Icon.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+  product: {
+    partNo: string
+    /** URL slug，缺省时回退到件号本身 */
+    slug?: string
+    spec?: string
+    type?: string
+    typeEn?: string
+    group?: string
+    image?: string | null
+    /** 是否已生成独立详情页；为 false 时卡片不可点击 */
+    hasPage?: boolean
+  }
+  /** 紧凑模式（用于相关推荐/侧栏） */
+  compact?: boolean
+  class?: string
+}
+
+const { lang, product, compact = false, class: className = '' } = Astro.props
+const isEn = lang === 'en'
+const group = groupBySlug[product.group ?? ''] ?? null
+const clickable = product.hasPage !== false
+const href = localizePath(`/p/${product.slug ?? product.partNo}/`, lang)
+const typeLabel = isEn ? product.typeEn || product.type : product.type
+---
+
+<a
+  href={clickable ? href : undefined}
+  class:list={[
+    'card group flex flex-col overflow-hidden',
+    clickable && 'card-hover',
+    className,
+  ]}
+  data-nolink={clickable ? undefined : 'true'}
+>
+  {/* 图片区 */}
+  <div
+    class:list={[
+      'relative overflow-hidden bg-gradient-to-br from-ink-50 to-white',
+      compact ? 'aspect-[5/4]' : 'aspect-[4/3]',
+    ]}
+  >
+    {/* 蓝图网格底纹 */}
+    <div class="absolute inset-0 bg-blueprint-light opacity-70" aria-hidden="true"></div>
+
+    {
+      product.image ? (
+        <img
+          src={product.image}
+          alt={`${product.partNo}${typeLabel ? ` ${typeLabel}` : ''}`}
+          width="400"
+          height="300"
+          loading="lazy"
+          decoding="async"
+          class="relative size-full object-contain p-5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.07]"
+        />
+      ) : (
+        <div class="relative flex size-full flex-col items-center justify-center gap-3 text-ink-300">
+          <Icon name={group?.icon ?? 'layers'} class="size-12 opacity-45" strokeWidth={1.2} />
+          <span class="text-[11px] font-medium uppercase tracking-[0.16em] opacity-60">
+            {isEn ? 'Image on request' : '实物图请咨询'}
+          </span>
+        </div>
+      )
+    }
+
+    {/* 品类标签 */}
+    {
+      typeLabel && (
+        <span class="absolute left-3 top-3 chip chip-brand backdrop-blur-sm">{typeLabel}</span>
+      )
+    }
+  </div>
+
+  {/* 信息区 */}
+  <div class:list={['flex flex-1 flex-col', compact ? 'p-4' : 'p-5']}>
+    <div class="flex items-start justify-between gap-3">
+      <span
+        class:list={[
+          'partno text-ink-900 transition-colors group-hover:text-brand-600',
+          compact ? 'text-[15px]' : 'text-[17px]',
+        ]}
+      >
+        {product.partNo}
+      </span>
+      <Icon
+        name={clickable ? 'arrow-up-right' : 'mail'}
+        class="mt-0.5 size-4 shrink-0 text-ink-300 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand-500"
+      />
+    </div>
+
+    {
+      product.spec && (
+        <p class="tnum mt-2 line-clamp-2 text-[12.5px] leading-relaxed text-ink-400">
+          {product.spec}
+        </p>
+      )
+    }
+
+    {
+      !compact && (
+        <div class="mt-auto flex items-center gap-1.5 pt-4 text-[12.5px] font-medium text-ink-400">
+          <span class="h-px w-4 bg-ink-200" />
+          {group ? (isEn ? group.shortEn : group.shortZh) : ''}
+        </div>
+      )
+    }
+  </div>
+</a>

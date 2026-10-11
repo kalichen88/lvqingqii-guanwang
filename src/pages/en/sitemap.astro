@@ -1,0 +1,16 @@
+---
+/** Sitemap (English) */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import SitemapPage from '../../components/pages/SitemapPage.astro'
+
+const lang = 'en' as const
+---
+
+<BaseLayout
+  {lang}
+  title="Sitemap — All Sections and Part Number Index"
+  description="Every section of this site plus a part number index grouped by application family."
+  pathname="/sitemap/"
+>
+  <SitemapPage {lang} />
+</BaseLayout>

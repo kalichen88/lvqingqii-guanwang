@@ -1,0 +1,29 @@
+---
+/** Applications index (English) */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import ApplicationsIndexPage from '../../../components/pages/ApplicationsIndexPage.astro'
+import { collectionJsonLd } from '../../../lib/seo.mjs'
+import { applications } from '../../../data/applications.mjs'
+
+const lang = 'en' as const
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: 'Applications — Filtration by Industry',
+    description:
+      'Recommended filter sets and common failure points by industry: construction machinery, truck fleets, compressors, moulding, EDM, gensets, cleanrooms and more.',
+    url: '/applications/',
+    items: applications.map((a) => ({ name: a.nameEn, href: `/applications/${a.slug}/` })),
+  }),
+]
+---
+
+<BaseLayout
+  {lang}
+  title="Applications — Filters by Industry & Machine Type"
+  description="Filter sets and selection advice by industry: construction machinery, truck and bus fleets, compressed air, concrete pumps, injection moulding, EDM, gensets, cleanrooms, agriculture and marine."
+  pathname="/applications/"
+  jsonLd={jsonLd}
+>
+  <ApplicationsIndexPage {lang} />
+</BaseLayout>

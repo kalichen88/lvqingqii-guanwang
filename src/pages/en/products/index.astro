@@ -1,0 +1,29 @@
+---
+/** Product centre (English) /en/products/ */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import ProductsIndexPage from '../../../components/pages/ProductsIndexPage.astro'
+import { collectionJsonLd } from '../../../lib/seo.mjs'
+import { groups, groupStats, productCount } from '../../../data/products.mjs'
+
+const lang = 'en' as const
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: 'Product Centre — Filters and Elements',
+    description:
+      'Authorized FILTERSUN product catalogue: construction machinery, trucks, compressors, hydraulics, industrial, purification, water separators and gensets.',
+    url: '/products/',
+    items: groups.map((g) => ({ name: g.nameEn, href: `/products/${g.slug}/` })),
+  }),
+]
+---
+
+<BaseLayout
+  {lang}
+  title="Products — Filter Part Numbers, Dimensions & Stock"
+  description={`Authorized FILTERSUN catalogue organised into ${groups.length} application groups with ${productCount.toLocaleString()} part numbers, real dimensions and product photos.`}
+  pathname="/products/"
+  jsonLd={jsonLd}
+>
+  <ProductsIndexPage {lang} />
+</BaseLayout>

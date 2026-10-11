@@ -1,0 +1,92 @@
+---
+/**
+ * ContentBlocks.astro — 结构化正文渲染
+ * ---------------------------------------------------------------------------
+ * 把 src/data/content.mjs 里的 block 数组渲染成排版良好的正文。
+ * 支持：p / h2 / h3 / ul / ol / quote / table
+ */
+interface Block {
+  t: 'p' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote' | 'table'
+  zh?: string | string[][]
+  en?: string | string[][]
+  head?: { zh: string[]; en: string[] }
+  rows?: { zh: string[][]; en: string[][] }
+}
+
+interface Props {
+  blocks: Block[]
+  lang: 'zh' | 'en'
+  class?: string
+}
+
+const { blocks, lang, class: className = '' } = Astro.props
+---
+
+<div class:list={['prose-cn', className]}>
+  {
+    blocks.map((b) => {
+      if (b.t === 'h2') return <h2>{b[lang] as string}</h2>
+      if (b.t === 'h3') return <h3>{b[lang] as string}</h3>
+      if (b.t === 'p') return <p>{b[lang] as string}</p>
+
+      if (b.t === 'quote') {
+        return (
+          <blockquote>
+            <p class="!mb-0">{b[lang] as string}</p>
+          </blockquote>
+        )
+      }
+
+      if (b.t === 'ul') {
+        const list = (b[lang] as string[]) ?? []
+        return (
+          <ul>
+            {list.map((li) => (
+              <li>{li}</li>
+            ))}
+          </ul>
+        )
+      }
+
+      if (b.t === 'ol') {
+        const list = (b[lang] as string[]) ?? []
+        return (
+          <ol>
+            {list.map((li) => (
+              <li>{li}</li>
+            ))}
+          </ol>
+        )
+      }
+
+      if (b.t === 'table' && b.head && b.rows) {
+        const head = b.head[lang] ?? []
+        const rows = b.rows[lang] ?? []
+        return (
+          <div class="not-prose my-7 overflow-x-auto rounded-2xl ring-1 ring-ink-100">
+            <table class="!my-0 !border-0">
+              <thead>
+                <tr>
+                  {head.map((h) => (
+                    <th>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr>
+                    {r.map((cell, ci) => (
+                      <td class={ci === 0 ? 'font-medium !text-ink-800' : ''}>{cell}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      }
+
+      return null
+    })
+  }
+</div>

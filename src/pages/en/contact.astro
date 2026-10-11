@@ -1,0 +1,31 @@
+---
+/** Contact (English) */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import ContactPage from '../../components/pages/ContactPage.astro'
+import siteConfig from '../../../site.config.mjs'
+import { localPageJsonLd } from '../../lib/local-business.mjs'
+
+const lang = 'en' as const
+const c = siteConfig.contact
+
+const jsonLd = [
+  localPageJsonLd(lang),
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Contact Us',
+    url: `${siteConfig.url.replace(/\/+$/, '')}/en/contact/`,
+    inLanguage: 'en',
+  },
+]
+---
+
+<BaseLayout
+  {lang}
+  title="Contact Us — Filter Enquiries & Technical Support"
+  description={`Sales ${c.salesPhone}, technical support ${c.techPhone}, WhatsApp +${c.whatsapp}, email ${c.email}. ${c.hoursEn}. Part number matching, volume pricing and export enquiries welcome.`}
+  pathname="/contact/"
+  jsonLd={jsonLd}
+>
+  <ContactPage {lang} />
+</BaseLayout>

@@ -1,0 +1,17 @@
+---
+/** 关于我们（中文） */
+import BaseLayout from '../layouts/BaseLayout.astro'
+import AboutPage from '../components/pages/AboutPage.astro'
+import siteConfig from '../../site.config.mjs'
+
+const lang = 'zh' as const
+---
+
+<BaseLayout
+  {lang}
+  title="关于我们_富滤盛授权代理服务商"
+  description={`我们是${siteConfig.principal.nameZh}的授权代理服务商，专注工程机械、商用车、空压机与工业滤清器的正品供应与选型支持，可提供授权文件与批次溯源。`}
+  pathname="/about/"
+>
+  <AboutPage {lang} />
+</BaseLayout>

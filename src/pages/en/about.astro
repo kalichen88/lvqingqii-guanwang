@@ -1,0 +1,17 @@
+---
+/** About (English) */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AboutPage from '../../components/pages/AboutPage.astro'
+import siteConfig from '../../../site.config.mjs'
+
+const lang = 'en' as const
+---
+
+<BaseLayout
+  {lang}
+  title="About Us — Authorized FILTERSUN Distributor"
+  description={`We are an authorized distributor of ${siteConfig.principal.nameEn}, supplying genuine filtration products with part-number matching, standing stock, technical support and export documentation.`}
+  pathname="/about/"
+>
+  <AboutPage {lang} />
+</BaseLayout>

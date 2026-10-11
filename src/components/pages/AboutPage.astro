@@ -1,0 +1,281 @@
+---
+/**
+ * AboutPage.astro — 关于我们（代理商视角，而非工厂视角）
+ */
+import siteConfig from '../../../site.config.mjs'
+import { t, localizePath } from '../../i18n/index.mjs'
+import { groups, groupStats, productCount } from '../../data/products.mjs'
+import { applications } from '../../data/applications.mjs'
+import Icon from '../Icon.astro'
+import PageHero from '../PageHero.astro'
+import SectionHeading from '../SectionHeading.astro'
+import InquiryForm from '../InquiryForm.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+}
+const { lang } = Astro.props
+const isEn = lang === 'en'
+const p = (path: string) => localizePath(path, lang)
+const c = siteConfig.contact
+const pr = siteConfig.principal
+
+const crumbs = [
+  { label: t(lang, 'home'), href: '/' },
+  { label: t(lang, 'navAbout') },
+]
+
+const timeline = [
+  {
+    year: '2015',
+    title: { zh: '开始做滤清器贸易', en: 'Started in filter trading' },
+    desc: { zh: '从工程机械配件起步，客户主要是本地挖机与装载机维修厂。', en: 'Began with construction machinery parts, serving local excavator and loader repair shops.' },
+  },
+  {
+    year: '2018',
+    title: { zh: '建立常备库存', en: 'Built a standing inventory' },
+    desc: { zh: '把最常被问到的 500 个件号做成常备库存，交货从「等一周」变成「当天发」。', en: 'Turned the 500 most-requested numbers into standing stock, cutting delivery from a week to same day.' },
+  },
+  {
+    year: '2021',
+    title: { zh: '取得富滤盛授权代理', en: 'Became an authorized FILTERSUN distributor' },
+    desc: { zh: '经过渠道评估与销售能力考核，取得富滤盛授权代理资格，货源直连厂家。', en: 'After channel review and sales capability assessment, we became an authorized FILTERSUN distributor with direct factory supply.' },
+  },
+  {
+    year: '2023',
+    title: { zh: '拓展工业与净化品类', en: 'Expanded into industrial and purification' },
+    desc: { zh: '在工程机械之外，新增空压机、注塑机、线切割与洁净新风等品类。', en: 'Added compressors, injection moulding, wire-cut EDM and clean-air filtration alongside construction machinery.' },
+  },
+  {
+    year: '2025',
+    title: { zh: '上线件号查询系统', en: 'Launched the part finder' },
+    desc: { zh: '把积累了十年的件号、规格与适配经验做成可检索的数据库，客户自己就能查。', en: 'Turned ten years of part numbers, dimensions and fitment knowledge into a searchable database customers can use themselves.' },
+  },
+]
+
+const values = [
+  {
+    icon: 'shield',
+    title: { zh: '只做正品', en: 'Genuine only' },
+    desc: { zh: '我们不做翻新件和来路不明的低价货。一只假滤芯造成的发动机损伤，远超过省下的差价。', en: 'No refurbished or grey-market stock. One counterfeit filter can destroy an engine worth far more than the saving.' },
+  },
+  {
+    icon: 'headset',
+    title: { zh: '先解决问题，再谈订单', en: 'Solve the problem first' },
+    desc: { zh: '客户问「换了滤芯还是报警」，我们会一起查原因，而不是再卖他一只。', en: 'When a customer says “still alarming after the change”, we help find the cause instead of selling another filter.' },
+  },
+  {
+    icon: 'database',
+    title: { zh: '把经验变成工具', en: 'Turn experience into tools' },
+    desc: { zh: '十年积累的适配经验做成公开可查的件号库，客户不必每次都来问我们。', en: 'A decade of fitment knowledge turned into an open, searchable catalogue — customers do not have to ask every time.' },
+  },
+]
+---
+
+<PageHero
+  {lang}
+  eyebrow={isEn ? 'About us' : '关于我们'}
+  title={isEn ? 'We are the distributor, and that is the point' : '我们是代理，而这恰恰是关键'}
+  desc={isEn
+    ? `We are an authorized distributor of ${pr.nameEn}. We do not claim to be the factory — we claim to be the shortest path between the factory and your machine.`
+    : `我们是${pr.nameZh}的授权代理服务商。我们不假装自己是工厂——我们的价值是在工厂和你的设备之间，做最短的那条路。`}
+  crumbs={crumbs}
+>
+  <div slot="aside">
+    <div class="rounded-2xl bg-white p-6 shadow-lift ring-1 ring-ink-100">
+      <p class="text-[12.5px] uppercase tracking-[0.14em] text-ink-400">
+        {isEn ? 'By the numbers' : '一些数字'}
+      </p>
+      <dl class="mt-5 grid grid-cols-2 gap-5">
+        {
+          [
+            { v: `${productCount.toLocaleString()}+`, l: { zh: '已收录件号', en: 'Catalogued numbers' } },
+            { v: '3,000+', l: { zh: '常备现货', en: 'Stocked numbers' } },
+            { v: String(groups.length), l: { zh: '产品大类', en: 'Product groups' } },
+            { v: String(applications.length), l: { zh: '应用领域', en: 'Industries served' } },
+          ].map((s) => (
+            <div>
+              <dt class="tnum text-[24px] font-semibold text-ink-900">{s.v}</dt>
+              <dd class="mt-1 text-[11.5px] text-ink-400">{s.l[lang]}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</PageHero>
+
+<!-- 我们做什么 -->
+<section class="section bg-white">
+  <div class="shell grid gap-14 lg:grid-cols-12 lg:gap-12">
+    <div class="lg:col-span-7">
+      <span class="eyebrow">{isEn ? 'What we do' : '我们做什么'}</span>
+      <h2 class="mt-3 text-[26px] font-semibold leading-tight text-ink-900 md:text-[34px]" data-reveal>
+        {isEn ? 'A filter distributor that answers the phone' : '一个会接电话的滤芯代理'}
+      </h2>
+
+      <div class="prose-cn mt-6">
+        {
+          isEn ? (
+            <>
+              <p>
+                Filtration is a category where the cost of choosing wrong is invisible until it is expensive. Fit a
+                filter with the wrong micron rating and the machine runs fine — for a while. Fit one with too little
+                media area and the pressure drop climbs quietly until a bypass valve opens and unfiltered oil goes
+                through the system.
+              </p>
+              <p>
+                That is the gap we work in. We supply genuine FILTERSUN products through the manufacturer's official
+                channel, we keep the fast-moving numbers on the shelf, and we spend our time on the part that actually
+                decides whether the order was a good one: <strong>getting the number right</strong>.
+              </p>
+              <p>
+                In practice that means you can send us a part number, a machine model, a photograph of a dirty old
+                filter or a set of dimensions measured with a vernier — and get a verified answer back rather than a
+                guess. It also means that when we do not know, we say so and check with the factory.
+              </p>
+            </>
+          ) : (
+            <>
+              <p>
+                滤清器这个品类有个特点：选错的代价在变贵之前是看不见的。过滤精度选低了，机器照样能跑——跑一阵子。
+                滤材面积小了，压差悄悄上升，直到旁通阀打开，未经过滤的油直接进了系统。
+              </p>
+              <p>
+                我们做的就是这个缝隙里的事。通过厂家正规渠道供应富滤盛正品，把常用件号压在仓库里，
+                然后把时间花在真正决定这笔订单好坏的那件事上：<strong>把件号配对</strong>。
+              </p>
+              <p>
+                具体来说，你可以把件号、设备机型、一张脏滤芯的照片，或者用卡尺量出来的几个尺寸发给我们，
+                拿回一个经过核对的答案，而不是一个「差不多」。同样地，遇到我们确实不确定的情况，我们会直说，
+                然后去跟厂家核实。
+              </p>
+            </>
+          )
+        }
+      </div>
+    </div>
+
+    <div class="lg:col-span-5">
+      <div class="space-y-3">
+        {
+          values.map((v, i) => (
+            <div class="card p-6" data-reveal style={`--reveal-delay:${i * 60}ms`}>
+              <span class="flex size-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                <Icon name={v.icon} class="size-5" />
+              </span>
+              <h3 class="mt-4 text-[16.5px] font-semibold text-ink-900">{v.title[lang]}</h3>
+              <p class="mt-2.5 text-[13.5px] leading-relaxed text-ink-500">{v.desc[lang]}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 发展历程 -->
+<section class="section bg-ink-50">
+  <div class="shell">
+    <SectionHeading
+      eyebrow={isEn ? 'Milestones' : '发展历程'}
+      title={isEn ? 'How we got here' : '我们是怎么走到今天的'}
+    />
+
+    <ol class="relative mt-12 space-y-8 border-l border-ink-200 pl-8 md:pl-10">
+      {
+        timeline.map((item, i) => (
+          <li class="relative" data-reveal style={`--reveal-delay:${i * 60}ms`}>
+            <span class="absolute -left-[41px] top-1.5 flex size-5 items-center justify-center rounded-full bg-white ring-2 ring-brand-500 md:-left-[51px]">
+              <span class="size-1.5 rounded-full bg-brand-500" />
+            </span>            <p class="font-mono text-[12px] font-medium tracking-[0.16em] text-brand-600">{item.year}</p>
+            <h3 class="mt-2 text-[17px] font-semibold text-ink-900">{item.title[lang]}</h3>
+            <p class="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-ink-500">{item.desc[lang]}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<!-- 代理关系说明 -->
+<section class="section bg-white">
+  <div class="shell">
+    <div class="mx-auto max-w-3xl text-center">
+      <span class="eyebrow eyebrow-plain justify-center">{isEn ? 'Our relationship with the factory' : '我们与厂家的关系'}</span>
+      <h2 class="mt-3 text-[26px] font-semibold leading-tight text-ink-900 md:text-[34px]" data-reveal>
+        {isEn ? 'Authorized, and happy to prove it' : '授权代理，随时可以验证'}
+      </h2>
+      <p class="mt-5 text-[14.5px] leading-[1.9] text-ink-500" data-reveal>
+        {
+          isEn
+            ? `We buy through ${pr.nameEn}'s official channel. If you need to verify our authorization before placing a larger order, ask us — we will send the documentation and you can also confirm with the factory directly.`
+            : `我们通过${pr.nameZh}的官方渠道进货。如果在下大额订单前需要验证我们的授权身份，可以直接向我们索取授权文件，也欢迎你向厂家核实。`
+        }
+      </p>
+    </div>
+
+    <div class="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-3">
+      {
+        [
+          { icon: 'certificate', t: { zh: '授权代理文件', en: 'Authorization documents' }, d: { zh: '可提供授权书复印件供核验', en: 'Copies available for verification' } },
+          { icon: 'box', t: { zh: '批次可溯源', en: 'Batch traceability' }, d: { zh: '保留出入库记录与批次标签', en: 'Inbound/outbound records and batch labels kept' } },
+          { icon: 'shield', t: { zh: '产品责任险', en: 'Liability insurance' }, d: { zh: '全系由太平洋保险承保', en: 'Full range covered by CPIC' } },
+        ].map((b) => (
+          <div class="rounded-2xl bg-ink-50 p-6 text-center ring-1 ring-ink-100">
+            <span class="mx-auto flex size-11 items-center justify-center rounded-xl bg-white text-brand-600 ring-1 ring-ink-100">
+              <Icon name={b.icon} class="size-5" />
+            </span>
+            <h3 class="mt-4 text-[15px] font-semibold text-ink-900">{b.t[lang]}</h3>
+            <p class="mt-2 text-[12.5px] leading-relaxed text-ink-500">{b.d[lang]}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<!-- 联系信息 + 询价 -->
+<section class="section bg-ink-50">
+  <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="lg:col-span-5">
+      <span class="eyebrow">{t(lang, 'contactUs')}</span>
+      <h2 class="mt-3 text-[26px] font-semibold leading-tight text-ink-900 md:text-[32px]">
+        {isEn ? 'Talk to a person' : '直接找人聊'}
+      </h2>
+
+      <ul class="mt-8 space-y-4">
+        {
+          [
+            { icon: 'phone', label: isEn ? 'Sales hotline' : '销售热线', value: c.salesPhone, href: `tel:${c.salesPhone.replace(/[^\d+]/g, '')}` },
+            { icon: 'wrench', label: isEn ? 'Technical support' : '技术支持', value: c.techPhone, href: `tel:${c.techPhone.replace(/[^\d+]/g, '')}` },
+            { icon: 'wechat', label: 'WeChat', value: c.wechatId, href: null },
+            { icon: 'mail', label: isEn ? 'Email' : '邮箱', value: c.email, href: `mailto:${c.email}` },
+            { icon: 'location', label: isEn ? 'Address' : '地址', value: isEn ? c.addressEn : c.addressZh, href: null },
+            { icon: 'clock', label: isEn ? 'Business hours' : '工作时间', value: isEn ? c.hoursEn : c.hoursZh, href: null },
+          ].map((row) => (
+            <li class="flex items-start gap-4 rounded-2xl bg-white p-4 ring-1 ring-ink-100">
+              <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ink-50 text-ink-500">
+                <Icon name={row.icon} class="size-[18px]" />
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block text-[11.5px] text-ink-400">{row.label}</span>
+                {row.href ? (
+                  <a href={row.href} class="tnum block text-[14.5px] font-medium text-ink-900 transition hover:text-brand-600">
+                    {row.value}
+                  </a>
+                ) : (
+                  <span class="block text-[14px] leading-relaxed text-ink-800">{row.value}</span>
+                )}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="lg:col-span-7">
+      <InquiryForm {lang} />
+    </div>
+  </div>
+</section>

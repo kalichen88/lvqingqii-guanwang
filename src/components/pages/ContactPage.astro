@@ -1,0 +1,210 @@
+---
+/**
+ * ContactPage.astro — 联系我们
+ */
+import siteConfig from '../../../site.config.mjs'
+import { t, localizePath } from '../../i18n/index.mjs'
+import Icon from '../Icon.astro'
+import PageHero from '../PageHero.astro'
+import InquiryForm from '../InquiryForm.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+}
+const { lang } = Astro.props
+const isEn = lang === 'en'
+const p = (path: string) => localizePath(path, lang)
+const c = siteConfig.contact
+
+const crumbs = [
+  { label: t(lang, 'home'), href: '/' },
+  { label: t(lang, 'navContact') },
+]
+
+const tel = (v: string) => `tel:${v.replace(/[^\d+]/g, '')}`
+const wa = `https://wa.me/${c.whatsapp}`
+
+/** 腾讯位置服务 / 高德 通用跳转（不需要 API key 的网页版） */
+const amapUrl = `https://uri.amap.com/marker?position=${c.geo.lng},${c.geo.lat}&name=${encodeURIComponent(
+  isEn ? siteConfig.brand.legalNameEn : siteConfig.brand.legalNameZh,
+)}`
+
+const channels = [
+  {
+    icon: 'phone',
+    label: { zh: '销售热线', en: 'Sales hotline' },
+    value: c.salesPhone,
+    href: tel(c.salesPhone),
+    desc: { zh: '报价、库存、货期', en: 'Pricing, stock and lead time' },
+    primary: true,
+  },
+  {
+    icon: 'wrench',
+    label: { zh: '技术支持', en: 'Technical support' },
+    value: c.techPhone,
+    href: tel(c.techPhone),
+    desc: { zh: '选型、适配、故障判断', en: 'Selection, fitment and diagnosis' },
+  },
+  {
+    icon: 'wechat',
+    label: { zh: '微信', en: 'WeChat' },
+    value: c.wechatId,
+    href: null,
+    desc: { zh: '发照片最快，扫码或搜手机号', en: 'Fastest for photos — scan or search the number' },
+  },
+  {
+    icon: 'whatsapp',
+    label: { zh: 'WhatsApp', en: 'WhatsApp' },
+    value: `+${c.whatsapp}`,
+    href: wa,
+    desc: { zh: '海外客户首选', en: 'Preferred by overseas customers' },
+  },
+  {
+    icon: 'mail',
+    label: { zh: '业务邮箱', en: 'Sales email' },
+    value: c.email,
+    href: `mailto:${c.email}`,
+    desc: { zh: '适合发清单与图纸', en: 'Best for lists and drawings' },
+  },
+  {
+    icon: 'certificate',
+    label: { zh: '售后与投诉', en: 'After-sales' },
+    value: c.serviceEmail,
+    href: `mailto:${c.serviceEmail}`,
+    desc: { zh: '质量问题请附批次号与照片', en: 'Include batch number and photos' },
+  },
+]
+---
+
+<PageHero
+  {lang}
+  eyebrow={t(lang, 'contactUs')}
+  title={isEn ? 'Send the part number. We will do the rest.' : '把件号发过来，剩下的我们做'}
+  desc={isEn
+    ? 'Working hours are Monday to Saturday, 08:30–18:00 (GMT+8). Enquiries outside those hours are answered the next working morning.'
+    : '工作时间为周一至周六 08:30–18:00。非工作时间提交的询价，我们会在下一个工作日上午回复。'}
+  crumbs={crumbs}
+/>
+
+<!-- 联系方式卡片 -->
+<section class="section-tight bg-white">
+  <div class="shell">
+    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {
+        channels.map((ch, i) => {
+          const inner = (
+            <>
+              <span
+                class:list={[
+                  'flex size-11 items-center justify-center rounded-xl transition',
+                  ch.primary ? 'bg-brand-500 text-white' : 'bg-ink-50 text-ink-500 group-hover:bg-brand-500 group-hover:text-white',
+                ]}
+              >
+                <Icon name={ch.icon} class="size-5" />
+              </span>
+              <span class="mt-5 block text-[11.5px] uppercase tracking-[0.12em] text-ink-400">
+                {ch.label[lang]}
+              </span>
+              <span class="tnum mt-1.5 block break-all text-[16.5px] font-semibold text-ink-900 group-hover:text-brand-600">
+                {ch.value}
+              </span>
+              <span class="mt-2 block text-[12.5px] leading-relaxed text-ink-400">{ch.desc[lang]}</span>
+            </>
+          )
+          return ch.href ? (
+            <a
+              href={ch.href}
+              target={ch.href.startsWith('http') ? '_blank' : undefined}
+              rel={ch.href.startsWith('http') ? 'noopener nofollow' : undefined}
+              class="card card-hover group p-6"
+              data-reveal
+              style={`--reveal-delay:${(i % 3) * 50}ms`}
+            >
+              {inner}
+            </a>
+          ) : (
+            <div class="card group p-6" data-reveal style={`--reveal-delay:${(i % 3) * 50}ms`}>
+              {inner}
+            </div>
+          )
+        })
+      }
+    </div>
+  </div>
+</section>
+
+<!-- 地址 + 地图 + 表单 -->
+<section class="section bg-ink-50">
+  <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="lg:col-span-5">
+      <span class="eyebrow">{isEn ? 'Visit us' : '来我们这里'}</span>
+      <h2 class="mt-3 text-[26px] font-semibold leading-tight text-ink-900 md:text-[32px]">
+        {isEn ? 'Office and warehouse' : '办公与仓库地址'}
+      </h2>
+
+      <ul class="mt-8 space-y-4">
+        <li class="rounded-2xl bg-white p-5 ring-1 ring-ink-100">
+          <span class="flex items-center gap-2.5 text-[11.5px] uppercase tracking-[0.12em] text-ink-400">
+            <Icon name="building" class="size-3.5" />
+            {isEn ? 'Office' : '办公地址'}
+          </span>
+          <p class="mt-2.5 text-[14.5px] leading-relaxed text-ink-800">
+            {isEn ? c.addressEn : c.addressZh}
+          </p>
+        </li>
+        {
+          (isEn ? c.warehouseEn : c.warehouseZh) && (
+            <li class="rounded-2xl bg-white p-5 ring-1 ring-ink-100">
+              <span class="flex items-center gap-2.5 text-[11.5px] uppercase tracking-[0.12em] text-ink-400">
+                <Icon name="box" class="size-3.5" />
+                {isEn ? 'Warehouse' : '仓库地址'}
+              </span>
+              <p class="mt-2.5 text-[14.5px] leading-relaxed text-ink-800">
+                {isEn ? c.warehouseEn : c.warehouseZh}
+              </p>
+            </li>
+          )
+        }
+        <li class="rounded-2xl bg-white p-5 ring-1 ring-ink-100">
+          <span class="flex items-center gap-2.5 text-[11.5px] uppercase tracking-[0.12em] text-ink-400">
+            <Icon name="clock" class="size-3.5" />
+            {isEn ? 'Business hours' : '工作时间'}
+          </span>
+          <p class="mt-2.5 text-[14.5px] text-ink-800">{isEn ? c.hoursEn : c.hoursZh}</p>
+        </li>
+      </ul>
+
+      <!-- 地图占位／跳转 -->
+      <a
+        href={amapUrl}
+        target="_blank"
+        rel="noopener nofollow"
+        class="group relative mt-4 block overflow-hidden rounded-2xl bg-ink-50 shadow-soft ring-1 ring-ink-100"
+      >
+        <div class="absolute inset-0 bg-blueprint-light opacity-80"></div>
+        <div class="relative flex aspect-[16/9] flex-col items-center justify-center gap-3 text-center">
+          <span class="flex size-12 items-center justify-center rounded-2xl bg-white text-brand-600 shadow-soft ring-1 ring-ink-100">
+            <Icon name="location" class="size-6" />
+          </span>
+          <span class="text-[14px] font-semibold text-ink-900">
+            {isEn ? 'Open in map app' : '在地图中打开'}
+          </span>
+          <span class="tnum font-mono text-[11.5px] text-ink-400">
+            {c.geo.lat.toFixed(4)}, {c.geo.lng.toFixed(4)}
+          </span>
+        </div>
+      </a>
+      <p class="mt-3 text-[12px] leading-relaxed text-ink-400">
+        {
+          isEn
+            ? 'Coordinates are a placeholder — update them in site.config.mjs to point at your own address.'
+            : '坐标目前为占位值，请在 site.config.mjs 中改成你自己的经纬度。'
+        }
+      </p>
+    </div>
+
+    <div class="lg:col-span-7">
+      <InquiryForm {lang} />
+    </div>
+  </div>
+</section>

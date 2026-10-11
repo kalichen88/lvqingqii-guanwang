@@ -1,0 +1,502 @@
+---
+/**
+ * FinderPage.astro — 件号 / 机型查询
+ * ---------------------------------------------------------------------------
+ * 无后端方案：把件号索引以紧凑 JSON 内嵌到页面，浏览器端实时检索。
+ *   - 服务端预渲染首屏结果，保证无 JS 也能用、爬虫也能抓到链接；
+ *   - 有 JS 时切换为即时检索 + 筛选 + 分页加载。
+ * 索引体积：约 1500 条 ≈ 120KB（gzip 后约 30KB），仅在查询页加载。
+ */
+import siteConfig from '../../../site.config.mjs'
+import { t, localizePath } from '../../i18n/index.mjs'
+import { products, groups, groupBySlug, partNoInitials, productCount } from '../../data/products.mjs'
+import Icon from '../Icon.astro'
+import Breadcrumbs from '../Breadcrumbs.astro'
+import InquiryForm from '../InquiryForm.astro'
+import FaqList from '../FaqList.astro'
+import { faqs } from '../../data/content.mjs'
+
+interface Props {
+  lang: 'zh' | 'en'
+}
+const { lang } = Astro.props
+const isEn = lang === 'en'
+const p = (path: string) => localizePath(path, lang)
+const c = siteConfig.contact
+
+/** 紧凑索引：[件号, slug, 规格, 类型中文, 类型英文, 大类slug, 图片路径, 品类名, 是否有详情页] */
+const index = products.map((x) => [
+  x.partNo,
+  x.slug,
+  x.spec,
+  x.type,
+  x.typeEn,
+  x.group,
+  x.image ?? '',
+  x.categoryName,
+  x.hasPage ? 1 : 0,
+])
+
+/** 服务端预渲染的前 60 条（优先展示有详情页的），保证首屏与无 JS 场景可用 */
+const initial = [...products].sort((a, b) => Number(b.hasPage) - Number(a.hasPage)).slice(0, 60)
+
+const crumbs = [
+  { label: t(lang, 'home'), href: '/' },
+  { label: t(lang, 'finderTitle') },
+]
+
+const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
+---
+
+<!-- ================= Hero + 搜索 ================= -->
+<section class="page-hero pb-14 pt-10 md:pb-16 md:pt-12">
+  <div class="shell relative">
+    <Breadcrumbs {lang} items={crumbs} />
+
+    <div class="mx-auto mt-7 max-w-3xl text-center">
+      <span class="eyebrow eyebrow-plain justify-center">
+        {isEn ? 'Part finder' : '件号查询'}
+      </span>
+      <h1 class="mt-3 text-[30px] font-semibold leading-[1.14] text-ink-900 md:text-[42px]" data-reveal>
+        {isEn ? 'Find your part number in seconds' : '几秒钟，找到你要的件号'}
+      </h1>
+      <p class="mx-auto mt-4 max-w-xl text-[14.5px] leading-relaxed text-ink-500" data-reveal>
+        {
+          isEn
+            ? `Search ${productCount.toLocaleString()} catalogued FILTERSUN part numbers by number, prefix, dimensions or category.`
+            : `在已收录的 ${productCount.toLocaleString()} 个富滤盛件号中检索，支持件号、前缀、规格尺寸与品类关键词。`
+        }
+      </p>
+
+      <!-- 搜索框 -->
+      <div class="mt-8" data-reveal style="--reveal-delay:80ms">
+        <div class="flex items-center gap-2 rounded-2xl bg-white p-2 shadow-lift ring-1 ring-ink-200 transition focus-within:ring-2 focus-within:ring-brand-500">
+          <Icon name="search" class="ml-3 size-5 shrink-0 text-ink-400" />
+          <input
+            type="search"
+            data-finder-input
+            autocomplete="off"
+            spellcheck="false"
+            placeholder={isEn ? 'e.g. FS641A, CA516, 406*265, air filter' : '例如：FS641A、CA516、406*265、空气滤芯'}
+            aria-label={t(lang, 'finderTitle')}
+            class="h-12 min-w-0 flex-1 border-0 bg-transparent text-[16px] text-ink-900 placeholder:text-ink-400 focus:outline-none"
+          />
+          <button type="button" data-finder-clear class="hidden shrink-0 rounded-lg p-2 text-ink-400 transition hover:bg-ink-50 hover:text-ink-700" aria-label={t(lang, 'reset')}>
+            <Icon name="close" class="size-4" />
+          </button>
+        </div>
+
+        <!-- 快捷筛选 -->
+        <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+          <select
+            data-finder-group
+            class="h-9 rounded-lg border-0 bg-white px-3 text-[13px] text-ink-700 shadow-soft ring-1 ring-ink-200 focus:ring-2 focus:ring-brand-500"
+            aria-label={t(lang, 'finderAllGroups')}
+          >
+            <option value="">{t(lang, 'finderAllGroups')}</option>
+            {groups.map((g) => <option value={g.slug}>{isEn ? g.nameEn : g.nameZh}</option>)}
+          </select>
+
+          <div class="flex flex-wrap items-center justify-center gap-1">
+            {
+              partNoInitials.map((ch) => (
+                <button
+                  type="button"
+                  data-finder-initial={ch}
+                  class="size-8 rounded-lg bg-white font-mono text-[12px] text-ink-500 shadow-soft ring-1 ring-ink-200 transition hover:text-brand-600 hover:ring-brand-300 aria-pressed:bg-brand-500 aria-pressed:text-white aria-pressed:ring-brand-500"
+                >
+                  {ch}
+                </button>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 结果 ================= -->
+<section class="section-tight bg-ink-50">
+  <div class="shell">
+    <!-- 结果统计 -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <p class="text-[14px] text-ink-500">
+        <span data-finder-count class="tnum font-semibold text-ink-900">{productCount.toLocaleString()}</span>
+        {isEn ? ' part numbers' : ' 个件号'}
+        <span data-finder-active class="ml-2"></span>
+      </p>
+      <p class="text-[12.5px] text-ink-400" data-finder-hint>
+        {isEn ? 'Type to filter instantly' : '输入即筛选'}
+      </p>
+    </div>
+
+    <!-- 空状态 -->
+    <div class="mt-6 hidden rounded-2xl bg-white p-10 text-center ring-1 ring-ink-100" data-finder-empty>
+      <span class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-ink-50 text-ink-300">
+        <Icon name="search" class="size-6" />
+      </span>
+      <p class="mt-4 text-[16px] font-semibold text-ink-900">{t(lang, 'noResult')}</p>
+      <p class="mx-auto mt-2 max-w-md text-[13.5px] leading-relaxed text-ink-500">
+        {t(lang, 'finderHint')}
+      </p>
+      <div class="mt-6 flex flex-wrap justify-center gap-3">
+        <a href={p('/contact/#quote')} class="btn btn-primary">
+          <Icon name="mail" class="size-4" />
+          {isEn ? 'Send it to us' : '发给我们帮你查'}
+        </a>
+        <a href={`https://wa.me/${c.whatsapp}`} target="_blank" rel="noopener nofollow" class="btn btn-ghost">
+          <Icon name="whatsapp" class="size-4" />
+          WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <!-- 结果表 -->
+    <div class="mt-6 overflow-hidden rounded-2xl bg-white ring-1 ring-ink-100">
+      <div class="max-h-[70vh] overflow-auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="w-[56px]">{t(lang, 'image')}</th>
+              <th class="w-[150px]">{t(lang, 'partNo')}</th>
+              <th>{t(lang, 'spec')}</th>
+              <th class="w-[170px]">{t(lang, 'type')}</th>
+              <th class="w-[130px]">{isEn ? 'Group' : '大类'}</th>
+              <th class="w-[96px]" />
+            </tr>
+          </thead>
+          <tbody data-finder-body>
+            {
+              initial.map((x) => (
+                <tr
+                  data-finder-row
+                  data-partno={x.partNo}
+                  data-slug={x.slug}
+                  data-spec={x.spec}
+                  data-type={x.type}
+                  data-typeen={x.typeEn}
+                  data-group={x.group}
+                  data-cat={x.categoryName}
+                  data-image={x.image ?? ''}
+                  data-haspage={x.hasPage ? '1' : '0'}
+                >
+                  <td>
+                    {x.image ? (
+                      <img src={x.image} alt={x.partNo} width="40" height="40" loading="lazy" class="size-10 rounded-md bg-ink-50 object-contain p-0.5" />
+                    ) : (
+                      <span class="flex size-10 items-center justify-center rounded-md bg-ink-50 text-ink-300">
+                        <Icon name={groupBySlug[x.group]?.icon ?? 'layers'} class="size-4" strokeWidth={1.4} />
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    {x.hasPage ? (
+                      <a href={p(`/p/${x.slug}/`)} class="partno text-[13.5px] font-medium text-ink-900 transition hover:text-brand-600">
+                        {x.partNo}
+                      </a>
+                    ) : (
+                      <span class="partno text-[13.5px] font-medium text-ink-800">{x.partNo}</span>
+                    )}
+                  </td>
+                  <td class="tnum text-[12.5px] text-ink-500">{x.spec || '—'}</td>
+                  <td class="text-[12.5px] text-ink-400">{isEn ? x.typeEn : x.type}</td>
+                  <td class="text-[12.5px] text-ink-400">
+                    {groupBySlug[x.group] ? (isEn ? groupBySlug[x.group].shortEn : groupBySlug[x.group].shortZh) : ''}
+                  </td>
+                  <td>
+                    {x.hasPage ? (
+                      <a href={p(`/p/${x.slug}/`)} class="inline-flex items-center gap-1 whitespace-nowrap text-[12.5px] font-medium text-brand-600 hover:text-brand-700">
+                        {t(lang, 'viewDetails')}
+                        <Icon name="arrow-right" class="size-3.5" />
+                      </a>
+                    ) : (
+                      <a href={`${p('/contact/')}?part=${encodeURIComponent(x.partNo)}#quote`} class="inline-flex items-center gap-1 whitespace-nowrap text-[12.5px] font-medium text-ink-500 hover:text-brand-600">
+                        {isEn ? 'Enquire' : '询价'}
+                        <Icon name="mail" class="size-3.5" />
+                      </a>
+                    )}
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 加载更多 -->
+    <div class="mt-6 text-center">
+      <button type="button" data-finder-more class="btn btn-ghost hidden">
+        {t(lang, 'finderLoadMore')}
+        <span data-finder-more-count class="tnum text-ink-400" />
+      </button>
+    </div>
+
+    <!-- 引导 -->
+    <div class="mt-8 grid gap-4 md:grid-cols-3">
+      {
+        [
+          {
+            icon: 'excavator',
+            title: { zh: '只知道机型？', en: 'Only know the machine?' },
+            desc: { zh: '按应用领域找到对应大类，或直接把机型发给我们。', en: 'Browse by industry, or just send us the model.' },
+            href: p('/applications/'),
+            cta: { zh: '按应用领域查找', en: 'Browse industries' },
+          },
+          {
+            icon: 'headset',
+            title: { zh: '有旧件照片？', en: 'Have a photo?' },
+            desc: { zh: '拍下旧滤芯或设备铭牌，工程师帮你人工核对。', en: 'Snap the old filter or data plate and we match it by hand.' },
+            href: `https://wa.me/${c.whatsapp}`,
+            cta: { zh: '发到 WhatsApp', en: 'Send on WhatsApp' },
+            external: true,
+          },
+          {
+            icon: 'list',
+            title: { zh: '想按品类翻？', en: 'Prefer browsing?' },
+            desc: { zh: '按 8 个大类逐个浏览完整件号清单。', en: `Browse the full list across ${groups.length} groups.` },
+            href: p('/products/'),
+            cta: { zh: '打开产品中心', en: 'Open product centre' },
+          },
+        ].map((box) => (
+          <div class="card p-6">
+            <span class="flex size-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+              <Icon name={box.icon} class="size-5" />
+            </span>
+            <h3 class="mt-4 text-[16px] font-semibold text-ink-900">{box.title[lang]}</h3>
+            <p class="mt-2 text-[13px] leading-relaxed text-ink-500">{box.desc[lang]}</p>
+            <a
+              href={box.href}
+              target={box.external ? '_blank' : undefined}
+              rel={box.external ? 'noopener nofollow' : undefined}
+              class="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-600 hover:text-brand-700"
+            >
+              {box.cta[lang]}
+              <Icon name="arrow-right" class="size-3.5" />
+            </a>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ + 询价 ================= -->
+<section class="section bg-white">
+  <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="lg:col-span-6">
+      <span class="eyebrow">{isEn ? 'FAQ' : '常见问题'}</span>
+      <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[32px]">
+        {isEn ? 'About finding the right part' : '关于找件号的常见问题'}
+      </h2>
+      <FaqList items={finderFaqs} {lang} class="mt-8" />
+    </div>
+    <div class="lg:col-span-6">
+      <InquiryForm {lang} />
+    </div>
+  </div>
+</section>
+
+<!-- ================= 索引数据 ================= -->
+<script type="application/json" data-finder-index set:html={JSON.stringify(index)} />
+
+<script>
+  /* ------------------------------------------------------------------
+     件号查询：客户端索引检索
+     数据格式（与服务端一致）：
+       [partNo, slug, spec, typeZh, typeEn, group, image, categoryName]
+     ------------------------------------------------------------------ */
+  const PAGE_SIZE = 60
+
+  const input = document.querySelector<HTMLInputElement>('[data-finder-input]')
+  const groupSel = document.querySelector<HTMLSelectElement>('[data-finder-group]')
+  const body = document.querySelector<HTMLElement>('[data-finder-body]')
+  const countEl = document.querySelector<HTMLElement>('[data-finder-count]')
+  const activeEl = document.querySelector<HTMLElement>('[data-finder-active]')
+  const emptyEl = document.querySelector<HTMLElement>('[data-finder-empty]')
+  const moreBtn = document.querySelector<HTMLButtonElement>('[data-finder-more]')
+  const moreCount = document.querySelector<HTMLElement>('[data-finder-more-count]')
+  const clearBtn = document.querySelector<HTMLElement>('[data-finder-clear]')
+  const hintEl = document.querySelector<HTMLElement>('[data-finder-hint]')
+  const initialState = document.querySelector<HTMLElement>('[data-finder-initial][aria-pressed]')
+
+  const indexEl = document.querySelector<HTMLScriptElement>('[data-finder-index]')
+  if (input && body && indexEl) {
+    const lang = (document.documentElement.lang || 'zh').startsWith('en') ? 'en' : 'zh'
+    const isEn = lang === 'en'
+    /** @type {string[][]} */
+    let rows: string[][] = []
+    try {
+      rows = JSON.parse(indexEl.textContent || '[]')
+    } catch {
+      rows = []
+    }
+
+    const T = isEn
+      ? { detail: 'View', group: 'Group', more: 'Load more', n: 'part numbers', filtered: 'filtered', enquire: 'Enquire' }
+      : { detail: '查看详情', group: '大类', more: '加载更多', n: '个件号', filtered: '条符合条件', enquire: '询价' }
+
+    const groupShort: Record<string, string> = {
+      construction: isEn ? 'Construction' : '工程机械',
+      truck: isEn ? 'Trucks' : '商用车',
+      compressor: isEn ? 'Compressor' : '空压机',
+      hydraulic: isEn ? 'Hydraulic' : '液压滤芯',
+      industrial: isEn ? 'Industrial' : '工业滤芯',
+      purifier: isEn ? 'Purification' : '净化滤芯',
+      separator: isEn ? 'Separators' : '油水分离',
+      genset: isEn ? 'Genset & Agri' : '发电机/农机',
+    }
+
+    const iconFor = (g: string) =>
+      ({
+        construction: 'excavator',
+        truck: 'truck',
+        compressor: 'compressor',
+        hydraulic: 'hydraulic',
+        industrial: 'precision',
+        purifier: 'air',
+        separator: 'separator',
+        genset: 'genset',
+      })[g] ?? 'layers'
+
+    let initialFilter = ''
+    let shown = PAGE_SIZE
+    let results: string[][] = rows
+
+    const esc = (s: string) =>
+      String(s).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m] as string)
+
+    function compute() {
+      const q = (input!.value || '').trim().toLowerCase()
+      const g = groupSel?.value || ''
+      const terms = q.split(/\s+/).filter(Boolean)
+
+      results = rows.filter((r) => {
+        if (g && r[5] !== g) return false
+        if (initialFilter && !r[0].toUpperCase().startsWith(initialFilter === '0-9' ? '' : initialFilter)) {
+          if (initialFilter === '0-9') {
+            if (!/^[0-9]/.test(r[0])) return false
+          } else return false
+        }
+        if (!terms.length) return true
+        const hay = `${r[0]} ${r[2]} ${r[3]} ${r[4]} ${r[7]}`.toLowerCase()
+        return terms.every((term) => hay.includes(term))
+      })
+
+      // 排序：件号完全匹配 > 前缀匹配 > 其他
+      if (terms.length) {
+        const first = terms[0]
+        results.sort((a, b) => {
+          const score = (x: string) => {
+            const pn = x[0].toLowerCase()
+            if (pn === first) return 0
+            if (pn.startsWith(first)) return 1
+            return 2
+          }
+          return score(a) - score(b) || a[0].localeCompare(b[0])
+        })
+      }
+
+      shown = PAGE_SIZE
+      render()
+    }
+
+    function render() {
+      const q = (input!.value || '').trim()
+      const slice = results.slice(0, shown)
+
+      body!.innerHTML = slice
+        .map((r) => {
+          const [partNo, slug, spec, typeZh, typeEn, group, image, , hasPageRaw] = r
+          const hasPage = hasPageRaw === '1' || hasPageRaw === 1
+          const href = (isEn ? '/en/p/' : '/p/') + encodeURIComponent(slug) + '/'
+          const enquireHref = (isEn ? '/en/contact/' : '/contact/') + '?part=' + encodeURIComponent(partNo) + '#quote'
+          const type = isEn ? typeEn : typeZh
+          const imgCell = image
+            ? `<img src="${esc(image)}" alt="${esc(partNo)}" width="40" height="40" loading="lazy" class="size-10 rounded-md bg-ink-50 object-contain p-0.5">`
+            : `<span class="flex size-10 items-center justify-center rounded-md bg-ink-50 text-ink-300"></span>`
+          const noCell = hasPage
+            ? `<a href="${href}" class="partno text-[13.5px] font-medium text-ink-900 transition hover:text-brand-600">${esc(partNo)}</a>`
+            : `<span class="partno text-[13.5px] font-medium text-ink-800">${esc(partNo)}</span>`
+          const actionCell = hasPage
+            ? `<a href="${href}" class="inline-flex items-center gap-1 whitespace-nowrap text-[12.5px] font-medium text-brand-600 hover:text-brand-700">${T.detail} →</a>`
+            : `<a href="${enquireHref}" class="inline-flex items-center gap-1 whitespace-nowrap text-[12.5px] font-medium text-ink-500 hover:text-brand-600">${T.enquire} ✉</a>`
+          return `<tr>
+            <td>${imgCell}</td>
+            <td>${noCell}</td>
+            <td class="tnum text-[12.5px] text-ink-500">${esc(spec) || '—'}</td>
+            <td class="text-[12.5px] text-ink-400">${esc(type)}</td>
+            <td class="text-[12.5px] text-ink-400">${esc(groupShort[group] ?? '')}</td>
+            <td>${actionCell}</td>
+          </tr>`
+        })
+        .join('')
+
+      if (countEl) countEl.textContent = results.length.toLocaleString()
+      if (activeEl) {
+        const bits = []
+        if (q) bits.push(`“${q}”`)
+        if (initialFilter) bits.push(initialFilter)
+        if (groupSel?.value) bits.push(groupShort[groupSel.value] ?? '')
+        activeEl.textContent = bits.length ? `· ${bits.join(' / ')}` : ''
+      }
+      if (emptyEl) emptyEl.classList.toggle('hidden', results.length > 0)
+      if (clearBtn) clearBtn.classList.toggle('hidden', !q)
+      if (hintEl) {
+        hintEl.textContent = results.length > shown
+          ? `${shown} / ${results.length}`
+          : results.length
+            ? `${results.length} ${T.n}`
+            : ''
+      }
+      if (moreBtn) {
+        const rest = results.length - shown
+        moreBtn.classList.toggle('hidden', rest <= 0)
+        if (moreCount) moreCount.textContent = rest > 0 ? ` (${rest})` : ''
+      }
+    }
+
+    /* 事件绑定 */
+    let timer = 0
+    input.addEventListener('input', () => {
+      window.clearTimeout(timer)
+      timer = window.setTimeout(compute, 120)
+    })
+    groupSel?.addEventListener('change', compute)
+    clearBtn?.addEventListener('click', () => {
+      input.value = ''
+      initialFilter = ''
+      document.querySelectorAll('[data-finder-initial]').forEach((b) => b.setAttribute('aria-pressed', 'false'))
+      compute()
+      input.focus()
+    })
+    document.querySelectorAll<HTMLElement>('[data-finder-initial]').forEach((btn) => {
+      btn.setAttribute('aria-pressed', 'false')
+      btn.addEventListener('click', () => {
+        const ch = btn.dataset.finderInitial ?? ''
+        const on = btn.getAttribute('aria-pressed') === 'true'
+        document.querySelectorAll('[data-finder-initial]').forEach((b) => b.setAttribute('aria-pressed', 'false'))
+        if (on) {
+          initialFilter = ''
+        } else {
+          btn.setAttribute('aria-pressed', 'true')
+          initialFilter = ch
+        }
+        compute()
+      })
+    })
+    moreBtn?.addEventListener('click', () => {
+      shown += PAGE_SIZE
+      render()
+    })
+
+    /* 从 URL ?q= 预填 */
+    const params = new URLSearchParams(location.search)
+    const q0 = params.get('q')
+    if (q0) {
+      input.value = q0
+      compute()
+    }
+  }
+</script>

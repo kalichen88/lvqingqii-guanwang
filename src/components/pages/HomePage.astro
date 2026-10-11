@@ -1,0 +1,899 @@
+---
+/**
+ * HomePage.astro — 首页主体（中英共用，通过 lang 切换文案）
+ */
+import siteConfig from '../../../site.config.mjs'
+import { t, localizePath } from '../../i18n/index.mjs'
+import { groups, groupStats, productCount, withImageCount } from '../../data/products.mjs'
+import { applications } from '../../data/applications.mjs'
+import { faqs, news, serviceContent } from '../../data/content.mjs'
+import Icon from '../Icon.astro'
+import SectionHeading from '../SectionHeading.astro'
+import ProductCard from '../ProductCard.astro'
+import FaqList from '../FaqList.astro'
+import InquiryForm from '../InquiryForm.astro'
+
+interface Props {
+  lang: 'zh' | 'en'
+}
+const { lang } = Astro.props
+const isEn = lang === 'en'
+const p = (path: string) => localizePath(path, lang)
+const c = siteConfig.contact
+const pr = siteConfig.principal
+
+const featured = siteConfig.featuredGroups
+  .map((slug) => groups.find((g) => g.slug === slug))
+  .filter(Boolean) as typeof groups
+
+const heroImage = '/media/factory/1258ce5d1737594.jpg'
+const tel = `tel:${c.salesPhone.replace(/[^\d+]/g, '')}`
+const wa = `https://wa.me/${c.whatsapp}`
+
+const latestNews = news.slice(0, 3)
+const homeFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
+
+const stats = [
+  { value: pr.facts.skuCount, suffix: '+', label: { zh: '厂家在产件号', en: 'Factory part numbers' }, decimals: 0 },
+  { value: pr.facts.yearsExperience, suffix: '', label: { zh: '年制造经验', en: 'Years of manufacturing' }, decimals: 0 },
+  { value: pr.facts.exportCountries, suffix: '+', label: { zh: '出口国家地区', en: 'Export markets' }, decimals: 0 },
+  { value: pr.facts.patents, suffix: '+', label: { zh: '国家专利', en: 'Patents' }, decimals: 0 },
+]
+---
+
+<!-- ==================================================================
+     1. HERO（浅色）
+     ================================================================== -->
+<!--
+  -mt-[68px] / lg:-mt-[var(--header-h)]：把 Hero 顶到透明页头下面，
+  使页头真正「浮」在首屏之上（移动端页头 68px，桌面 72px）。
+-->
+<section
+  class="home-hero -mt-[68px] pt-[68px] lg:-mt-[var(--header-h)] lg:pt-[var(--header-h)]"
+>
+  <div class="shell relative pb-14 pt-14 md:pb-20 md:pt-16 lg:pb-24 lg:pt-20">
+    <div class="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+      <!-- 左侧主文案 -->
+      <div class="lg:col-span-7">
+        <div
+          class="inline-flex items-center gap-2.5 rounded-full bg-white py-1.5 pl-2 pr-4 shadow-soft ring-1 ring-ink-100"
+          data-reveal
+        >
+          <span class="inline-flex size-6 items-center justify-center rounded-full bg-brand-500">
+            <Icon name="shield" class="size-3.5 text-white" strokeWidth={2} />
+          </span>
+          <span class="text-[12.5px] font-medium tracking-wide text-ink-600">
+            {isEn ? siteConfig.brand.taglineEn : siteConfig.brand.taglineZh}
+          </span>
+        </div>
+
+        <h1
+          class="mt-7 text-[38px] font-semibold leading-[1.08] tracking-tight text-ink-900 sm:text-[50px] lg:text-[62px]"
+          data-reveal
+          style="--reveal-delay:60ms"
+        >
+          {
+            isEn ? (
+              <>
+                The right filter,
+                <br />
+                <span class="text-gradient">first time.</span>
+              </>
+            ) : (
+              <>
+                选对滤芯，
+                <br />
+                <span class="text-gradient">让设备少停一天。</span>
+              </>
+            )
+          }
+        </h1>
+
+        <p
+          class="mt-6 max-w-2xl text-[15.5px] leading-[1.85] text-ink-500 md:text-[17px]"
+          data-reveal
+          style="--reveal-delay:120ms"
+        >
+          {
+            isEn
+              ? `${pr.nameEn} authorized distributor. ${productCount.toLocaleString()} catalogued part numbers for construction machinery, commercial vehicles, air compressors and industrial filtration — with part-number lookup, model matching and engineer-backed selection support.`
+              : `${pr.nameZh}授权代理。已收录 ${productCount.toLocaleString()} 个件号，覆盖工程机械、商用车、空压机与工业过滤，提供件号查询、机型匹配与工程师选型支持，常用件号现货直发。`
+          }
+        </p>
+
+        <div class="mt-9 flex flex-wrap items-center gap-3" data-reveal style="--reveal-delay:180ms">
+          <a href={p('/search/')} class="btn btn-primary btn-lg">
+            <Icon name="search" class="size-[18px]" />
+            {isEn ? 'Find my part number' : '查询件号 / 机型'}
+          </a>
+          <a href={p('/contact/#quote')} class="btn btn-ghost btn-lg">
+            <Icon name="mail" class="size-[18px]" />
+            {t(lang, 'getQuote')}
+          </a>
+        </div>
+
+        <!-- 快速搜索条 -->
+        <form
+          action={p('/search/')}
+          method="get"
+          class="mt-8 max-w-xl"
+          data-reveal
+          style="--reveal-delay:220ms"
+        >
+          <div
+            class="flex items-center gap-2 rounded-2xl bg-white p-1.5 shadow-lift ring-1 ring-ink-200 transition focus-within:ring-2 focus-within:ring-brand-500"
+          >
+            <Icon name="search" class="ml-3 size-[18px] shrink-0 text-ink-400" />
+            <input
+              type="search"
+              name="q"
+              class="h-11 min-w-0 flex-1 border-0 bg-transparent text-[14.5px] text-ink-900 placeholder:text-ink-400 focus:outline-none"
+              placeholder={isEn
+                ? 'Part number, machine model or keyword…'
+                : '输入件号、机型或关键词，如 FS641A / 小松 PC200'}
+              aria-label={t(lang, 'finderTitle')}
+            />
+            <button type="submit" class="btn btn-primary btn-sm shrink-0">
+              {t(lang, 'search')}
+            </button>
+          </div>
+        </form>
+
+        <!-- 信任标签 -->
+        <div
+          class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12.5px] text-ink-500"
+          data-reveal
+          style="--reveal-delay:260ms"
+        >
+          {
+            (isEn
+              ? ['Genuine factory channel', '3,000+ numbers in stock', 'Engineer-backed support', 'Export ready']
+              : ['厂家正规渠道', '3000+ 件号现货', '工程师选型支持', '支持出口报关']
+            ).map((item) => (
+              <span class="inline-flex items-center gap-2">
+                <Icon name="check" class="size-3.5 text-brand-500" strokeWidth={2.4} />
+                {item}
+              </span>
+            ))
+          }
+        </div>
+      </div>
+
+      <!-- 右侧：三种查询方式卡片 -->
+      <div class="lg:col-span-5" data-reveal="right" style="--reveal-delay:160ms">
+        <div class="relative overflow-hidden rounded-3xl bg-white p-6 shadow-deep ring-1 ring-ink-100 md:p-7">
+          {/* 顶部渐变细线 */}
+          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-500 via-brand-400 to-aqua-500"></div>
+
+          <div class="flex items-center gap-3">
+            <span class="flex size-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
+              <Icon name="spark" class="size-[18px]" />
+            </span>
+            <div>
+              <p class="text-[15px] font-semibold text-ink-900">
+                {isEn ? 'Three ways to find it' : '三种方式，找到对的滤芯'}
+              </p>
+              <p class="text-[12px] text-ink-400">
+                {isEn ? 'No part number? No problem.' : '没有件号也能配'}
+              </p>
+            </div>
+          </div>
+
+          <ul class="mt-6 space-y-3">
+            {
+              [
+                {
+                  icon: 'database',
+                  title: { zh: '按件号查', en: 'By part number' },
+                  desc: { zh: '输入件号前缀或完整件号，秒级匹配', en: 'Type a prefix or full number for an instant match' },
+                  href: p('/search/'),
+                },
+                {
+                  icon: 'excavator',
+                  title: { zh: '按机型配', en: 'By machine model' },
+                  desc: { zh: '告诉我品牌型号，配齐全车滤芯清单', en: 'Give us brand and model, we build the full list' },
+                  href: p('/applications/'),
+                },
+                {
+                  icon: 'headset',
+                  title: { zh: '发照片人工核对', en: 'Send a photo' },
+                  desc: { zh: '拍旧滤芯或铭牌，工程师帮你对号', en: 'Snap the old filter or data plate — we match it by hand' },
+                  href: wa,
+                  external: true,
+                },
+              ].map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener nofollow' : undefined}
+                    class="group flex items-start gap-3.5 rounded-2xl bg-ink-50 p-3.5 ring-1 ring-ink-100 transition hover:bg-white hover:shadow-soft hover:ring-brand-200"
+                  >
+                    <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-ink-500 shadow-soft ring-1 ring-ink-100 transition group-hover:bg-brand-500 group-hover:text-white group-hover:ring-brand-500">
+                      <Icon name={item.icon} class="size-4" />
+                    </span>
+                    <span class="min-w-0 flex-1">
+                      <span class="block text-[13.5px] font-semibold text-ink-900">{item.title[lang]}</span>
+                      <span class="mt-0.5 block text-[12px] leading-relaxed text-ink-500">{item.desc[lang]}</span>
+                    </span>
+                    <Icon
+                      name="arrow-up-right"
+                      class="mt-1 size-3.5 shrink-0 text-ink-300 transition group-hover:text-brand-500"
+                    />
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+
+          <div class="mt-6 flex items-center justify-between border-t border-ink-100 pt-5">
+            <div>
+              <p class="text-[11.5px] text-ink-400">{isEn ? 'Sales hotline' : '销售热线'}</p>
+              <a href={tel} class="tnum mt-0.5 block text-[17px] font-semibold text-ink-900 transition hover:text-brand-600">
+                {c.salesPhone}
+              </a>
+              {c.landline && <p class="tnum mt-0.5 text-[12.5px] text-ink-400">{c.landline}</p>}
+            </div>
+            <a
+              href={wa}
+              target="_blank"
+              rel="noopener nofollow"
+              class="inline-flex size-10 items-center justify-center rounded-xl bg-[#25D366]/12 text-[#1faa52] ring-1 ring-[#25D366]/25 transition hover:bg-[#25D366] hover:text-white"
+              aria-label="WhatsApp"
+            >
+              <Icon name="whatsapp" class="size-5" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 数据条 -->
+    <div
+      class="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-ink-100 shadow-soft ring-1 ring-ink-100 md:mt-16 md:grid-cols-4"
+      data-reveal
+    >
+      {
+        stats.map((s) => (
+          <div class="bg-white px-6 py-6 md:py-7">
+            <p class="flex items-baseline gap-0.5 text-[30px] font-semibold leading-none tracking-tight text-ink-900 md:text-[36px]">
+              <span class="tnum" data-count={s.value} data-decimals={s.decimals}>
+                0
+              </span>
+              <span class="text-brand-500">{s.suffix}</span>
+            </p>
+            <p class="mt-2.5 text-[12.5px] text-ink-400">{s.label[lang]}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================================
+     2. 认证 / 合作品牌 跑马灯
+     ================================================================== -->
+<section class="border-b border-ink-100 bg-white py-7">
+  <div class="shell flex flex-col gap-5 lg:flex-row lg:items-center lg:gap-10">
+    <p class="shrink-0 text-[12px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+      {isEn ? 'Certified & trusted' : '资质与认证'}
+    </p>
+    <div class="mask-fade-x relative flex-1 overflow-hidden">
+      <div class="flex w-max animate-marquee items-center gap-10 hover:[animation-play-state:paused]">
+        {
+          [...pr.certifications, ...pr.certifications].map((cert) => (
+            <span class="inline-flex shrink-0 items-center gap-2.5 text-[13.5px] font-medium text-ink-500">
+              <Icon name="certificate" class="size-4 text-brand-500" />
+              {cert}
+            </span>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================================
+     3. 产品大类
+     ================================================================== -->
+<section class="section bg-white">
+  <div class="shell">
+    <SectionHeading
+      eyebrow={isEn ? 'Product groups' : '产品中心'}
+      title={isEn ? 'Find the right filter by application' : '按应用场景，找到对的滤芯'}
+      desc={isEn
+        ? `We reorganised the factory's catalogue into ${groups.length} application groups, so selection takes two clicks instead of a paper catalogue.`
+        : `我们把厂家的件号按你的设备类型重新整理成 ${groups.length} 个大类，选型从「翻目录」变成「点两下」。`}
+      actionLabel={isEn ? 'All products' : '浏览全部产品'}
+      actionHref={p('/products/')}
+    />
+
+    <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        featured.map((g, i) => {
+          const stat = groupStats[g.slug]
+          const isWide = i === 0
+          return (
+            <a
+              href={p(`/products/${g.slug}/`)}
+              class:list={[
+                'card card-hover group relative flex flex-col overflow-hidden',
+                isWide && 'sm:col-span-2 lg:row-span-2',
+              ]}
+              data-reveal
+              style={`--reveal-delay:${i * 60}ms`}
+            >
+              {/* 图片区 */}
+              <div
+                class:list={[
+                  'relative overflow-hidden bg-ink-50',
+                  isWide ? 'aspect-[16/10] lg:aspect-[16/11]' : 'aspect-[16/10]',
+                ]}
+              >
+                <img
+                  src={g.image}
+                  alt={isEn ? g.nameEn : g.nameZh}
+                  width="800"
+                  height="500"
+                  loading="lazy"
+                  decoding="async"
+                  class="size-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]"
+                />
+
+                {/* 编号 */}
+                <span class="absolute right-4 top-4 rounded-md bg-white/85 px-2 py-1 font-mono text-[11px] font-medium tracking-widest text-ink-500 backdrop-blur-sm">
+                  {g.no}
+                </span>
+
+                <span class="absolute bottom-4 left-4 inline-flex size-10 items-center justify-center rounded-xl bg-white text-brand-600 shadow-lift ring-1 ring-ink-100">
+                  <Icon name={g.icon} class="size-[18px]" />
+                </span>
+              </div>
+
+              {/* 文字区 */}
+              <div class:list={['flex flex-1 flex-col p-5', isWide && 'lg:p-7']}>
+                <h3
+                  class:list={[
+                    'font-semibold text-ink-900 transition group-hover:text-brand-600',
+                    isWide ? 'text-[20px] lg:text-[24px]' : 'text-[16.5px]',
+                  ]}
+                >
+                  {isEn ? g.nameEn : g.nameZh}
+                </h3>
+
+                <p
+                  class:list={[
+                    'mt-2.5 leading-relaxed text-ink-500',
+                    isWide ? 'text-[14px] lg:text-[15px]' : 'text-[13px]',
+                  ]}
+                >
+                  {isEn ? g.taglineEn : g.taglineZh}
+                </p>
+
+                <div class="mt-auto flex items-center gap-3 pt-5">
+                  <span class="chip chip-brand tnum">
+                    {stat?.count ?? 0} {t(lang, 'productsCount')}
+                  </span>
+                  {isWide && (
+                    <span class="chip tnum">
+                      {stat?.typeCount ?? 0} {isEn ? 'categories' : '品类'}
+                    </span>
+                  )}
+                  <Icon
+                    name="arrow-right"
+                    class="ml-auto size-4 text-ink-300 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-brand-500"
+                  />
+                </div>
+              </div>
+            </a>
+          )
+        })
+      }
+    </div>
+
+    <!-- 剩余两个大类 -->
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      {
+        groups
+          .filter((g) => !siteConfig.featuredGroups.includes(g.slug))
+          .map((g) => {
+            const stat = groupStats[g.slug]
+            return (
+              <a
+                href={p(`/products/${g.slug}/`)}
+                class="card card-hover group flex items-center gap-4 p-5"
+                data-reveal
+              >
+                <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition group-hover:bg-brand-500 group-hover:text-white">
+                  <Icon name={g.icon} class="size-5" />
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate text-[15.5px] font-semibold text-ink-900 group-hover:text-brand-600">
+                    {isEn ? g.nameEn : g.nameZh}
+                  </span>
+                  <span class="mt-0.5 block truncate text-[12.5px] text-ink-400">
+                    {isEn ? g.taglineEn : g.taglineZh}
+                  </span>
+                </span>
+                <span class="tnum shrink-0 text-[12.5px] font-medium text-ink-400">
+                  {stat?.count ?? 0}
+                </span>
+              </a>
+            )
+          })
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================================
+     4. 件号查询入口
+     ================================================================== -->
+<section class="relative overflow-hidden border-y border-ink-100 bg-ink-50 py-20 md:py-24">
+  <div class="absolute inset-0 bg-blueprint-light opacity-70" aria-hidden="true"></div>
+  <div
+    class="pointer-events-none absolute left-1/4 top-0 size-[520px] -translate-y-1/2 rounded-full opacity-[0.14] blur-[100px]"
+    style="background: radial-gradient(closest-side, #2F6BFF, transparent 72%)"
+    aria-hidden="true"
+  >
+  </div>
+
+  <div class="shell relative grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+    <div>
+      <span class="eyebrow">{isEn ? 'Part finder' : '件号查询'}</span>
+      <h2 class="mt-3 text-[28px] font-semibold leading-tight text-ink-900 md:text-[38px]" data-reveal>
+        {isEn ? 'Not sure which part number?' : '不确定要哪个件号？'}
+      </h2>
+      <p class="mt-4 max-w-lg text-[15px] leading-relaxed text-ink-500" data-reveal>
+        {
+          isEn
+            ? `Our catalogue currently holds ${productCount.toLocaleString()} verified part numbers with dimensions and categories, and it keeps growing. Search instantly, or just ask us.`
+            : `目前已收录 ${productCount.toLocaleString()} 个带规格尺寸与品类的件号，并持续补录。你可以实时检索，也可以直接问我们。`
+        }
+      </p>
+
+      <div class="mt-8 grid gap-4 sm:grid-cols-3" data-reveal>
+        {
+          [
+            { v: productCount, label: { zh: '已收录件号', en: 'Catalogued' } },
+            { v: withImageCount, label: { zh: '带实物图', en: 'With photos' } },
+            { v: groups.length, label: { zh: '应用大类', en: 'Groups' } },
+          ].map((s) => (
+            <div class="rounded-2xl bg-white p-4 shadow-soft ring-1 ring-ink-100">
+              <p class="tnum text-[24px] font-semibold text-ink-900">{s.v.toLocaleString()}</p>
+              <p class="mt-1 text-[12px] text-ink-400">{s.label[lang]}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mt-8 flex flex-wrap gap-3" data-reveal>
+        <a href={p('/search/')} class="btn btn-primary">
+          <Icon name="search" class="size-4" />
+          {isEn ? 'Open part finder' : '打开件号查询'}
+        </a>
+        <a href={p('/products/')} class="btn btn-ghost">
+          <Icon name="grid" class="size-4" />
+          {isEn ? 'Browse by category' : '按品类浏览'}
+        </a>
+      </div>
+    </div>
+
+    <!-- 模拟查询预览 -->
+    <div class="relative" data-reveal="right">
+      <div class="overflow-hidden rounded-3xl bg-white shadow-deep ring-1 ring-ink-100">
+        <div class="flex items-center gap-2 border-b border-ink-100 bg-ink-50/80 px-5 py-3.5">
+          <span class="size-2.5 rounded-full bg-ink-200"></span>
+          <span class="size-2.5 rounded-full bg-ink-200"></span>
+          <span class="size-2.5 rounded-full bg-ink-200"></span>
+          <span class="ml-3 font-mono text-[11.5px] text-ink-400">/search/?q=FS6</span>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 rounded-xl bg-ink-50 px-3.5 ring-1 ring-ink-200">
+            <Icon name="search" class="size-4 text-ink-400" />
+            <span class="partno py-3 text-[14px] font-medium text-ink-900">FS6</span>
+            <span class="ml-auto inline-block h-4 w-px animate-pulse bg-brand-500"></span>
+          </div>
+          <div class="mt-4 space-y-2">
+            {
+              [
+                { no: 'FS641A', spec: '406*Ø265*Ø153/Ø17', type: { zh: '空气滤芯', en: 'Air Filter' } },
+                { no: 'FS644A', spec: '460*Ø245*Ø130/0（平底）', type: { zh: '空气滤芯', en: 'Air Filter' } },
+                { no: 'FS646A', spec: '406*Ø301*Ø191/Ø17', type: { zh: '空气滤芯', en: 'Air Filter' } },
+                { no: 'FS649B', spec: '292*Ø120/Ø113*Ø80/0', type: { zh: '空气滤芯', en: 'Air Filter' } },
+                { no: 'FS6515', spec: '462*Ø302*Ø192/Ø10', type: { zh: '空气滤芯', en: 'Air Filter' } },
+              ].map((row, i) => (
+                <div
+                  class="flex items-center gap-3 rounded-xl bg-ink-50 px-3.5 py-2.5 ring-1 ring-ink-100 transition hover:bg-brand-50 hover:ring-brand-200"
+                  style={`opacity:${1 - i * 0.13}`}
+                >
+                  <span class="partno w-20 shrink-0 text-[13px] font-medium text-brand-600">{row.no}</span>
+                  <span class="tnum min-w-0 flex-1 truncate text-[11.5px] text-ink-500">{row.spec}</span>
+                  <span class="shrink-0 text-[11px] text-ink-400">{row.type[lang]}</span>
+                </div>
+              ))
+            }
+          </div>
+          <p class="mt-4 text-center text-[11.5px] text-ink-400">
+            {isEn ? 'Live results from our own catalogue' : '数据来自我们自己的件号库，实时检索'}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================================
+     5. 为什么选择我们
+     ================================================================== -->
+<section class="section bg-white">
+  <div class="shell">
+    <SectionHeading
+      eyebrow={isEn ? 'Why us' : '我们的优势'}
+      title={isEn ? 'Why customers choose us' : '为什么客户选择我们'}
+      desc={isEn
+        ? 'A distributor earns its place by what happens after the order — stock, fitment accuracy and technical backup.'
+        : '代理商的价值不在于货架上有什么，而在于下单之后：有没有现货、配得准不准、出问题有没有人管。'}
+      align="center"
+    />
+
+    <div class="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {
+        (isEn ? siteConfig.promisesEn : siteConfig.promisesZh).map((item, i) => (
+          <div
+            class="card card-hover group p-6"
+            data-reveal
+            style={`--reveal-delay:${i * 55}ms`}
+          >
+            <div class="flex size-11 items-center justify-center rounded-xl bg-ink-50 text-ink-500 ring-1 ring-ink-100 transition group-hover:bg-brand-500 group-hover:text-white group-hover:ring-brand-500">
+              <Icon
+                name={
+                  ['shield', 'box', 'search', 'wrench', 'certificate', 'globe'][i] ?? 'check-circle'
+                }
+                class="size-5"
+              />
+            </div>
+            <h3 class="mt-5 text-[17px] font-semibold text-ink-900">{item.title}</h3>
+            <p class="mt-2.5 text-[13.5px] leading-relaxed text-ink-500">{item.desc}</p>
+            <span class="mt-5 block font-mono text-[11px] tracking-widest text-ink-200">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================================
+     6. 品牌背后的制造实力
+     ================================================================== -->
+<section class="section bg-ink-50">
+  <div class="shell grid gap-14 lg:grid-cols-12 lg:gap-12">
+    <!-- 左：图片拼贴 -->
+    <div class="lg:col-span-6" data-reveal="left">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2 overflow-hidden rounded-2xl">
+          <img
+            src="/media/factory/1258ce5d1737594.jpg"
+            alt={isEn ? 'Production workshop' : '生产车间'}
+            width="1200"
+            height="800"
+            loading="lazy"
+            class="aspect-[16/9] w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
+          />
+        </div>
+        <div class="overflow-hidden rounded-2xl">
+          <img
+            src="/media/factory/c002b39ef339a07.jpg"
+            alt={isEn ? 'Workshop equipment' : '车间设备'}
+            width="600"
+            height="600"
+            loading="lazy"
+            class="aspect-square w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
+          />
+        </div>
+        <div class="grid gap-3">
+          <div class="overflow-hidden rounded-2xl">
+            <img
+              src="/media/factory/978d796e67dd442.jpg"
+              alt={isEn ? 'Workshop equipment' : '车间设备'}
+              width="600"
+              height="300"
+              loading="lazy"
+              class="aspect-[2/1] w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
+            />
+          </div>
+          <div class="flex flex-col justify-center rounded-2xl bg-brand-500 p-5">
+            <p class="tnum text-[28px] font-semibold leading-none text-white">
+              {pr.facts.plantAreaSqm.toLocaleString()}
+            </p>
+            <p class="mt-1.5 text-[12px] text-white/75">
+              {isEn ? 'm² production area' : '平方米生产面积'}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右：文字 -->
+    <div class="lg:col-span-6 lg:pl-4">
+      <span class="eyebrow">{isEn ? 'Behind the brand' : '品牌实力'}</span>
+      <h2 class="mt-3 text-[28px] font-semibold leading-tight text-ink-900 md:text-[38px]" data-reveal>
+        {isEn ? 'Manufacturing strength you can audit' : '我们敢承诺品质，因为工厂经得起查'}
+      </h2>
+      <p class="mt-5 text-[15px] leading-[1.85] text-ink-500" data-reveal>
+        {
+          isEn
+            ? `We represent ${pr.nameEn}. Founded in ${pr.founded}, the group runs three production bases and is certified to IATF 16949, ISO 9001, ISO 14001 and ISO 45001, with TÜV-verified GMC “China Quality Supplier” status.`
+            : `我们代理的是${pr.nameZh}。集团创立于 ${pr.founded} 年，下设三大生产基地，通过 IATF 16949、ISO 9001、ISO 14001、ISO 45001 体系认证，并取得 TÜV 认证的 GMC 中国出口优质供应商资质。`
+        }
+      </p>
+
+      <div class="mt-8 space-y-4">
+        {
+          (isEn ? pr.basesEn : pr.basesZh).map((base, i) => (
+            <div class="flex items-start gap-3.5" data-reveal style={`--reveal-delay:${i * 60}ms`}>
+              <span class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-50 text-[11px] font-semibold text-brand-600">
+                {i + 1}
+              </span>
+              <span class="text-[14px] leading-relaxed text-ink-600">{base}</span>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mt-9 grid grid-cols-2 gap-3 sm:grid-cols-3" data-reveal>
+        {
+          pr.certifications.map((cert) => (
+            <div class="rounded-xl bg-ink-50 px-4 py-3.5 ring-1 ring-ink-100">
+              <Icon name="certificate" class="size-4 text-brand-500" />
+              <p class="mt-2 text-[12.5px] font-medium leading-snug text-ink-700">{cert}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mt-9 flex flex-wrap gap-3" data-reveal>
+        <a href={p('/quality/')} class="btn btn-dark">
+          {isEn ? 'Quality & certifications' : '查看品质与认证'}
+          <Icon name="arrow-right" class="size-4" />
+        </a>
+        <a href={p('/about/')} class="btn btn-ghost">{isEn ? 'About us' : '关于我们'}</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================================
+     7. 应用领域
+     ================================================================== -->
+<section class="section bg-white">
+  <div class="shell">
+    <SectionHeading
+      eyebrow={isEn ? 'Industries' : '应用领域'}
+      title={isEn ? 'Where our filters work' : '这些行业，都在用我们的滤芯'}
+      desc={isEn
+        ? 'From quarries to cleanrooms — pick your industry to see the recommended filter set and the usual failure points.'
+        : '从矿山到无尘车间，选择你的行业，查看推荐的滤芯配置与常见故障点。'}
+      actionLabel={isEn ? 'All industries' : '查看全部领域'}
+      actionHref={p('/applications/')}
+    />
+
+    <div class="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {
+        applications.slice(0, 12).map((a, i) => (
+          <a
+            href={p(`/applications/${a.slug}/`)}
+            class="card card-hover group flex items-start gap-3.5 p-5"
+            data-reveal
+            style={`--reveal-delay:${(i % 4) * 50}ms`}
+          >
+            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white text-ink-500 ring-1 ring-ink-100 transition group-hover:bg-brand-500 group-hover:text-white group-hover:ring-brand-500">
+              <Icon name={a.icon} class="size-[18px]" />
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block text-[14.5px] font-semibold text-ink-900 group-hover:text-brand-600">
+                {isEn ? a.nameEn : a.nameZh}
+              </span>
+              <span class="mt-1 block line-clamp-2 text-[12.5px] leading-relaxed text-ink-400">
+                {isEn ? a.shortEn : a.shortZh}
+                {' · '}
+                {isEn ? a.groups.length : a.groups.length} {isEn ? 'groups' : '个品类'}
+              </span>
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================================
+     8. 服务流程
+     ================================================================== -->
+<section class="section bg-ink-50">
+  <div class="shell">
+    <SectionHeading
+      eyebrow={isEn ? 'How it works' : '服务流程'}
+      title={isEn ? 'From enquiry to delivery in four steps' : '从询价到收货，只要四步'}
+      align="center"
+    />
+
+    <div class="relative mt-14">
+      <!-- 连接线 -->
+      <div
+        class="absolute left-0 right-0 top-[26px] hidden h-px bg-gradient-to-r from-transparent via-ink-200 to-transparent lg:block"
+        aria-hidden="true"
+      >
+      </div>
+
+      <div class="grid gap-8 lg:grid-cols-4 lg:gap-6">
+        {
+          serviceContent.steps.map((s, i) => (
+            <div class="relative" data-reveal style={`--reveal-delay:${i * 90}ms`}>
+              <div class="relative z-10 flex size-[52px] items-center justify-center rounded-2xl bg-brand-500 text-white shadow-glow">
+                <Icon name={s.icon} class="size-6" />
+              </div>
+              <p class="mt-5 font-mono text-[11px] font-medium tracking-[0.2em] text-brand-500">
+                {s.no}
+              </p>
+              <h3 class="mt-2 text-[17px] font-semibold text-ink-900">{s.title[lang]}</h3>
+              <p class="mt-2.5 text-[13.5px] leading-relaxed text-ink-500">{s.desc[lang]}</p>
+              <span class="chip mt-4">{s.time[lang]}</span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================================
+     9. 新闻
+     ================================================================== -->
+<section class="section bg-white">
+  <div class="shell">
+    <SectionHeading
+      eyebrow={isEn ? 'News & guides' : '新闻资讯'}
+      title={isEn ? 'Selection guides and maintenance notes' : '选型指南与运维笔记'}
+      desc={isEn
+        ? 'Practical notes written by people who actually handle filter failures — not reposted press releases.'
+        : '由真正处理过故障的人写的实操经验，不是转载的通稿。'}
+      actionLabel={isEn ? 'All articles' : '查看全部文章'}
+      actionHref={p('/news/')}
+    />
+
+    <div class="mt-12 grid gap-5 md:grid-cols-3">
+      {
+        latestNews.map((post, i) => (
+          <a
+            href={p(`/news/${post.slug}/`)}
+            class="card card-hover group flex flex-col overflow-hidden"
+            data-reveal
+            style={`--reveal-delay:${i * 70}ms`}
+          >
+            <div class="aspect-[16/10] overflow-hidden bg-ink-100">
+              <img
+                src={post.cover}
+                alt={post.title[lang]}
+                width="800"
+                height="500"
+                loading="lazy"
+                class="size-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
+              />
+            </div>
+            <div class="flex flex-1 flex-col p-5">
+              <div class="flex items-center gap-3 text-[11.5px] text-ink-400">
+                <span class="chip chip-brand">{post.category[lang]}</span>
+                <time datetime={post.date} class="tnum">{post.date}</time>
+              </div>
+              <h3 class="mt-4 line-clamp-2 text-[16px] font-semibold leading-snug text-ink-900 transition group-hover:text-brand-600">
+                {post.title[lang]}
+              </h3>
+              <p class="mt-2.5 line-clamp-3 text-[13px] leading-relaxed text-ink-500">
+                {post.summary[lang]}
+              </p>
+              <span class="mt-auto inline-flex items-center gap-1.5 pt-5 text-[12.5px] font-semibold text-brand-600">
+                {t(lang, 'readMore')}
+                <Icon name="arrow-right" class="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+              </span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================================
+     10. FAQ
+     ================================================================== -->
+<section class="section bg-ink-50">
+  <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="lg:col-span-4">
+      <span class="eyebrow">{isEn ? 'FAQ' : '常见问题'}</span>
+      <h2 class="mt-3 text-[28px] font-semibold leading-tight text-ink-900 md:text-[36px]" data-reveal>
+        {isEn ? 'Questions buyers ask us most' : '采购最常问的几个问题'}
+      </h2>
+      <p class="mt-4 text-[14.5px] leading-relaxed text-ink-500" data-reveal>
+        {isEn
+          ? 'Still not answered? Send us a message — a person replies, not an autoresponder.'
+          : '没有找到答案？直接发消息给我们，是真人回复，不是自动应答。'}
+      </p>
+      <a href={p('/faq/')} class="btn btn-ghost mt-7" data-reveal>
+        {isEn ? 'All questions' : '查看全部问题'}
+        <Icon name="arrow-right" class="size-4" />
+      </a>
+    </div>
+
+    <div class="lg:col-span-8">
+      <FaqList items={homeFaqs} {lang} data-reveal />
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================================
+     11. 底部询价
+     ================================================================== -->
+<section class="relative overflow-hidden border-t border-ink-100 bg-white py-20 md:py-24">
+  <div
+    class="pointer-events-none absolute right-1/4 top-1/2 size-[600px] -translate-y-1/2 rounded-full opacity-[0.12] blur-[110px]"
+    style="background: radial-gradient(closest-side, #2F6BFF, transparent 72%)"
+    aria-hidden="true"
+  >
+  </div>
+
+  <div class="shell relative grid gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="lg:col-span-5">
+      <span class="eyebrow">{isEn ? 'Get a quote' : '获取报价'}</span>
+      <h2 class="mt-3 text-[28px] font-semibold leading-tight text-ink-900 md:text-[38px]" data-reveal>
+        {isEn ? 'Send the part number — we handle the rest' : '把件号发过来，剩下的交给我们'}
+      </h2>
+      <p class="mt-5 text-[15px] leading-[1.85] text-ink-500" data-reveal>
+        {isEn
+          ? 'Quotation and lead time within one business day. Bulk orders, custom builds and export enquiries are all welcome.'
+          : '一个工作日内回复报价与货期。批量采购、非标定制、出口订单同样欢迎。'}
+      </p>
+
+      <ul class="mt-9 space-y-3" data-reveal>
+        {
+          [
+            { icon: 'phone', label: isEn ? 'Sales hotline' : '销售热线', value: c.salesPhone, href: tel },
+            ...(c.landline
+              ? [{ icon: 'headset', label: isEn ? 'Landline' : '座机', value: c.landline, href: `tel:${c.landline.replace(/[^\d+]/g, '')}` }]
+              : []),
+            { icon: 'wechat', label: isEn ? 'WeChat' : '微信', value: c.wechatId, href: null },
+            { icon: 'whatsapp', label: 'WhatsApp', value: `+${c.whatsapp}`, href: wa },
+            { icon: 'mail', label: isEn ? 'Email' : '邮箱', value: c.email, href: `mailto:${c.email}` },
+          ].map((row) => (
+            <li class="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-soft ring-1 ring-ink-100">
+              <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                <Icon name={row.icon} class="size-[18px]" />
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block text-[11.5px] text-ink-400">{row.label}</span>
+                {row.href ? (
+                  <a
+                    href={row.href}
+                    target={row.href.startsWith('http') ? '_blank' : undefined}
+                    rel={row.href.startsWith('http') ? 'noopener nofollow' : undefined}
+                    class="tnum block truncate text-[14.5px] font-medium text-ink-900 transition hover:text-brand-600"
+                  >
+                    {row.value}
+                  </a>
+                ) : (
+                  <span class="tnum block truncate text-[14.5px] font-medium text-ink-900">{row.value}</span>
+                )}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="lg:col-span-7" data-reveal="right">
+      <InquiryForm {lang} />
+    </div>
+  </div>
+</section>

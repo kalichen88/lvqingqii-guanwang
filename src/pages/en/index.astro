@@ -1,0 +1,33 @@
+---
+/** Homepage (English, /en/) */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import HomePage from '../../components/pages/HomePage.astro'
+import siteConfig from '../../../site.config.mjs'
+import { faqs } from '../../data/content.mjs'
+import { faqJsonLd } from '../../lib/seo.mjs'
+
+const lang = 'en' as const
+
+const jsonLd = [
+  faqJsonLd(faqs.slice(0, 6).map((f) => ({ q: f.q.en, a: f.a.en }))),
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: siteConfig.brand.shortNameEn,
+    description: siteConfig.brand.positioningEn,
+    inLanguage: 'en',
+  },
+]
+---
+
+<BaseLayout
+  {lang}
+  title="Authorized FILTERSUN Distributor | Filter Part Finder & In-Stock Supply"
+  description="Authorized FILTERSUN distributor supplying filters for construction machinery, trucks, air compressors and industry. 1,500+ part numbers catalogued, part finder, engineer-backed selection and export support."
+  pathname="/"
+  jsonLd={jsonLd}
+  darkHeader={false}
+  transparentHeader={true}
+>
+  <HomePage {lang} />
+</BaseLayout>

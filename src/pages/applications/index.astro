@@ -1,0 +1,28 @@
+---
+/** 应用领域总览（中文） */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import ApplicationsIndexPage from '../../components/pages/ApplicationsIndexPage.astro'
+import { collectionJsonLd } from '../../lib/seo.mjs'
+import { applications } from '../../data/applications.mjs'
+
+const lang = 'zh' as const
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: '应用领域 — 滤清器行业解决方案',
+    description: '按行业查看推荐的滤芯配置与常见故障点：工程机械、商用车、空压机、注塑机、电加工、发电机组、洁净室等。',
+    url: '/applications/',
+    items: applications.map((a) => ({ name: a.nameZh, href: `/applications/${a.slug}/` })),
+  }),
+]
+---
+
+<BaseLayout
+  {lang}
+  title="应用领域_工程机械/商用车/空压机滤芯解决方案"
+  description="按行业查看推荐滤芯配置与常见故障点，覆盖工程机械、商用车队、空压机、泵车、注塑机、线切割、发电机组、洁净室新风、农机、船舶等 18 个领域。"
+  pathname="/applications/"
+  jsonLd={jsonLd}
+>
+  <ApplicationsIndexPage {lang} />
+</BaseLayout>

@@ -1,0 +1,28 @@
+---
+/** News index (English) */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import NewsIndexPage from '../../../components/pages/NewsIndexPage.astro'
+import { collectionJsonLd } from '../../../lib/seo.mjs'
+import { news } from '../../../data/content.mjs'
+
+const lang = 'en' as const
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: 'News & Guides — Filter Selection and Maintenance',
+    description: 'Selection guides, maintenance notes and buying advice for filtration products.',
+    url: '/news/',
+    items: news.map((n) => ({ name: n.title.en, href: `/news/${n.slug}/` })),
+  }),
+]
+---
+
+<BaseLayout
+  {lang}
+  title="News & Guides — Filter Selection and Maintenance Notes"
+  description="Practical filtration guides: air filter change intervals, hydraulic micron ratings, China VI truck fuel filtration, compressor separator pressure drop and fleet filter stock planning."
+  pathname="/news/"
+  jsonLd={jsonLd}
+>
+  <NewsIndexPage {lang} />
+</BaseLayout>

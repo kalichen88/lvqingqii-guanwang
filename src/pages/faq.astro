@@ -1,0 +1,20 @@
+---
+/** 常见问题（中文） */
+import BaseLayout from '../layouts/BaseLayout.astro'
+import FaqPage from '../components/pages/FaqPage.astro'
+import { faqJsonLd } from '../lib/seo.mjs'
+import { faqs } from '../data/content.mjs'
+
+const lang = 'zh' as const
+const jsonLd = [faqJsonLd(faqs.map((f) => ({ q: f.q.zh, a: f.a.zh })))]
+---
+
+<BaseLayout
+  {lang}
+  title="常见问题_滤清器采购_正品授权_起订量_交期_质保"
+  description="关于富滤盛授权代理、正品保障、件号查询、起订量与混批、交期与现货、质保与责任险、出口报关、非标定制的常见问题解答。"
+  pathname="/faq/"
+  jsonLd={jsonLd}
+>
+  <FaqPage {lang} />
+</BaseLayout>
