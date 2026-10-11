@@ -25,3 +25,4 @@ desktop.ini
 # 同步脚本产生的备份与记录
 src/data/.products.backup.json
 
+.deploy-profile/

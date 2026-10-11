@@ -1,4 +1,4 @@
-﻿// @ts-check
+// @ts-check
 /**
  * 站点唯一配置源 / Single source of truth
  * ===========================================================================
@@ -99,10 +99,10 @@ export const siteConfig = {
     wechatId: '13926410788',
     // [必改] WhatsApp 国际格式，不带 + 号
     whatsapp: '8613926410788',
-    // [必改] 业务邮箱
-    email: 'sales@example.com',
-    // [必改] 售后邮箱
-    serviceEmail: 'service@example.com',
+    // 业务邮箱
+    email: '13926410788@163.com',
+    // 售后邮箱（与业务邮箱相同；有独立售后邮箱时替换）
+    serviceEmail: '13926410788@163.com',
     // [必改] 办公地址
     addressZh: '广州市天河区珠吉路科珠工程机械市场 B09-10',
     addressEn: 'B09-10, Kezhu Construction Machinery Market, Zhuji Road, Tianhe District, Guangzhou, China',
