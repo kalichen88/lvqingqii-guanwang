@@ -14,6 +14,12 @@
 3. [站点结构与规模](#3-站点结构与规模)
 4. [★ 产品数据：抓取、自动同步与跟踪厂家更新](#4-产品数据抓取自动同步与跟踪厂家更新)
 5. [★ 自动部署（GitHub → EdgeOne / Cloudflare）](#5-自动部署github--edgeone--cloudflare)
+   - [5.1 两个平台都需要确认的构建设置](#51-两个平台都需要确认的构建设置)
+   - [5.2 Cloudflare Pages](#52-cloudflare-pages)
+   - [5.3 腾讯云 EdgeOne Pages（香港节点）](#53-腾讯云-edgeone-pages香港节点)
+   - [5.4 中国大陆节点提示](#54-中国大陆节点提示)
+   - [5.5 为什么 EdgeOne 要单独处理 Node 与 pnpm](#55-为什么-edgeone-要单独处理-node-与-pnpm)
+
 6. [表单接入](#6-表单接入)
 7. [部署细节与缓存策略](#7-部署细节与缓存策略)
 8. [上线后 SEO 检查清单](#8-上线后-seo-检查清单)
@@ -256,6 +262,20 @@ productPagePolicy: 'complete'   // 默认：有图 或 有规格 才生成详情
 你的 GitHub 已绑定腾讯云 EdgeOne 与 Cloudflare Pages，因此**推送代码即自动构建部署**，
 不需要额外写部署工作流。
 
+**当前线上地址（均为 `main` 分支自动部署）：**
+
+| 平台 | 访问地址 | 状态 |
+| --- | --- | --- |
+| Cloudflare Pages（全球） | https://lvqingqii-guanwang.pages.dev | ✅ 运行中 |
+| 腾讯云 EdgeOne（香港/海外，无需备案） | https://lvqingqii-guanwang-nnqmgm9s.edgeone.dev | ✅ 运行中 |
+
+> ℹ️ 两个地址目前内容相同，`site.config.mjs` 里的 canonical / sitemap 指向 **Cloudflare 的 pages.dev**。
+> 绑定正式域名后，**只改一处即可**（二选一）：
+> - 改 [`site.config.mjs`](./site.config.mjs) 的 `url`
+> - 或构建时给环境变量：`SITE_URL=https://你的域名 pnpm build`
+>
+> 也可以在 `edgeone.json` 的 `buildCommand` 前面加上 `SITE_URL=https://... ` 让 EdgeOne 用另一个域名做 canonical。
+
 ### 5.1 两个平台都需要确认的构建设置
 
 | 配置项 | 值 |
@@ -263,7 +283,12 @@ productPagePolicy: 'complete'   // 默认：有图 或 有规格 才生成详情
 | 安装命令 | `pnpm install --frozen-lockfile` |
 | 构建命令 | `pnpm build` |
 | 输出目录 | `dist` |
-| Node 版本 | `22`（Astro 7 要求 ≥ 20） |
+| Node 版本 | `22`（Astro 7 要求 **≥ 22.12.0**） |
+
+> ⚠️ **EdgeOne 例外**：EdgeOne 构建机预装 Node 最高只有 `22.11.0`（低于 Astro 7 要求的 22.12.0），
+> 且其自带 pnpm 10 不会安装 rolldown / lightningcss 的 Linux 原生可选依赖。
+> 因此仓库 [`edgeone.json`](./edgeone.json) 里覆盖了安装/构建命令 —— **以仓库文件为准**，
+> 控制台「构建设置」里填什么都不影响。详见 [5.5](#55-为什么-edgeone-要单独处理-node-与-pnpm)。
 
 ### 5.2 Cloudflare Pages
 
@@ -279,14 +304,28 @@ productPagePolicy: 'complete'   // 默认：有图 或 有规格 才生成详情
 
 ### 5.3 腾讯云 EdgeOne Pages（香港节点）
 
-1. [EdgeOne 控制台](https://console.cloud.tencent.com/edgeone) → **Pages** → **新建项目** → **导入 Git 仓库**
-2. 选择同一仓库，框架预设选 **Astro**（或自定义）
-3. 构建配置会被仓库里的 [`edgeone.json`](./edgeone.json) 自动覆盖，通常无需手填
-4. **加速区域选「全球（不含中国大陆）」** —— 香港/海外节点**无需 ICP 备案**，海外访问快
-5. 绑定自定义域名：项目 → 域名管理 → 添加域名 → 到 DNS 服务商加 CNAME → 自动签发免费 HTTPS
+1. [EdgeOne 控制台](https://console.cloud.tencent.com/edgeone/makers) → **创建项目** → **导入 Git 仓库**
+2. 选择同一仓库 `kalichen88/lvqingqii-guanwang`，分支 `main`，框架预设自动识别为 **Astro**
+3. 构建配置会被仓库里的 [`edgeone.json`](./edgeone.json) 自动覆盖，**控制台无需手填**
+4. **加速区域选「全球可用区（不含中国大陆）」** —— 香港/海外节点**无需 ICP 备案**
+5. 出网域名默认是 `https://<项目名>.<区域>.edgeone.cool`（项目概览 → 域名）
+6. 绑定自定义域名：项目 → **域名管理** → 添加域名 → 到 DNS 服务商加 CNAME → 自动签发免费 HTTPS
 
 > ⚠️ EdgeOne「直接上传」方式**不会执行 `functions/api/inquiry.js`**。
 > 要用边缘函数收表单，请走 Git 部署，或改用第 6 章的方案 A / C。
+
+### 5.5 为什么 EdgeOne 要单独处理 Node 与 pnpm
+
+排查记录（都是实测踩到的坑，换机器/换版本时按这里对号入座）：
+
+| 现象 | 原因 | 处理 |
+| --- | --- | --- |
+| `Node.js v22.11.0 is not supported by Astro!` | EdgeOne 构建机预装 Node 只有 14/16/18/20/**22.11.0**，而 Astro 7 要求 `>=22.12.0` | `edgeone.json` 的 `buildCommand` 先下载官方 **Node 22.23.3** 再用它构建 |
+| `Cannot find native binding ... @rolldown/binding-*` | EdgeOne 自带 **pnpm 10.34.5** 用 `--frozen-lockfile` 时**不安装** rolldown / lightningcss / sharp 的 Linux 原生可选依赖 | 在 `buildCommand` 里改用 **pnpm 11.11.0**（`npm i -g pnpm@11.11.0 --prefix /tmp/pnpm11`）重新安装；同时 [`pnpm-workspace.yaml`](./pnpm-workspace.yaml) 声明 `supportedArchitectures` 显式拉取 `linux/x64/glibc` 原生包 |
+| 控制台设置了 `NODE_VERSION` / `PNPM_VERSION` 环境变量但没用 | EdgeOne 只认 `edgeone.json` 里的 `nodeVersion`，且不读取 `PNPM_VERSION` | 统一在 `edgeone.json` 里解决，别依赖控制台环境变量 |
+
+`edgeone.json` 里的 `nodeVersion` 仍写 `"22.11.0"`（EdgeOne 只预装这几个版本，写别的会失败），
+它只用来跑「下载 Node + 安装 pnpm」这几步；真正构建 Astro 的是下载下来的 22.23.3。
 
 ### 5.4 中国大陆节点提示
 
