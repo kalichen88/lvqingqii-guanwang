@@ -1,0 +1,17 @@
+# pnpm 设置（pnpm 11 起，pnpm 配置项统一放在这里，不再读取 package.json 的 "pnpm" 字段）
+#
+# supportedArchitectures：显式声明需要安装的平台二进制。
+# Astro 7 的打包器 rolldown 依赖可选平台包（@rolldown/binding-*），
+# 若只按“当前平台”安装，在 CI（Linux x64 glibc）上会漏装，
+# 导致构建报错 "Cannot find native binding"。
+# 这里显式加上 linux/x64/glibc，保证本地（Windows）与 CI（Linux）都能装上。
+supportedArchitectures:
+  os:
+    - current
+    - linux
+  cpu:
+    - current
+    - x64
+  libc:
+    - current
+    - glibc
