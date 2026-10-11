@@ -266,11 +266,20 @@ productPagePolicy: 'complete'   // 默认：有图 或 有规格 才生成详情
 
 | 平台 | 访问地址 | 状态 |
 | --- | --- | --- |
-| Cloudflare Pages（全球） | https://lvqingqii-guanwang.pages.dev | ✅ 运行中 |
-| 腾讯云 EdgeOne（香港/海外，无需备案） | https://lvqingqii-guanwang-nnqmgm9s.edgeone.dev | ✅ 运行中 |
+| **Cloudflare Pages（全球）** | **https://lvqingqii-guanwang.pages.dev** | ✅ **对外正式地址，可直接分享** |
+| 腾讯云 EdgeOne（香港/海外，无需备案） | https://lvqingqii-guanwang-nnqmgm9s.edgeone.dev | ⚠️ 仅「预览地址」，见下方说明 |
 
-> ℹ️ 两个地址目前内容相同，`site.config.mjs` 里的 canonical / sitemap 指向 **Cloudflare 的 pages.dev**。
-> 绑定正式域名后，**只改一处即可**（二选一）：
+> ⚠️ **EdgeOne 的 `*.edgeone.dev` 不能对外分享。**
+> 它是 EdgeOne 的 **预览（Preview）链接**：只给项目所有者短时查看、会过期，
+> 用手机/其他网络打开会看到 **`401 UNAUTHORIZED`**（页面提示
+> “For Global (MLC excluded) projects, check your network environment”）。
+> **这不代表部署失败** —— 构建和部署都是成功的，只是这个域名不对外。
+> 要让 EdgeOne 对外可访问，必须绑一个自己的域名：
+> 项目 → **域名管理** → **添加自定义域名** → 填入域名 → 选择环境「生产(main)」→ 下一步，
+> 然后按提示到 DNS 服务商加一条 **CNAME**（关闭 CDN 代理/灰云），等待 EdgeOne 校验并自动签发免费 HTTPS。
+>
+> ℹ️ 两个平台内容完全相同（同一份构建产物），`site.config.mjs` 里的 canonical / sitemap
+> 目前指向 **Cloudflare 的 pages.dev**。以后绑定了正式域名，**只改一处即可**（二选一）：
 > - 改 [`site.config.mjs`](./site.config.mjs) 的 `url`
 > - 或构建时给环境变量：`SITE_URL=https://你的域名 pnpm build`
 >
@@ -308,8 +317,14 @@ productPagePolicy: 'complete'   // 默认：有图 或 有规格 才生成详情
 2. 选择同一仓库 `kalichen88/lvqingqii-guanwang`，分支 `main`，框架预设自动识别为 **Astro**
 3. 构建配置会被仓库里的 [`edgeone.json`](./edgeone.json) 自动覆盖，**控制台无需手填**
 4. **加速区域选「全球可用区（不含中国大陆）」** —— 香港/海外节点**无需 ICP 备案**
-5. 出网域名默认是 `https://<项目名>.<区域>.edgeone.cool`（项目概览 → 域名）
-6. 绑定自定义域名：项目 → **域名管理** → 添加域名 → 到 DNS 服务商加 CNAME → 自动签发免费 HTTPS
+5. 部署完成后项目会分到一个 `https://<项目名>-<随机串>.edgeone.dev` 地址；
+   **这是预览地址，不能对外分享**（别人打开是 `401 UNAUTHORIZED`，链接也会过期）
+6. **要对外访问必须绑自己的域名**：项目 → **域名管理** → **添加自定义域名**
+   → 填域名 → 环境选「生产（main）」→ 下一步 → 到 DNS 服务商加 **CNAME**（关闭 CDN 代理）
+   → 等 EdgeOne 校验通过后自动签发免费 HTTPS
+
+> 💡 只需要一个对外地址的话，直接分享 Cloudflare 的 https://lvqingqii-guanwang.pages.dev 即可，
+> EdgeOne 可以先只当「备用 + 香港节点」放着，等有正式域名时再绑。
 
 > ⚠️ EdgeOne「直接上传」方式**不会执行 `functions/api/inquiry.js`**。
 > 要用边缘函数收表单，请走 Git 部署，或改用第 6 章的方案 A / C。
