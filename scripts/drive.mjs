@@ -36,6 +36,8 @@ import { setTimeout as delay } from 'node:timers/promises'
 
 const PORT = Number((process.argv.find((a) => a.startsWith('--port=')) ?? '--port=9222').split('=')[1])
 const FILE_ARG = process.argv.find((a) => a.startsWith('--file='))
+/** 只操作 URL 含该片段的标签页（强烈建议指定，避免影响其他标签） */
+const MATCH = process.argv.find((a) => a.startsWith('--match='))?.split('=')[1]
 
 /**
  * 命令来源：
@@ -90,16 +92,29 @@ class CDP {
 async function findPageTarget() {
   for (let i = 0; i < 20; i++) {
     try {
-      const res = await fetch(`http://127.0.0.1:${PORT}/json/list`)
-      const list = await res.json()
-      const page = list.find((t) => t.type === 'page')
-      if (page) return page
+      // 需要指定标签页时，用 --match=<url 片段> 精确挑选，避免误操作其他标签
+      if (MATCH) {
+        const res = await fetch(`http://127.0.0.1:${PORT}/json/list`)
+        const list = await res.json()
+        const page = list
+          .filter((t) => t.type === 'page')
+          .find((t) => (t.url || '').includes(MATCH))
+        if (page) return page
+      } else {
+        const res = await fetch(`http://127.0.0.1:${PORT}/json/list`)
+        const list = await res.json()
+        const pages = list.filter((t) => t.type === 'page')
+        // 默认取最后一个（通常是最近打开/活跃的标签）
+        if (pages.length) return pages[pages.length - 1]
+      }
     } catch {
       /* devtools 还没起来 */
     }
     await delay(400)
   }
-  throw new Error(`连接不上 CDP（127.0.0.1:${PORT}），请确认 Chrome 带 --remote-debugging-port 启动`)
+  throw new Error(
+    `连接不上 CDP（127.0.0.1:${PORT}）或未找到匹配标签${MATCH ? `（--match=${MATCH}）` : ''}`,
+  )
 }
 
 /** 按可见文字找元素并点击（返回命中的文字，便于确认点对了） */

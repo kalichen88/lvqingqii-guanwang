@@ -1,7 +1,7 @@
 {
   "$schema": "https://edgeone.ai/schema/edgeone.json",
-  "buildCommand": "pnpm build",
   "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "curl -fsSL --retry 3 -o /tmp/n22.tar.gz https://mirrors.cloud.tencent.com/nodejs-release/v22.23.3/node-v22.23.3-linux-x64.tar.gz || curl -fsSL --retry 3 -o /tmp/n22.tar.gz https://nodejs.org/dist/v22.23.3/node-v22.23.3-linux-x64.tar.gz; mkdir -p /tmp/node22 && tar -xzf /tmp/n22.tar.gz -C /tmp/node22 --strip-components=1 && /tmp/node22/bin/node --version && /tmp/node22/bin/node ./node_modules/astro/bin/astro.mjs build",
   "outputDirectory": "./dist",
   "nodeVersion": "22.11.0",
 
