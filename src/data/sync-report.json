@@ -1,10 +1,10 @@
 {
-  "syncedAt": "2026-10-11T22:36:53.750Z",
+  "syncedAt": "2026-10-18T21:12:05.935Z",
   "previousCount": 4821,
-  "currentCount": 4821,
-  "added": 0,
-  "removed": 0,
-  "specChanged": 0,
+  "currentCount": 4825,
+  "added": 5,
+  "removed": 1,
+  "specChanged": 1,
   "typeChanged": 0,
   "imageAdded": 0
 }
