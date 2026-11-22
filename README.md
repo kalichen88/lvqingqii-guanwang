@@ -166,7 +166,47 @@ Cloudflare Pages 免费版单次部署上限 2 万个文件。因此详情页策
 
 ---
 
+## 2.6 ★ 首页首屏轮播 Banner
+
+[`HeroCarousel.astro`](./src/components/HeroCarousel.astro) —— 三组素材，每组 = 广告语 + 配图，成组轮换。
+
+| # | 小标题 | 主标题 | 配图 |
+| --- | --- | --- | --- |
+| 1 | 9,000+ 件号 · 8 大应用类目 | 滤芯不用猜，件号一查就到。 | `media/categories/cp13.jpg`（产品系列） |
+| 2 | 滤材结构 · 三层复合 | 粉尘拦在外面，动力留在里面。 | `media/factory/1bdb5aca568b6db.jpg`（生产线） |
+| 3 | 交付 · 当天发出 | 设备等不起，现货等得起。 | `media/factory/1258ce5d1737594.jpg`（仓储发货） |
+
+交互与可访问性：
+
+- **3 秒自动轮播、循环**；圆点可点选，点选后重新计时，圆点带进度填充。
+- 鼠标悬停 / 键盘聚焦 / 切换到其他标签页时**暂停**，离开后继续。
+- 尊重 `prefers-reduced-motion`：**不自动播放**，只保留手动切换。
+- 移动端支持左右滑动。
+- 无 JS 时只显示第 1 组（CSS 隐藏其余），不会闪动。
+- 第 1 组的标题是 `<h1>`，第 2、3 组是 `<h2>`，避免一页多个 H1。
+
+改文案只需改 [`HeroCarousel.astro`](./src/components/HeroCarousel.astro) 里 `slides` 数组的 `tx(…)` 两个参数：
+第一个是英文（同时作为 `src/i18n/copy/<lang>.mjs` 的 key），第二个是中文。
+
+---
+
+## 2.7 ★ 文案口径：只讲产品，不讲身份
+
+全站**不出现**「代理 / 代理服务商 / 授权代理 / distributor / authorized / дистрибьютор / موزّع」
+这类自我身份描述。广告位与首屏一律用来讲产品与交付：
+
+- 品牌主张（`site.config.mjs` → `brand.tagline*`）：**三层复合滤材 · 高容尘 · 3000+ 件号现货**
+- 顶栏（`messages/*.mjs` → `headerTopbar`）：产品指标 + 库存，不放身份
+- SEO 标题/描述（`meta.mjs`、根页面 `title`/`description`）：以「件号 + 规格 + 库存」为主词
+- FAQ 第 1 条：从「你们是不是授权代理」改为「过滤效率和容尘量是什么水平」
+- 关于我们：从「我们是谁的代理」改为「产品指标 + 配得准 + 可溯源」
+
+新增文案时请沿用这个口径；`grep -n "代理\|distributor" src site.config.mjs` 应始终为空。
+
+---
+
 ## 3. 站点结构与规模
+
 
 ```
 ├─ site.config.mjs          ★ 唯一配置文件
