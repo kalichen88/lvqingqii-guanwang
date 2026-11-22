@@ -1,0 +1,34 @@
+---
+/** 新闻资讯（非默认语言） */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import NewsIndexPage from '../../../components/pages/NewsIndexPage.astro'
+import { collectionJsonLd } from '../../../lib/seo.mjs'
+import { news } from '../../../data/content.mjs'
+import { PREFIXED_LANGS, pick, t } from '../../../i18n/index.mjs'
+import { pageTitle, pageDesc } from '../../../i18n/meta.mjs'
+
+export function getStaticPaths() {
+  return PREFIXED_LANGS.map((lang) => ({ params: { lang } }))
+}
+
+const lang = Astro.params.lang as string
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: t(lang, 'homeNewsTitle'),
+    description: t(lang, 'newsIndexDesc'),
+    url: '/news/',
+    items: news.map((n) => ({ name: pick(lang, n.title), href: `/news/${n.slug}/` })),
+  }),
+]
+---
+
+<BaseLayout
+  {lang}
+  title={pageTitle(lang, 'news')}
+  description={pageDesc(lang, 'news')}
+  pathname="/news/"
+  jsonLd={jsonLd}
+>
+  <NewsIndexPage {lang} />
+</BaseLayout>

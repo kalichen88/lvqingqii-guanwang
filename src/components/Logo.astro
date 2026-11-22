@@ -8,6 +8,7 @@
  * 文字部分读取 site.config.mjs 的品牌名，改配置即可全站同步。
  */
 import siteConfig from '../../site.config.mjs'
+import { bi, isCjk } from '../i18n/index.mjs'
 
 interface Props {
   /** light=深色文字（白底使用）/ dark=白色文字 / inherit=跟随父级颜色（由 CSS 变量驱动） */
@@ -19,7 +20,7 @@ interface Props {
   /** 点击跳转地址 */
   href?: string
   /** 语言：英文站把英文名放在主位，更符合当地阅读习惯 */
-  lang?: 'zh' | 'en'
+  lang?: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
 }
 
 const {
@@ -33,11 +34,11 @@ const {
 
 const isDark = variant === 'dark'
 const isInherit = variant === 'inherit'
-const isEn = lang === 'en'
+const isEn = !isCjk(lang)
 
 /** 主副标题按语言互换 */
-const primary = isEn ? siteConfig.brand.shortNameEn : siteConfig.brand.shortNameZh
-const secondary = isEn ? siteConfig.brand.shortNameZh : siteConfig.brand.shortNameEn
+const primary = bi(lang, siteConfig.brand, 'shortName')
+const secondary = lang === 'en' ? siteConfig.brand.shortNameZh : siteConfig.brand.shortNameEn
 
 /** 主文字颜色 */
 const titleColor = isInherit ? 'text-current' : isDark ? 'text-white' : 'text-ink-900'
@@ -106,7 +107,7 @@ const taglineColor = isInherit
 
   {showTagline && (
     <span class={`ml-3 hidden whitespace-nowrap border-l pl-3 text-[11px] leading-tight 2xl:block ${taglineColor}`}>
-      {isEn ? siteConfig.brand.taglineEn : siteConfig.brand.taglineZh}
+      {bi(lang, siteConfig.brand, 'tagline')}
     </span>
   )}
 </a>

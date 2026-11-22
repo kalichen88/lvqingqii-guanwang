@@ -2,17 +2,17 @@
 /**
  * NewsIndexPage.astro — 新闻与文章列表
  */
-import { t, localizePath } from '../../i18n/index.mjs'
+import { t, localizePath, isCjk, tx } from '../../i18n/index.mjs'
 import { news } from '../../data/content.mjs'
 import Icon from '../Icon.astro'
 import PageHero from '../PageHero.astro'
 import InquiryForm from '../InquiryForm.astro'
 
 interface Props {
-  lang: 'zh' | 'en'
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
 }
 const { lang } = Astro.props
-const isEn = lang === 'en'
+const isEn = !isCjk(lang)
 const p = (path: string) => localizePath(path, lang)
 
 const crumbs = [
@@ -25,11 +25,9 @@ const [lead, ...rest] = news
 
 <PageHero
   {lang}
-  eyebrow={isEn ? 'News & guides' : '新闻资讯'}
-  title={isEn ? 'Selection guides and maintenance notes' : '选型指南与运维笔记'}
-  desc={isEn
-    ? 'Written by people who handle filter failures every week. No press-release reposts.'
-    : '由每周都在处理滤芯故障的人写的。不是转载的通稿。'}
+  eyebrow={tx(lang, 'News & guides', '新闻资讯')}
+  title={tx(lang, 'Selection guides and maintenance notes', '选型指南与运维笔记')}
+  desc={tx(lang, 'Written by people who handle filter failures every week. No press-release reposts.', '由每周都在处理滤芯故障的人写的。不是转载的通稿。')}
   crumbs={crumbs}
 />
 
@@ -113,14 +111,12 @@ const [lead, ...rest] = news
 <section class="section bg-ink-50">
   <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
     <div class="lg:col-span-5">
-      <span class="eyebrow">{isEn ? 'Have a question?' : '有具体问题？'}</span>
+      <span class="eyebrow">{tx(lang, 'Have a question?', '有具体问题？')}</span>
       <h2 class="mt-3 text-[24px] font-semibold leading-tight text-ink-900 md:text-[30px]">
-        {isEn ? 'Ask it directly' : '直接问我们'}
+        {tx(lang, 'Ask it directly', '直接问我们')}
       </h2>
       <p class="mt-4 text-[14px] leading-relaxed text-ink-500">
-        {isEn
-          ? 'If an article raised a question about your own machine, send us the details — that is usually faster than reading more.'
-          : '如果某篇文章让你想到自己设备上的具体问题，把信息发给我们——通常比继续看文章更快。'}
+        {tx(lang, 'If an article raised a question about your own machine, send us the details — that is usually faster than reading more.', '如果某篇文章让你想到自己设备上的具体问题，把信息发给我们——通常比继续看文章更快。')}
       </p>
     </div>
     <div class="lg:col-span-7">

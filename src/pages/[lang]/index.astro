@@ -1,0 +1,39 @@
+---
+/** 首页（所有非默认语言）/ko /ja /ru /ar /zh-hant */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import HomePage from '../../components/pages/HomePage.astro'
+import siteConfig from '../../../site.config.mjs'
+import { faqs } from '../../data/content.mjs'
+import { faqJsonLd } from '../../lib/seo.mjs'
+import { PREFIXED_LANGS, langMeta, pick, isCjk } from '../../i18n/index.mjs'
+import { pageTitle, pageDesc } from '../../i18n/meta.mjs'
+
+export function getStaticPaths() {
+  return PREFIXED_LANGS.map((lang) => ({ params: { lang } }))
+}
+
+const lang = Astro.params.lang as string
+
+const jsonLd = [
+  faqJsonLd(faqs.slice(0, 6).map((f) => ({ q: pick(lang, f.q), a: pick(lang, f.a) }))),
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: isCjk(lang) ? siteConfig.brand.shortNameZh : siteConfig.brand.shortNameEn,
+    description: isCjk(lang) ? siteConfig.brand.positioningZh : siteConfig.brand.positioningEn,
+    inLanguage: langMeta[lang]?.htmlLang ?? lang,
+  },
+]
+---
+
+<BaseLayout
+  {lang}
+  title={pageTitle(lang, 'home')}
+  description={pageDesc(lang, 'home')}
+  pathname="/"
+  jsonLd={jsonLd}
+  darkHeader={false}
+  transparentHeader={true}
+>
+  <HomePage {lang} />
+</BaseLayout>

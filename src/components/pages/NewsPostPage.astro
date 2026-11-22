@@ -3,7 +3,7 @@
  * NewsPostPage.astro — 文章详情
  */
 import siteConfig from '../../../site.config.mjs'
-import { t, localizePath } from '../../i18n/index.mjs'
+import { t, localizePath, isCjk, tx } from '../../i18n/index.mjs'
 import { news, newsBySlug } from '../../data/content.mjs'
 import { getGroupSamples, groups } from '../../data/products.mjs'
 import Icon from '../Icon.astro'
@@ -13,11 +13,11 @@ import InquiryForm from '../InquiryForm.astro'
 import ProductCard from '../ProductCard.astro'
 
 interface Props {
-  lang: 'zh' | 'en'
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
   post: (typeof news)[number]
 }
 const { lang, post } = Astro.props
-const isEn = lang === 'en'
+const isEn = !isCjk(lang)
 const p = (path: string) => localizePath(path, lang)
 const c = siteConfig.contact
 
@@ -79,18 +79,16 @@ const tel = `tel:${c.salesPhone.replace(/[^\d+]/g, '')}`
           <div class="flex flex-wrap items-center justify-between gap-5">
             <div>
               <p class="text-[15.5px] font-semibold text-ink-900">
-                {isEn ? 'Need help applying this to your machine?' : '想把这些用到你自己的设备上？'}
+                {tx(lang, 'Need help applying this to your machine?', '想把这些用到你自己的设备上？')}
               </p>
               <p class="mt-1.5 text-[13px] text-ink-500">
-                {isEn
-                  ? 'Send the part number or machine model and we will check it for you.'
-                  : '把件号或设备机型发给我们，帮你核对。'}
+                {tx(lang, 'Send the part number or machine model and we will check it for you.', '把件号或设备机型发给我们，帮你核对。')}
               </p>
             </div>
             <div class="flex flex-wrap gap-3">
               <a href={p('/contact/#quote')} class="btn btn-primary">
                 <Icon name="mail" class="size-4" />
-                {isEn ? 'Enquire' : '在线询价'}
+                {tx(lang, 'Enquire', '在线询价')}
               </a>
               <a href={tel} class="btn btn-ghost">
                 <Icon name="phone" class="size-4" />
@@ -106,7 +104,7 @@ const tel = `tel:${c.salesPhone.replace(/[^\d+]/g, '')}`
             <div class="mt-12">
               <div class="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <span class="eyebrow">{isEn ? 'Related parts' : '相关件号'}</span>
+                  <span class="eyebrow">{tx(lang, 'Related parts', '相关件号')}</span>
                   <h2 class="mt-3 text-[20px] font-semibold text-ink-900 md:text-[24px]">
                     {isEn
                       ? `Commonly ordered in ${suggestGroupMeta?.nameEn ?? ''}`
@@ -114,7 +112,7 @@ const tel = `tel:${c.salesPhone.replace(/[^\d+]/g, '')}`
                   </h2>
                 </div>
                 <a href={p(`/products/${suggestGroup}/`)} class="btn btn-ghost btn-sm">
-                  {isEn ? 'View group' : '查看大类'}
+                  {tx(lang, 'View group', '查看大类')}
                   <Icon name="arrow-right" class="size-3.5" />
                 </a>
               </div>
@@ -131,7 +129,7 @@ const tel = `tel:${c.salesPhone.replace(/[^\d+]/g, '')}`
         <!-- 其他文章 -->
         <div class="mt-12 border-t border-ink-100 pt-10">
           <h2 class="text-[20px] font-semibold text-ink-900 md:text-[24px]">
-            {isEn ? 'Keep reading' : '继续阅读'}
+            {tx(lang, 'Keep reading', '继续阅读')}
           </h2>
           <div class="mt-6 space-y-3">
             {
@@ -167,15 +165,13 @@ const tel = `tel:${c.salesPhone.replace(/[^\d+]/g, '')}`
 
           <div class="rounded-2xl bg-brand-500 p-6 text-white shadow-glow">
             <p class="text-[11.5px] uppercase tracking-[0.14em] text-white/70">
-              {isEn ? 'Part finder' : '件号查询'}
+              {tx(lang, 'Part finder', '件号查询')}
             </p>
             <p class="mt-3 text-[15px] font-semibold leading-snug">
-              {isEn ? 'Look up a number before you ask' : '先自己查一下，可能更快'}
+              {tx(lang, 'Look up a number before you ask', '先自己查一下，可能更快')}
             </p>
             <p class="mt-2 text-[12.5px] leading-relaxed text-white/75">
-              {isEn
-                ? 'Over 1,500 part numbers with real dimensions.'
-                : '已收录 1500+ 件号，附真实规格尺寸。'}
+              {tx(lang, 'Over 1,500 part numbers with real dimensions.', '已收录 1500+ 件号，附真实规格尺寸。')}
             </p>
             <a href={p('/search/')} class="btn btn-sm mt-5 w-full bg-white text-brand-700 hover:bg-brand-50">
               <Icon name="search" class="size-4" />
@@ -185,7 +181,7 @@ const tel = `tel:${c.salesPhone.replace(/[^\d+]/g, '')}`
 
           <div class="rounded-2xl bg-ink-50 p-6 ring-1 ring-ink-100">
             <p class="text-[11.5px] uppercase tracking-[0.14em] text-ink-400">
-              {isEn ? 'Categories' : '文章分类'}
+              {tx(lang, 'Categories', '文章分类')}
             </p>
             <div class="mt-4 flex flex-wrap gap-2">
               {[...new Set(news.map((n) => n.category[lang]))].map((cat) => (

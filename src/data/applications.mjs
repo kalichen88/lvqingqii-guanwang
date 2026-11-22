@@ -350,3 +350,7 @@ export const applicationName = (slug, lang = 'zh') => {
   if (!a) return slug
   return lang === 'en' ? a.nameEn : a.nameZh
 }
+
+/* 多语言覆盖（日本語 / Русский / العربية） */
+import { applyOverrides } from './i18n/index.mjs'
+applyOverrides(applications, 'applications')

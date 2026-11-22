@@ -5,12 +5,13 @@
  * 有本地图片就显示图片；没有则回退到与该品类匹配的图标占位图，
  * 保证列表在任何数据完整度下都不出现破图。
  */
-import { localizePath, t } from '../i18n/index.mjs'
+import { localizePath, t, bi, isCjk, tx } from '../i18n/index.mjs'
 import { groupBySlug } from '../data/groups.mjs'
+import { hasPageFor } from '../data/products.mjs'
 import Icon from './Icon.astro'
 
 interface Props {
-  lang: 'zh' | 'en'
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
   product: {
     partNo: string
     /** URL slug，缺省时回退到件号本身 */
@@ -29,9 +30,9 @@ interface Props {
 }
 
 const { lang, product, compact = false, class: className = '' } = Astro.props
-const isEn = lang === 'en'
+const isEn = !isCjk(lang)
 const group = groupBySlug[product.group ?? ''] ?? null
-const clickable = product.hasPage !== false
+const clickable = hasPageFor(product, lang)
 const href = localizePath(`/p/${product.slug ?? product.partNo}/`, lang)
 const typeLabel = isEn ? product.typeEn || product.type : product.type
 ---
@@ -70,7 +71,7 @@ const typeLabel = isEn ? product.typeEn || product.type : product.type
         <div class="relative flex size-full flex-col items-center justify-center gap-3 text-ink-300">
           <Icon name={group?.icon ?? 'layers'} class="size-12 opacity-45" strokeWidth={1.2} />
           <span class="text-[11px] font-medium uppercase tracking-[0.16em] opacity-60">
-            {isEn ? 'Image on request' : '实物图请咨询'}
+            {tx(lang, 'Image on request', '实物图请咨询')}
           </span>
         </div>
       )
@@ -113,7 +114,7 @@ const typeLabel = isEn ? product.typeEn || product.type : product.type
       !compact && (
         <div class="mt-auto flex items-center gap-1.5 pt-4 text-[12.5px] font-medium text-ink-400">
           <span class="h-px w-4 bg-ink-200" />
-          {group ? (isEn ? group.shortEn : group.shortZh) : ''}
+          {group ? (bi(lang, group, 'short')) : ''}
         </div>
       )
     }

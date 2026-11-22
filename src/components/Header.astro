@@ -9,7 +9,8 @@
  * 不会出现深色文字配深色背景这类低对比问题。JS 只负责切换 data-scrolled。
  */
 import siteConfig from '../../site.config.mjs'
-import { t, localizePath, altLangPath, buildNav } from '../i18n/index.mjs'
+import { langMeta, tx } from '../i18n/index.mjs'
+import { t, localizePath, alternateLinks, buildNav, bi, isCjk } from '../i18n/index.mjs'
 import { groups } from '../data/groups.mjs'
 import { applications } from '../data/applications.mjs'
 import { groupStats } from '../data/products.mjs'
@@ -17,17 +18,18 @@ import Logo from './Logo.astro'
 import Icon from './Icon.astro'
 
 interface Props {
-  lang: 'zh' | 'en'
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
   pathname: string
   darkHeader?: boolean
   transparentHeader?: boolean
 }
 
 const { lang, pathname, darkHeader = false, transparentHeader = false } = Astro.props
-const isEn = lang === 'en'
+const isEn = !isCjk(lang)
 const nav = buildNav(lang)
-const other = isEn ? 'zh' : 'en'
-const switchHref = altLangPath(pathname, other)
+
+/** 6 语言切换列表（保持当前页面路径不变，只换语言前缀） */
+const langLinks = alternateLinks(pathname).map((l) => ({ ...l, current: l.lang === lang }))
 
 const c = siteConfig.contact
 const phone = c.salesPhone
@@ -74,10 +76,32 @@ const quoteHref = localizePath('/contact/#quote', lang)
         {c.email}
       </a>
       <span class="h-3 w-px bg-ink-200"></span>
-      <a href={switchHref} hreflang={other} class="inline-flex items-center gap-1.5 text-ink-500 transition hover:text-brand-600">
-        <Icon name="globe" class="size-3.5" />
-        {t(lang, 'langSwitch')}
-      </a>
+      <details class="lang-menu relative">
+        <summary class="flex cursor-pointer list-none items-center gap-1.5 text-ink-500 transition hover:text-brand-600">
+          <Icon name="globe" class="size-3.5" />
+          <span>{langMeta[lang].label}</span>
+        </summary>
+        <ul class="lang-menu-list absolute end-0 top-full z-50 mt-3 min-w-[176px] overflow-hidden rounded-xl border border-ink-100 bg-white py-1 shadow-lg">
+          {langLinks.map((l) => (
+            <li>
+              <a
+                href={l.href}
+                hreflang={l.hreflang}
+                lang={l.hreflang}
+                dir={l.dir}
+                aria-current={l.current ? 'true' : undefined}
+                class:list={[
+                  'flex items-center justify-between gap-3 px-3.5 py-2 text-[13px] transition',
+                  l.current ? 'bg-ink-50 font-semibold text-brand-700' : 'text-ink-600 hover:bg-ink-50 hover:text-brand-600',
+                ]}
+              >
+                <span>{l.label}</span>
+                <span class="text-[11px] uppercase tracking-wider text-ink-400">{l.lang}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </details>
     </div>
   </div>
 </div>
@@ -99,7 +123,7 @@ const quoteHref = localizePath('/contact/#quote', lang)
       <Logo variant="inherit" showTagline={true} href={homeHref} {lang} class="shrink-0" />
 
       <!-- 桌面导航 -->
-      <nav class="hidden items-center gap-0.5 lg:flex" aria-label={isEn ? 'Main' : '主导航'}>
+      <nav class="hidden items-center gap-0.5 lg:flex" aria-label={tx(lang, 'Main', '主导航')}>
         <!-- 产品中心 -->
         <div class="group/nav relative">
           <a href={productHref} class="nav-link inline-flex h-10 items-center gap-1.5 rounded-lg px-3 text-[14.5px] font-medium" data-active={isActive(productHref)} aria-haspopup="true">
@@ -120,11 +144,11 @@ const quoteHref = localizePath('/contact/#quote', lang)
                         </span>
                         <span class="min-w-0">
                           <span class="block truncate text-[13.5px] font-semibold text-ink-800 group-hover/item:text-brand-700">
-                            {isEn ? g.nameEn : g.nameZh}
+                            {bi(lang, g, 'name')}
                           </span>
                           <span class="mt-0.5 block truncate text-[11.5px] text-ink-400">
                             {stat?.count ?? 0} {t(lang, 'productsCount')} · {stat?.typeCount ?? 0}{' '}
-                            {isEn ? 'types' : '品类'}
+                            {tx(lang, 'types', '品类')}
                           </span>
                         </span>
                       </a>
@@ -135,7 +159,7 @@ const quoteHref = localizePath('/contact/#quote', lang)
 
               <div class="flex items-center justify-between gap-4 border-t border-ink-100 bg-ink-50/70 px-5 py-3.5">
                 <span class="text-[12.5px] text-ink-500">
-                  {isEn ? 'Not sure which part? Use the part finder.' : '不确定件号？用查询工具，或把旧滤芯照片发给我们。'}
+                  {tx(lang, 'Not sure which part? Use the part finder.', '不确定件号？用查询工具，或把旧滤芯照片发给我们。')}
                 </span>
                 <a href={finderHref} class="btn btn-primary btn-sm">
                   <Icon name="search" class="size-4" />
@@ -161,7 +185,7 @@ const quoteHref = localizePath('/contact/#quote', lang)
                     <a href={localizePath(`/applications/${a.slug}/`, lang)} class="group/item flex items-center gap-3 rounded-xl px-3 py-2.5 transition hover:bg-brand-50">
                       <Icon name={a.icon} class="size-4 shrink-0 text-ink-400 transition group-hover/item:text-brand-500" />
                       <span class="truncate text-[13.5px] font-medium text-ink-700 group-hover/item:text-brand-700">
-                        {isEn ? a.nameEn : a.nameZh}
+                        {bi(lang, a, 'name')}
                       </span>
                     </a>
                   ))
@@ -169,7 +193,7 @@ const quoteHref = localizePath('/contact/#quote', lang)
               </div>
               <div class="border-t border-ink-100 bg-ink-50/70 px-5 py-3.5">
                 <a href={appsHref} class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-600 hover:text-brand-700">
-                  {isEn ? 'All industries' : '查看全部应用领域'}
+                  {tx(lang, 'All industries', '查看全部应用领域')}
                   <Icon name="arrow-right" class="size-4" />
                 </a>
               </div>
@@ -192,7 +216,7 @@ const quoteHref = localizePath('/contact/#quote', lang)
       <div class="flex items-center gap-2">
         <a href={finderHref} class="nav-chip hidden h-10 items-center gap-2 whitespace-nowrap rounded-lg px-3 text-[13.5px] font-medium 2xl:inline-flex">
           <Icon name="search" class="size-4" />
-          {isEn ? 'Part finder' : '件号查询'}
+          {tx(lang, 'Part finder', '件号查询')}
         </a>
 
         <a href={quoteHref} class="btn btn-primary hidden whitespace-nowrap md:inline-flex">
@@ -240,7 +264,7 @@ const quoteHref = localizePath('/contact/#quote', lang)
         <input
           type="search"
           name="q"
-          placeholder={isEn ? 'Part number or keyword' : '输入件号或关键词'}
+          placeholder={tx(lang, 'Part number or keyword', '输入件号或关键词')}
           class="h-11 w-full rounded-xl border-0 bg-ink-50 pl-10 pr-3 text-[14px] text-ink-800 ring-1 ring-ink-100 placeholder:text-ink-400 focus:bg-white focus:ring-2 focus:ring-brand-500"
         />
       </form>
@@ -271,7 +295,7 @@ const quoteHref = localizePath('/contact/#quote', lang)
             groups.map((g) => (
               <a href={localizePath(`/products/${g.slug}/`, lang)} class="flex items-center gap-3 rounded-xl px-4 py-2.5 text-[14px] text-ink-600 transition hover:bg-ink-50">
                 <Icon name={g.icon} class="size-4 text-ink-400" />
-                {isEn ? g.nameEn : g.nameZh}
+                {bi(lang, g, 'name')}
               </a>
             ))
           }
@@ -285,10 +309,23 @@ const quoteHref = localizePath('/contact/#quote', lang)
         <span class="tnum">{phone}</span>
       </a>
       <a href={quoteHref} class="btn btn-primary w-full">{t(lang, 'getQuote')}</a>
-      <a href={switchHref} class="flex items-center justify-center gap-2 py-1 text-[13.5px] font-medium text-ink-500">
-        <Icon name="globe" class="size-4" />
-        {t(lang, 'langSwitch')}
-      </a>
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        {langLinks.map((l) => (
+          <a
+            href={l.href}
+            hreflang={l.hreflang}
+            lang={l.hreflang}
+            dir={l.dir}
+            aria-current={l.current ? 'true' : undefined}
+            class:list={[
+              'flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-[12.5px] font-medium transition',
+              l.current ? 'border-brand-300 bg-brand-50 text-brand-700' : 'border-ink-150 bg-white text-ink-600',
+            ]}
+          >
+            <span>{l.label}</span>
+          </a>
+        ))}
+      </div>
     </div>
   </div>
 </div>

@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config'
 import sitemap from '@astrojs/sitemap'
+import zhHant from './scripts/integrations/zh-hant.mjs'
 import tailwindcss from '@tailwindcss/vite'
 import siteConfig from './site.config.mjs'
 
@@ -31,10 +32,18 @@ export default defineConfig({
   compressHTML: true,
 
   integrations: [
+    zhHant(),
     sitemap({
       i18n: {
         defaultLocale: 'zh',
-        locales: { zh: 'zh-CN', en: 'en' },
+        locales: {
+          zh: 'zh-CN',
+          en: 'en',
+          'zh-hant': 'zh-Hant',
+          ja: 'ja',
+          ru: 'ru',
+          ar: 'ar',
+        },
       },
       filter: (page) => !page.includes('/404') && !page.includes('/thanks'),
       changefreq: 'weekly',

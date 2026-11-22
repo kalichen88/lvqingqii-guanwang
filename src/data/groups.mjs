@@ -265,3 +265,9 @@ export const typeI18n = {
 
 /** 把产品类型翻成英文（找不到就回退） */
 export const typeEn = (zh) => typeI18n[zh] ?? zh
+
+/* --------------------------------------------------------------------------
+   多语言覆盖：把日本語 / Русский / العربية 的名字、简介写入 nameJa / nameRu / nameAr …
+   -------------------------------------------------------------------------- */
+import { applyOverrides } from './i18n/index.mjs'
+applyOverrides(groups, 'groups')

@@ -8,8 +8,8 @@
  * 索引体积：约 1500 条 ≈ 120KB（gzip 后约 30KB），仅在查询页加载。
  */
 import siteConfig from '../../../site.config.mjs'
-import { t, localizePath } from '../../i18n/index.mjs'
-import { products, groups, groupBySlug, partNoInitials, productCount } from '../../data/products.mjs'
+import { t, localizePath, bi, isCjk, tx } from '../../i18n/index.mjs'
+import { products, groups, groupBySlug, partNoInitials, productCount, hasPageFor } from '../../data/products.mjs'
 import Icon from '../Icon.astro'
 import Breadcrumbs from '../Breadcrumbs.astro'
 import InquiryForm from '../InquiryForm.astro'
@@ -17,10 +17,10 @@ import FaqList from '../FaqList.astro'
 import { faqs } from '../../data/content.mjs'
 
 interface Props {
-  lang: 'zh' | 'en'
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
 }
 const { lang } = Astro.props
-const isEn = lang === 'en'
+const isEn = !isCjk(lang)
 const p = (path: string) => localizePath(path, lang)
 const c = siteConfig.contact
 
@@ -34,11 +34,13 @@ const index = products.map((x) => [
   x.group,
   x.image ?? '',
   x.categoryName,
-  x.hasPage ? 1 : 0,
+  hasPageFor(x, lang) ? 1 : 0,
 ])
 
 /** 服务端预渲染的前 60 条（优先展示有详情页的），保证首屏与无 JS 场景可用 */
-const initial = [...products].sort((a, b) => Number(b.hasPage) - Number(a.hasPage)).slice(0, 60)
+const initial = [...products]
+  .sort((a, b) => Number(hasPageFor(b, lang)) - Number(hasPageFor(a, lang)))
+  .slice(0, 60)
 
 const crumbs = [
   { label: t(lang, 'home'), href: '/' },
@@ -55,10 +57,10 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
 
     <div class="mx-auto mt-7 max-w-3xl text-center">
       <span class="eyebrow eyebrow-plain justify-center">
-        {isEn ? 'Part finder' : '件号查询'}
+        {tx(lang, 'Part finder', '件号查询')}
       </span>
       <h1 class="mt-3 text-[30px] font-semibold leading-[1.14] text-ink-900 md:text-[42px]" data-reveal>
-        {isEn ? 'Find your part number in seconds' : '几秒钟，找到你要的件号'}
+        {tx(lang, 'Find your part number in seconds', '几秒钟，找到你要的件号')}
       </h1>
       <p class="mx-auto mt-4 max-w-xl text-[14.5px] leading-relaxed text-ink-500" data-reveal>
         {
@@ -77,7 +79,7 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
             data-finder-input
             autocomplete="off"
             spellcheck="false"
-            placeholder={isEn ? 'e.g. FS641A, CA516, 406*265, air filter' : '例如：FS641A、CA516、406*265、空气滤芯'}
+            placeholder={tx(lang, 'e.g. FS641A, CA516, 406*265, air filter', '例如：FS641A、CA516、406*265、空气滤芯')}
             aria-label={t(lang, 'finderTitle')}
             class="h-12 min-w-0 flex-1 border-0 bg-transparent text-[16px] text-ink-900 placeholder:text-ink-400 focus:outline-none"
           />
@@ -94,7 +96,7 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
             aria-label={t(lang, 'finderAllGroups')}
           >
             <option value="">{t(lang, 'finderAllGroups')}</option>
-            {groups.map((g) => <option value={g.slug}>{isEn ? g.nameEn : g.nameZh}</option>)}
+            {groups.map((g) => <option value={g.slug}>{bi(lang, g, 'name')}</option>)}
           </select>
 
           <div class="flex flex-wrap items-center justify-center gap-1">
@@ -123,11 +125,11 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
     <div class="flex flex-wrap items-center justify-between gap-4">
       <p class="text-[14px] text-ink-500">
         <span data-finder-count class="tnum font-semibold text-ink-900">{productCount.toLocaleString()}</span>
-        {isEn ? ' part numbers' : ' 个件号'}
+        {tx(lang, ' part numbers', ' 个件号')}
         <span data-finder-active class="ml-2"></span>
       </p>
       <p class="text-[12.5px] text-ink-400" data-finder-hint>
-        {isEn ? 'Type to filter instantly' : '输入即筛选'}
+        {tx(lang, 'Type to filter instantly', '输入即筛选')}
       </p>
     </div>
 
@@ -143,7 +145,7 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
       <div class="mt-6 flex flex-wrap justify-center gap-3">
         <a href={p('/contact/#quote')} class="btn btn-primary">
           <Icon name="mail" class="size-4" />
-          {isEn ? 'Send it to us' : '发给我们帮你查'}
+          {tx(lang, 'Send it to us', '发给我们帮你查')}
         </a>
         <a href={`https://wa.me/${c.whatsapp}`} target="_blank" rel="noopener nofollow" class="btn btn-ghost">
           <Icon name="whatsapp" class="size-4" />
@@ -162,7 +164,7 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
               <th class="w-[150px]">{t(lang, 'partNo')}</th>
               <th>{t(lang, 'spec')}</th>
               <th class="w-[170px]">{t(lang, 'type')}</th>
-              <th class="w-[130px]">{isEn ? 'Group' : '大类'}</th>
+              <th class="w-[130px]">{tx(lang, 'Group', '大类')}</th>
               <th class="w-[96px]" />
             </tr>
           </thead>
@@ -179,7 +181,7 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
                   data-group={x.group}
                   data-cat={x.categoryName}
                   data-image={x.image ?? ''}
-                  data-haspage={x.hasPage ? '1' : '0'}
+                  data-haspage={hasPageFor(x, lang) ? '1' : '0'}
                 >
                   <td>
                     {x.image ? (
@@ -191,7 +193,7 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
                     )}
                   </td>
                   <td>
-                    {x.hasPage ? (
+                    {hasPageFor(x, lang) ? (
                       <a href={p(`/p/${x.slug}/`)} class="partno text-[13.5px] font-medium text-ink-900 transition hover:text-brand-600">
                         {x.partNo}
                       </a>
@@ -205,14 +207,14 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
                     {groupBySlug[x.group] ? (isEn ? groupBySlug[x.group].shortEn : groupBySlug[x.group].shortZh) : ''}
                   </td>
                   <td>
-                    {x.hasPage ? (
+                    {hasPageFor(x, lang) ? (
                       <a href={p(`/p/${x.slug}/`)} class="inline-flex items-center gap-1 whitespace-nowrap text-[12.5px] font-medium text-brand-600 hover:text-brand-700">
                         {t(lang, 'viewDetails')}
                         <Icon name="arrow-right" class="size-3.5" />
                       </a>
                     ) : (
                       <a href={`${p('/contact/')}?part=${encodeURIComponent(x.partNo)}#quote`} class="inline-flex items-center gap-1 whitespace-nowrap text-[12.5px] font-medium text-ink-500 hover:text-brand-600">
-                        {isEn ? 'Enquire' : '询价'}
+                        {tx(lang, 'Enquire', '询价')}
                         <Icon name="mail" class="size-3.5" />
                       </a>
                     )}
@@ -286,9 +288,9 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
 <section class="section bg-white">
   <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
     <div class="lg:col-span-6">
-      <span class="eyebrow">{isEn ? 'FAQ' : '常见问题'}</span>
+      <span class="eyebrow">{tx(lang, 'FAQ', '常见问题')}</span>
       <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[32px]">
-        {isEn ? 'About finding the right part' : '关于找件号的常见问题'}
+        {tx(lang, 'About finding the right part', '关于找件号的常见问题')}
       </h2>
       <FaqList items={finderFaqs} {lang} class="mt-8" />
     </div>
@@ -297,6 +299,23 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
     </div>
   </div>
 </section>
+
+
+<!-- ================= 客户端文案 / 路径前缀 ================= -->
+<script
+  type="application/json"
+  data-finder-labels
+  set:html={JSON.stringify({
+    base: lang === 'zh' ? '' : '/' + lang,
+    detail: t(lang, 'viewDetails'),
+    enquire: t(lang, 'inquiryAbout'),
+    more: t(lang, 'finderLoadMore'),
+    group: t(lang, 'type'),
+    n: t(lang, 'productsCount'),
+    filtered: t(lang, 'finderResults'),
+    groupShort: Object.fromEntries(groups.map((g) => [g.slug, bi(lang, g, 'short')])),
+  })}
+/>
 
 <!-- ================= 索引数据 ================= -->
 <script type="application/json" data-finder-index set:html={JSON.stringify(index)} />
@@ -323,8 +342,10 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
 
   const indexEl = document.querySelector<HTMLScriptElement>('[data-finder-index]')
   if (input && body && indexEl) {
-    const lang = (document.documentElement.lang || 'zh').startsWith('en') ? 'en' : 'zh'
-    const isEn = lang === 'en'
+    const labelsEl = document.querySelector('[data-finder-labels]')
+    const L = labelsEl ? JSON.parse(labelsEl.textContent || '{}') : {}
+    const base = L.base ?? ''
+    const isEn = true
     /** @type {string[][]} */
     let rows: string[][] = []
     try {
@@ -333,20 +354,16 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
       rows = []
     }
 
-    const T = isEn
-      ? { detail: 'View', group: 'Group', more: 'Load more', n: 'part numbers', filtered: 'filtered', enquire: 'Enquire' }
-      : { detail: '查看详情', group: '大类', more: '加载更多', n: '个件号', filtered: '条符合条件', enquire: '询价' }
-
-    const groupShort: Record<string, string> = {
-      construction: isEn ? 'Construction' : '工程机械',
-      truck: isEn ? 'Trucks' : '商用车',
-      compressor: isEn ? 'Compressor' : '空压机',
-      hydraulic: isEn ? 'Hydraulic' : '液压滤芯',
-      industrial: isEn ? 'Industrial' : '工业滤芯',
-      purifier: isEn ? 'Purification' : '净化滤芯',
-      separator: isEn ? 'Separators' : '油水分离',
-      genset: isEn ? 'Genset & Agri' : '发电机/农机',
+    const T = {
+      detail: L.detail ?? 'View',
+      group: L.group ?? 'Group',
+      more: L.more ?? 'Load more',
+      n: L.n ?? 'part numbers',
+      filtered: L.filtered ?? 'filtered',
+      enquire: L.enquire ?? 'Enquire',
     }
+
+    const groupShort: Record<string, string> = (L.groupShort ?? {}) as Record<string, string>
 
     const iconFor = (g: string) =>
       ({
@@ -410,8 +427,8 @@ const finderFaqs = faqs.slice(0, 5).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
         .map((r) => {
           const [partNo, slug, spec, typeZh, typeEn, group, image, , hasPageRaw] = r
           const hasPage = hasPageRaw === '1' || hasPageRaw === 1
-          const href = (isEn ? '/en/p/' : '/p/') + encodeURIComponent(slug) + '/'
-          const enquireHref = (isEn ? '/en/contact/' : '/contact/') + '?part=' + encodeURIComponent(partNo) + '#quote'
+          const href = base + '/p/' + encodeURIComponent(slug) + '/'
+          const enquireHref = base + '/contact/?part=' + encodeURIComponent(partNo) + '#quote'
           const type = isEn ? typeEn : typeZh
           const imgCell = image
             ? `<img src="${esc(image)}" alt="${esc(partNo)}" width="40" height="40" loading="lazy" class="size-10 rounded-md bg-ink-50 object-contain p-0.5">`

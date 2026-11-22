@@ -8,19 +8,19 @@
  * 微信二维码图片放在 public/brand/wechat-qr.png，替换即可。
  */
 import siteConfig from '../../site.config.mjs'
-import { t, localizePath } from '../i18n/index.mjs'
+import { t, localizePath, isCjk, tx } from '../i18n/index.mjs'
 import Icon from './Icon.astro'
 
 interface Props {
-  lang: 'zh' | 'en'
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
 }
 
 const { lang } = Astro.props
-const isEn = lang === 'en'
+const isEn = !isCjk(lang)
 const c = siteConfig.contact
 const tel = `tel:${c.salesPhone.replace(/[^\d+]/g, '')}`
 const wa = `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(
-  isEn ? 'Hello, I would like to enquire about FILTERSUN filters.' : '你好，我想咨询富滤盛滤清器。',
+  tx(lang, 'Hello, I would like to enquire about FILTERSUN filters.', '你好，我想咨询富滤盛滤清器。'),
 )}`
 const quote = localizePath('/contact/#quote', lang)
 const wechatQr = '/brand/wechat-qr.png'
@@ -41,7 +41,7 @@ const wechatQr = '/brand/wechat-qr.png'
     <span
       class="pointer-events-none absolute right-full mr-3 whitespace-nowrap rounded-lg bg-ink-900 px-3 py-1.5 text-[12.5px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100"
     >
-      {isEn ? 'Call sales' : '销售热线'} · <span class="tnum">{c.salesPhone}</span>
+      {tx(lang, 'Call sales', '销售热线')} · <span class="tnum">{c.salesPhone}</span>
     </span>
   </a>
 
@@ -59,17 +59,17 @@ const wechatQr = '/brand/wechat-qr.png'
     >
       <img
         src={wechatQr}
-        alt={isEn ? 'WeChat QR code' : '微信二维码'}
+        alt={tx(lang, 'WeChat QR code', '微信二维码')}
         width="180"
         height="180"
         loading="lazy"
         class="aspect-square w-full rounded-lg bg-ink-50 object-contain"
       />
       <p class="mt-2.5 text-center text-[12.5px] font-semibold text-ink-800">
-        {isEn ? 'Scan to add us on WeChat' : '扫码加微信，快速报价'}
+        {tx(lang, 'Scan to add us on WeChat', '扫码加微信，快速报价')}
       </p>
       <p class="mt-1 text-center text-[11.5px] text-ink-400">
-        {isEn ? 'WeChat ID' : '微信号'}：<span class="font-mono">{c.wechatId}</span>
+        {tx(lang, 'WeChat ID', '微信号')}：<span class="font-mono">{c.wechatId}</span>
       </p>
     </div>
   </div>
@@ -109,7 +109,7 @@ const wechatQr = '/brand/wechat-qr.png'
     type="button"
     data-to-top
     class="mt-1 flex size-12 translate-y-2 items-center justify-center rounded-xl bg-brand-500 text-white opacity-0 shadow-lift transition-all duration-300 hover:bg-brand-600 data-[show=true]:translate-y-0 data-[show=true]:opacity-100"
-    aria-label={isEn ? 'Back to top' : '回到顶部'}
+    aria-label={tx(lang, 'Back to top', '回到顶部')}
   >
     <Icon name="chevron-up" class="size-5" />
   </button>
@@ -122,11 +122,11 @@ const wechatQr = '/brand/wechat-qr.png'
   <div class="grid grid-cols-3 divide-x divide-ink-100">
     <a href={tel} class="flex flex-col items-center gap-1 py-2.5 active:bg-ink-50">
       <Icon name="phone" class="size-[18px] text-brand-500" />
-      <span class="text-[11.5px] font-medium text-ink-600">{isEn ? 'Call' : '打电话'}</span>
+      <span class="text-[11.5px] font-medium text-ink-600">{tx(lang, 'Call', '打电话')}</span>
     </a>
     <a href={quote} class="flex flex-col items-center gap-1 py-2.5 active:bg-ink-50">
       <Icon name="mail" class="size-[18px] text-brand-500" />
-      <span class="text-[11.5px] font-medium text-ink-600">{isEn ? 'Enquire' : '在线询价'}</span>
+      <span class="text-[11.5px] font-medium text-ink-600">{tx(lang, 'Enquire', '在线询价')}</span>
     </a>
     <a href={wa} target="_blank" rel="noopener nofollow" class="flex flex-col items-center gap-1 py-2.5 active:bg-ink-50">
       <Icon name="whatsapp" class="size-[18px] text-[#25D366]" />

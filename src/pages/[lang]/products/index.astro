@@ -1,0 +1,36 @@
+---
+/** 产品中心（非默认语言） */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import ProductsIndexPage from '../../../components/pages/ProductsIndexPage.astro'
+import { collectionJsonLd } from '../../../lib/seo.mjs'
+import { groups, groupStats, productCount } from '../../../data/products.mjs'
+import { PREFIXED_LANGS, localizePath, bi, t } from '../../../i18n/index.mjs'
+import { pageTitle, pageDesc } from '../../../i18n/meta.mjs'
+
+export function getStaticPaths() {
+  return PREFIXED_LANGS.map((lang) => ({ params: { lang } }))
+}
+
+const lang = Astro.params.lang as string
+
+const ctx = { groups: groups.length, products: productCount }
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: t(lang, 'productsTitle'),
+    description: t(lang, 'productsDesc'),
+    url: '/products/',
+    items: groups.map((g) => ({ name: bi(lang, g, 'name'), href: `/products/${g.slug}/` })),
+  }),
+]
+---
+
+<BaseLayout
+  {lang}
+  title={pageTitle(lang, 'products', ctx)}
+  description={pageDesc(lang, 'products', ctx)}
+  pathname="/products/"
+  jsonLd={jsonLd}
+>
+  <ProductsIndexPage {lang} />
+</BaseLayout>

@@ -6,18 +6,19 @@
  */
 import siteConfig from '../../site.config.mjs'
 import { abs } from './seo.mjs'
+import { bi, isCjk } from '../i18n/index.mjs'
 
 const ORIGIN = siteConfig.url.replace(/\/+$/, '')
 
 export function localPageJsonLd(lang = 'zh') {
-  const isEn = lang === 'en'
+  const isEn = !isCjk(lang)
   const c = siteConfig.contact
 
   return {
     '@context': 'https://schema.org',
     '@type': 'AutoPartsStore',
     '@id': `${ORIGIN}/#localbusiness`,
-    name: isEn ? siteConfig.brand.legalNameEn : siteConfig.brand.legalNameZh,
+    name: bi(lang, siteConfig.brand, 'legalName'),
     image: abs('/brand/og-default.jpg'),
     url: abs(isEn ? '/en/contact/' : '/contact/'),
     telephone: c.salesPhone,
@@ -27,7 +28,7 @@ export function localPageJsonLd(lang = 'zh') {
     paymentAccepted: isEn ? 'Bank transfer, Alipay, WeChat Pay' : '银行转账、支付宝、微信支付',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: isEn ? c.addressEn : c.addressZh,
+      streetAddress: bi(lang, c, 'address'),
       addressLocality: isEn ? 'Dongguan' : '东莞市',
       addressRegion: isEn ? 'Guangdong' : '广东省',
       addressCountry: 'CN',

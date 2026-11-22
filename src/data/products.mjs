@@ -90,8 +90,30 @@ export const products = (raw.products ?? []).map((p) => {
   }
 })
 
-/** 需要生成详情页的件号 */
+/** 需要生成详情页的件号（简体中文，默认语言） */
 export const pageProducts = products.filter((p) => p.hasPage)
+
+/** 有独立图片的件号（用于非英语语言的详情页，控制总文件数） */
+export const imageProducts = products.filter((p) => p.image)
+
+/**
+ * 各语言生成详情页的件号集合。
+ *
+ * Cloudflare Pages 免费版单次部署上限 2 万个文件。6 种语言 × 3,899 个详情页
+ * 会超过上限，因此：
+ *   - en 与 zh（默认语言）保持全量详情页，保证主站内容完整
+ *   - ja / ru / ar / zh-hant 只为「有实物图」的 1,414 个件号生成详情页
+ * 其余件号在这些语言下不输出链接，改为「询价」入口（与原有薄内容页策略一致）。
+ */
+export function pageProductsFor(lang) {
+  return lang === 'en' ? pageProducts : imageProducts
+}
+
+/** 某个件号在指定语言下是否有详情页 */
+export function hasPageFor(product, lang) {
+  if (!product) return false
+  return lang === 'en' ? Boolean(product.hasPage) : Boolean(product.image)
+}
 
 export const productCount = products.length
 export const groupCount = groups.length

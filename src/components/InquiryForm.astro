@@ -7,11 +7,11 @@
  *   - 填写了 endpoint（EdgeOne 边缘函数或第三方表单服务）则走 fetch 提交。
  */
 import siteConfig from '../../site.config.mjs'
-import { t } from '../i18n/index.mjs'
+import { t, isCjk, tx } from '../i18n/index.mjs'
 import Icon from './Icon.astro'
 
 interface Props {
-  lang: 'zh' | 'en'
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
   /** 预填件号（件号详情页用） */
   presetPartNo?: string
   /** 紧凑布局（侧栏 / 页面底部） */
@@ -30,7 +30,7 @@ const {
   class: className = '',
 } = Astro.props
 
-const isEn = lang === 'en'
+const isEn = !isCjk(lang)
 const c = siteConfig.contact
 const endpoint = siteConfig.forms?.endpoint ?? ''
 const formId = `inquiry-${Math.random().toString(36).slice(2, 9)}`
@@ -80,7 +80,7 @@ const label = 'mb-1.5 block text-[12.5px] font-medium text-ink-600'
             name="name"
             required
             autocomplete="name"
-            placeholder={isEn ? 'John Smith' : '张先生 / 李工'}
+            placeholder={tx(lang, 'John Smith', '张先生 / 李工')}
           />
         </div>
 
@@ -95,7 +95,7 @@ const label = 'mb-1.5 block text-[12.5px] font-medium text-ink-600'
             name="phone"
             required
             autocomplete="tel"
-            placeholder={isEn ? '+86 138 0000 0000' : '138 0000 0000'}
+            placeholder={tx(lang, '+86 138 0000 0000', '138 0000 0000')}
           />
         </div>
       </div>
@@ -120,7 +120,7 @@ const label = 'mb-1.5 block text-[12.5px] font-medium text-ink-600'
             type="email"
             name="email"
             autocomplete="email"
-            placeholder={isEn ? 'you@company.com' : '可选，方便发报价单'}
+            placeholder={tx(lang, 'you@company.com', '可选，方便发报价单')}
           />
         </div>
       </div>
@@ -134,7 +134,7 @@ const label = 'mb-1.5 block text-[12.5px] font-medium text-ink-600'
             type="text"
             name="partNo"
             value={presetPartNo}
-            placeholder={isEn ? 'e.g. FS641A, Komatsu PC200-8' : '如 FS641A、小松 PC200-8'}
+            placeholder={tx(lang, 'e.g. FS641A, Komatsu PC200-8', '如 FS641A、小松 PC200-8')}
           />
         </div>
 
@@ -145,7 +145,7 @@ const label = 'mb-1.5 block text-[12.5px] font-medium text-ink-600'
             class={field}
             type="text"
             name="quantity"
-            placeholder={isEn ? 'e.g. 50 pcs' : '如 50 只'}
+            placeholder={tx(lang, 'e.g. 50 pcs', '如 50 只')}
           />
         </div>
       </div>
@@ -158,9 +158,7 @@ const label = 'mb-1.5 block text-[12.5px] font-medium text-ink-600'
           name="message"
           rows="3"
           placeholder={
-            isEn
-              ? 'Machine model, OEM reference, delivery deadline…'
-              : '设备机型、原件号、交期要求等，写得越具体报价越准'
+            tx(lang, 'Machine model, OEM reference, delivery deadline…', '设备机型、原件号、交期要求等，写得越具体报价越准')
           }
         ></textarea>
       </div>
@@ -229,7 +227,7 @@ const label = 'mb-1.5 block text-[12.5px] font-medium text-ink-600'
   }
 
   forms.forEach((form) => {
-    const lang = (form.dataset.lang as 'zh' | 'en') || 'zh'
+    const lang = (form.dataset.lang as 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar') || 'zh'
     const msg = messages[lang]
     const btn = form.querySelector<HTMLButtonElement>('[data-submit-btn]')
     const btnLabel = form.querySelector<HTMLElement>('[data-submit-label]')

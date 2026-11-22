@@ -342,3 +342,37 @@ export const qualityContent = {
     { icon: 'globe', zh: '海外进口商与分销商', en: 'Overseas importers and resellers' },
   ],
 }
+
+/* --------------------------------------------------------------------------
+   多语言覆盖：FAQ 与产品特性
+   content.mjs 里的 faqs / productFeatures 用 { q: { zh, en }, a: { zh, en } }
+   这类双语对象，这里把 ja / ru / ar 直接写进同一个对象。
+   -------------------------------------------------------------------------- */
+import { dataOverrides } from './i18n/index.mjs'
+
+export function contentOverrides() {
+  const langs = Object.keys(dataOverrides)
+  const buckets = langs.map((l) => ({ lang: l, data: dataOverrides[l]?.content }))
+
+  for (const { lang, data } of buckets) {
+    if (!data) continue
+    if (Array.isArray(data.faqs)) {
+      data.faqs.forEach((item, i) => {
+        const target = faqs[i]
+        if (!target) return
+        if (item.q && target.q) target.q[lang] = item.q
+        if (item.a && target.a) target.a[lang] = item.a
+      })
+    }
+    if (Array.isArray(data.productFeatures)) {
+      data.productFeatures.forEach((item, i) => {
+        const target = productFeatures[i]
+        if (!target) return
+        if (item.title && target.title) target.title[lang] = item.title
+        if (item.desc && target.desc) target.desc[lang] = item.desc
+      })
+    }
+  }
+}
+
+contentOverrides()

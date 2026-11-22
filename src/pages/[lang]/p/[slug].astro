@@ -1,0 +1,44 @@
+---
+/** 件号详情（非默认语言） */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import ProductDetailPage from '../../../components/pages/ProductDetailPage.astro'
+import { pageProductsFor } from '../../../data/products.mjs'
+import { groupBySlug } from '../../../data/groups.mjs'
+import { productJsonLd, breadcrumbJsonLd } from '../../../lib/seo.mjs'
+import { PREFIXED_LANGS, bi, t } from '../../../i18n/index.mjs'
+
+export function getStaticPaths() {
+  return PREFIXED_LANGS.flatMap((lang) =>
+    pageProductsFor(lang).map((product) => ({
+      params: { lang, slug: product.slug },
+      props: { product },
+    })),
+  )
+}
+
+const lang = Astro.params.lang as string
+const { product } = Astro.props
+const group = groupBySlug[product.group]
+const typeLabel = bi(lang, product, 'type')
+
+const jsonLd = [
+  productJsonLd(lang, product, group),
+  breadcrumbJsonLd(lang, [
+    { label: t(lang, 'home'), href: '/' },
+    { label: t(lang, 'productsTitle'), href: '/products/' },
+    ...(group ? [{ label: bi(lang, group, 'name'), href: `/products/${group.slug}/` }] : []),
+    { label: product.partNo, href: `/p/${product.slug}/` },
+  ]),
+]
+---
+
+<BaseLayout
+  {lang}
+  title={`${product.partNo} ${typeLabel}${product.spec ? ' ' + product.spec : ''} — ${t(lang, 'spec')} | FILTERSUN`}
+  description={`${product.partNo} FILTERSUN ${typeLabel}${product.spec ? ', ' + product.spec : ''}. ${t(lang, 'oemRefValue')}`}
+  pathname={`/p/${product.slug}/`}
+  image={product.image ?? undefined}
+  jsonLd={jsonLd}
+>
+  <ProductDetailPage {lang} product={product} />
+</BaseLayout>

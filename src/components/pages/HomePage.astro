@@ -3,7 +3,7 @@
  * HomePage.astro — 首页主体（中英共用，通过 lang 切换文案）
  */
 import siteConfig from '../../../site.config.mjs'
-import { t, localizePath } from '../../i18n/index.mjs'
+import { t, localizePath, bi, isCjk, tx } from '../../i18n/index.mjs'
 import { groups, groupStats, productCount, withImageCount } from '../../data/products.mjs'
 import { applications } from '../../data/applications.mjs'
 import { faqs, news, serviceContent } from '../../data/content.mjs'
@@ -14,10 +14,10 @@ import FaqList from '../FaqList.astro'
 import InquiryForm from '../InquiryForm.astro'
 
 interface Props {
-  lang: 'zh' | 'en'
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
 }
 const { lang } = Astro.props
-const isEn = lang === 'en'
+const isEn = !isCjk(lang)
 const p = (path: string) => localizePath(path, lang)
 const c = siteConfig.contact
 const pr = siteConfig.principal
@@ -63,7 +63,7 @@ const stats = [
             <Icon name="shield" class="size-3.5 text-white" strokeWidth={2} />
           </span>
           <span class="text-[12.5px] font-medium tracking-wide text-ink-600">
-            {isEn ? siteConfig.brand.taglineEn : siteConfig.brand.taglineZh}
+            {bi(lang, siteConfig.brand, 'tagline')}
           </span>
         </div>
 
@@ -104,7 +104,7 @@ const stats = [
         <div class="mt-9 flex flex-wrap items-center gap-3" data-reveal style="--reveal-delay:180ms">
           <a href={p('/search/')} class="btn btn-primary btn-lg">
             <Icon name="search" class="size-[18px]" />
-            {isEn ? 'Find my part number' : '查询件号 / 机型'}
+            {tx(lang, 'Find my part number', '查询件号 / 机型')}
           </a>
           <a href={p('/contact/#quote')} class="btn btn-ghost btn-lg">
             <Icon name="mail" class="size-[18px]" />
@@ -128,9 +128,7 @@ const stats = [
               type="search"
               name="q"
               class="h-11 min-w-0 flex-1 border-0 bg-transparent text-[14.5px] text-ink-900 placeholder:text-ink-400 focus:outline-none"
-              placeholder={isEn
-                ? 'Part number, machine model or keyword…'
-                : '输入件号、机型或关键词，如 FS641A / 小松 PC200'}
+              placeholder={tx(lang, 'Part number, machine model or keyword…', '输入件号、机型或关键词，如 FS641A / 小松 PC200')}
               aria-label={t(lang, 'finderTitle')}
             />
             <button type="submit" class="btn btn-primary btn-sm shrink-0">
@@ -171,10 +169,10 @@ const stats = [
             </span>
             <div>
               <p class="text-[15px] font-semibold text-ink-900">
-                {isEn ? 'Three ways to find it' : '三种方式，找到对的滤芯'}
+                {tx(lang, 'Three ways to find it', '三种方式，找到对的滤芯')}
               </p>
               <p class="text-[12px] text-ink-400">
-                {isEn ? 'No part number? No problem.' : '没有件号也能配'}
+                {tx(lang, 'No part number? No problem.', '没有件号也能配')}
               </p>
             </div>
           </div>
@@ -228,7 +226,7 @@ const stats = [
 
           <div class="mt-6 flex items-center justify-between border-t border-ink-100 pt-5">
             <div>
-              <p class="text-[11.5px] text-ink-400">{isEn ? 'Sales hotline' : '销售热线'}</p>
+              <p class="text-[11.5px] text-ink-400">{tx(lang, 'Sales hotline', '销售热线')}</p>
               <a href={tel} class="tnum mt-0.5 block text-[17px] font-semibold text-ink-900 transition hover:text-brand-600">
                 {c.salesPhone}
               </a>
@@ -276,7 +274,7 @@ const stats = [
 <section class="border-b border-ink-100 bg-white py-7">
   <div class="shell flex flex-col gap-5 lg:flex-row lg:items-center lg:gap-10">
     <p class="shrink-0 text-[12px] font-semibold uppercase tracking-[0.14em] text-ink-400">
-      {isEn ? 'Certified & trusted' : '资质与认证'}
+      {tx(lang, 'Certified & trusted', '资质与认证')}
     </p>
     <div class="mask-fade-x relative flex-1 overflow-hidden">
       <div class="flex w-max animate-marquee items-center gap-10 hover:[animation-play-state:paused]">
@@ -299,12 +297,12 @@ const stats = [
 <section class="section bg-white">
   <div class="shell">
     <SectionHeading
-      eyebrow={isEn ? 'Product groups' : '产品中心'}
-      title={isEn ? 'Find the right filter by application' : '按应用场景，找到对的滤芯'}
+      eyebrow={tx(lang, 'Product groups', '产品中心')}
+      title={tx(lang, 'Find the right filter by application', '按应用场景，找到对的滤芯')}
       desc={isEn
         ? `We reorganised the factory's catalogue into ${groups.length} application groups, so selection takes two clicks instead of a paper catalogue.`
         : `我们把厂家的件号按你的设备类型重新整理成 ${groups.length} 个大类，选型从「翻目录」变成「点两下」。`}
-      actionLabel={isEn ? 'All products' : '浏览全部产品'}
+      actionLabel={tx(lang, 'All products', '浏览全部产品')}
       actionHref={p('/products/')}
     />
 
@@ -332,7 +330,7 @@ const stats = [
               >
                 <img
                   src={g.image}
-                  alt={isEn ? g.nameEn : g.nameZh}
+                  alt={bi(lang, g, 'name')}
                   width="800"
                   height="500"
                   loading="lazy"
@@ -358,7 +356,7 @@ const stats = [
                     isWide ? 'text-[20px] lg:text-[24px]' : 'text-[16.5px]',
                   ]}
                 >
-                  {isEn ? g.nameEn : g.nameZh}
+                  {bi(lang, g, 'name')}
                 </h3>
 
                 <p
@@ -367,7 +365,7 @@ const stats = [
                     isWide ? 'text-[14px] lg:text-[15px]' : 'text-[13px]',
                   ]}
                 >
-                  {isEn ? g.taglineEn : g.taglineZh}
+                  {bi(lang, g, 'tagline')}
                 </p>
 
                 <div class="mt-auto flex items-center gap-3 pt-5">
@@ -376,7 +374,7 @@ const stats = [
                   </span>
                   {isWide && (
                     <span class="chip tnum">
-                      {stat?.typeCount ?? 0} {isEn ? 'categories' : '品类'}
+                      {stat?.typeCount ?? 0} {tx(lang, 'categories', '品类')}
                     </span>
                   )}
                   <Icon
@@ -409,10 +407,10 @@ const stats = [
                 </span>
                 <span class="min-w-0 flex-1">
                   <span class="block truncate text-[15.5px] font-semibold text-ink-900 group-hover:text-brand-600">
-                    {isEn ? g.nameEn : g.nameZh}
+                    {bi(lang, g, 'name')}
                   </span>
                   <span class="mt-0.5 block truncate text-[12.5px] text-ink-400">
-                    {isEn ? g.taglineEn : g.taglineZh}
+                    {bi(lang, g, 'tagline')}
                   </span>
                 </span>
                 <span class="tnum shrink-0 text-[12.5px] font-medium text-ink-400">
@@ -440,9 +438,9 @@ const stats = [
 
   <div class="shell relative grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
     <div>
-      <span class="eyebrow">{isEn ? 'Part finder' : '件号查询'}</span>
+      <span class="eyebrow">{tx(lang, 'Part finder', '件号查询')}</span>
       <h2 class="mt-3 text-[28px] font-semibold leading-tight text-ink-900 md:text-[38px]" data-reveal>
-        {isEn ? 'Not sure which part number?' : '不确定要哪个件号？'}
+        {tx(lang, 'Not sure which part number?', '不确定要哪个件号？')}
       </h2>
       <p class="mt-4 max-w-lg text-[15px] leading-relaxed text-ink-500" data-reveal>
         {
@@ -470,11 +468,11 @@ const stats = [
       <div class="mt-8 flex flex-wrap gap-3" data-reveal>
         <a href={p('/search/')} class="btn btn-primary">
           <Icon name="search" class="size-4" />
-          {isEn ? 'Open part finder' : '打开件号查询'}
+          {tx(lang, 'Open part finder', '打开件号查询')}
         </a>
         <a href={p('/products/')} class="btn btn-ghost">
           <Icon name="grid" class="size-4" />
-          {isEn ? 'Browse by category' : '按品类浏览'}
+          {tx(lang, 'Browse by category', '按品类浏览')}
         </a>
       </div>
     </div>
@@ -515,7 +513,7 @@ const stats = [
             }
           </div>
           <p class="mt-4 text-center text-[11.5px] text-ink-400">
-            {isEn ? 'Live results from our own catalogue' : '数据来自我们自己的件号库，实时检索'}
+            {tx(lang, 'Live results from our own catalogue', '数据来自我们自己的件号库，实时检索')}
           </p>
         </div>
       </div>
@@ -529,17 +527,15 @@ const stats = [
 <section class="section bg-white">
   <div class="shell">
     <SectionHeading
-      eyebrow={isEn ? 'Why us' : '我们的优势'}
-      title={isEn ? 'Why customers choose us' : '为什么客户选择我们'}
-      desc={isEn
-        ? 'A distributor earns its place by what happens after the order — stock, fitment accuracy and technical backup.'
-        : '代理商的价值不在于货架上有什么，而在于下单之后：有没有现货、配得准不准、出问题有没有人管。'}
+      eyebrow={tx(lang, 'Why us', '我们的优势')}
+      title={tx(lang, 'Why customers choose us', '为什么客户选择我们')}
+      desc={tx(lang, 'A distributor earns its place by what happens after the order — stock, fitment accuracy and technical backup.', '代理商的价值不在于货架上有什么，而在于下单之后：有没有现货、配得准不准、出问题有没有人管。')}
       align="center"
     />
 
     <div class="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {
-        (isEn ? siteConfig.promisesEn : siteConfig.promisesZh).map((item, i) => (
+        (bi(lang, siteConfig, 'promises')).map((item, i) => (
           <div
             class="card card-hover group p-6"
             data-reveal
@@ -576,7 +572,7 @@ const stats = [
         <div class="col-span-2 overflow-hidden rounded-2xl">
           <img
             src="/media/factory/1258ce5d1737594.jpg"
-            alt={isEn ? 'Production workshop' : '生产车间'}
+            alt={tx(lang, 'Production workshop', '生产车间')}
             width="1200"
             height="800"
             loading="lazy"
@@ -586,7 +582,7 @@ const stats = [
         <div class="overflow-hidden rounded-2xl">
           <img
             src="/media/factory/c002b39ef339a07.jpg"
-            alt={isEn ? 'Workshop equipment' : '车间设备'}
+            alt={tx(lang, 'Workshop equipment', '车间设备')}
             width="600"
             height="600"
             loading="lazy"
@@ -597,7 +593,7 @@ const stats = [
           <div class="overflow-hidden rounded-2xl">
             <img
               src="/media/factory/978d796e67dd442.jpg"
-              alt={isEn ? 'Workshop equipment' : '车间设备'}
+              alt={tx(lang, 'Workshop equipment', '车间设备')}
               width="600"
               height="300"
               loading="lazy"
@@ -609,7 +605,7 @@ const stats = [
               {pr.facts.plantAreaSqm.toLocaleString()}
             </p>
             <p class="mt-1.5 text-[12px] text-white/75">
-              {isEn ? 'm² production area' : '平方米生产面积'}
+              {tx(lang, 'm² production area', '平方米生产面积')}
             </p>
           </div>
         </div>
@@ -618,9 +614,9 @@ const stats = [
 
     <!-- 右：文字 -->
     <div class="lg:col-span-6 lg:pl-4">
-      <span class="eyebrow">{isEn ? 'Behind the brand' : '品牌实力'}</span>
+      <span class="eyebrow">{tx(lang, 'Behind the brand', '品牌实力')}</span>
       <h2 class="mt-3 text-[28px] font-semibold leading-tight text-ink-900 md:text-[38px]" data-reveal>
-        {isEn ? 'Manufacturing strength you can audit' : '我们敢承诺品质，因为工厂经得起查'}
+        {tx(lang, 'Manufacturing strength you can audit', '我们敢承诺品质，因为工厂经得起查')}
       </h2>
       <p class="mt-5 text-[15px] leading-[1.85] text-ink-500" data-reveal>
         {
@@ -632,7 +628,7 @@ const stats = [
 
       <div class="mt-8 space-y-4">
         {
-          (isEn ? pr.basesEn : pr.basesZh).map((base, i) => (
+          (bi(lang, pr, 'bases')).map((base, i) => (
             <div class="flex items-start gap-3.5" data-reveal style={`--reveal-delay:${i * 60}ms`}>
               <span class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-50 text-[11px] font-semibold text-brand-600">
                 {i + 1}
@@ -656,10 +652,10 @@ const stats = [
 
       <div class="mt-9 flex flex-wrap gap-3" data-reveal>
         <a href={p('/quality/')} class="btn btn-dark">
-          {isEn ? 'Quality & certifications' : '查看品质与认证'}
+          {tx(lang, 'Quality & certifications', '查看品质与认证')}
           <Icon name="arrow-right" class="size-4" />
         </a>
-        <a href={p('/about/')} class="btn btn-ghost">{isEn ? 'About us' : '关于我们'}</a>
+        <a href={p('/about/')} class="btn btn-ghost">{tx(lang, 'About us', '关于我们')}</a>
       </div>
     </div>
   </div>
@@ -671,12 +667,10 @@ const stats = [
 <section class="section bg-white">
   <div class="shell">
     <SectionHeading
-      eyebrow={isEn ? 'Industries' : '应用领域'}
-      title={isEn ? 'Where our filters work' : '这些行业，都在用我们的滤芯'}
-      desc={isEn
-        ? 'From quarries to cleanrooms — pick your industry to see the recommended filter set and the usual failure points.'
-        : '从矿山到无尘车间，选择你的行业，查看推荐的滤芯配置与常见故障点。'}
-      actionLabel={isEn ? 'All industries' : '查看全部领域'}
+      eyebrow={tx(lang, 'Industries', '应用领域')}
+      title={tx(lang, 'Where our filters work', '这些行业，都在用我们的滤芯')}
+      desc={tx(lang, 'From quarries to cleanrooms — pick your industry to see the recommended filter set and the usual failure points.', '从矿山到无尘车间，选择你的行业，查看推荐的滤芯配置与常见故障点。')}
+      actionLabel={tx(lang, 'All industries', '查看全部领域')}
       actionHref={p('/applications/')}
     />
 
@@ -694,12 +688,12 @@ const stats = [
             </span>
             <span class="min-w-0 flex-1">
               <span class="block text-[14.5px] font-semibold text-ink-900 group-hover:text-brand-600">
-                {isEn ? a.nameEn : a.nameZh}
+                {bi(lang, a, 'name')}
               </span>
               <span class="mt-1 block line-clamp-2 text-[12.5px] leading-relaxed text-ink-400">
-                {isEn ? a.shortEn : a.shortZh}
+                {bi(lang, a, 'short')}
                 {' · '}
-                {isEn ? a.groups.length : a.groups.length} {isEn ? 'groups' : '个品类'}
+                {isEn ? a.groups.length : a.groups.length} {tx(lang, 'groups', '个品类')}
               </span>
             </span>
           </a>
@@ -715,8 +709,8 @@ const stats = [
 <section class="section bg-ink-50">
   <div class="shell">
     <SectionHeading
-      eyebrow={isEn ? 'How it works' : '服务流程'}
-      title={isEn ? 'From enquiry to delivery in four steps' : '从询价到收货，只要四步'}
+      eyebrow={tx(lang, 'How it works', '服务流程')}
+      title={tx(lang, 'From enquiry to delivery in four steps', '从询价到收货，只要四步')}
       align="center"
     />
 
@@ -755,12 +749,10 @@ const stats = [
 <section class="section bg-white">
   <div class="shell">
     <SectionHeading
-      eyebrow={isEn ? 'News & guides' : '新闻资讯'}
-      title={isEn ? 'Selection guides and maintenance notes' : '选型指南与运维笔记'}
-      desc={isEn
-        ? 'Practical notes written by people who actually handle filter failures — not reposted press releases.'
-        : '由真正处理过故障的人写的实操经验，不是转载的通稿。'}
-      actionLabel={isEn ? 'All articles' : '查看全部文章'}
+      eyebrow={tx(lang, 'News & guides', '新闻资讯')}
+      title={tx(lang, 'Selection guides and maintenance notes', '选型指南与运维笔记')}
+      desc={tx(lang, 'Practical notes written by people who actually handle filter failures — not reposted press releases.', '由真正处理过故障的人写的实操经验，不是转载的通稿。')}
+      actionLabel={tx(lang, 'All articles', '查看全部文章')}
       actionHref={p('/news/')}
     />
 
@@ -812,17 +804,15 @@ const stats = [
 <section class="section bg-ink-50">
   <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
     <div class="lg:col-span-4">
-      <span class="eyebrow">{isEn ? 'FAQ' : '常见问题'}</span>
+      <span class="eyebrow">{tx(lang, 'FAQ', '常见问题')}</span>
       <h2 class="mt-3 text-[28px] font-semibold leading-tight text-ink-900 md:text-[36px]" data-reveal>
-        {isEn ? 'Questions buyers ask us most' : '采购最常问的几个问题'}
+        {tx(lang, 'Questions buyers ask us most', '采购最常问的几个问题')}
       </h2>
       <p class="mt-4 text-[14.5px] leading-relaxed text-ink-500" data-reveal>
-        {isEn
-          ? 'Still not answered? Send us a message — a person replies, not an autoresponder.'
-          : '没有找到答案？直接发消息给我们，是真人回复，不是自动应答。'}
+        {tx(lang, 'Still not answered? Send us a message — a person replies, not an autoresponder.', '没有找到答案？直接发消息给我们，是真人回复，不是自动应答。')}
       </p>
       <a href={p('/faq/')} class="btn btn-ghost mt-7" data-reveal>
-        {isEn ? 'All questions' : '查看全部问题'}
+        {tx(lang, 'All questions', '查看全部问题')}
         <Icon name="arrow-right" class="size-4" />
       </a>
     </div>
@@ -846,26 +836,24 @@ const stats = [
 
   <div class="shell relative grid gap-12 lg:grid-cols-12 lg:gap-14">
     <div class="lg:col-span-5">
-      <span class="eyebrow">{isEn ? 'Get a quote' : '获取报价'}</span>
+      <span class="eyebrow">{tx(lang, 'Get a quote', '获取报价')}</span>
       <h2 class="mt-3 text-[28px] font-semibold leading-tight text-ink-900 md:text-[38px]" data-reveal>
-        {isEn ? 'Send the part number — we handle the rest' : '把件号发过来，剩下的交给我们'}
+        {tx(lang, 'Send the part number — we handle the rest', '把件号发过来，剩下的交给我们')}
       </h2>
       <p class="mt-5 text-[15px] leading-[1.85] text-ink-500" data-reveal>
-        {isEn
-          ? 'Quotation and lead time within one business day. Bulk orders, custom builds and export enquiries are all welcome.'
-          : '一个工作日内回复报价与货期。批量采购、非标定制、出口订单同样欢迎。'}
+        {tx(lang, 'Quotation and lead time within one business day. Bulk orders, custom builds and export enquiries are all welcome.', '一个工作日内回复报价与货期。批量采购、非标定制、出口订单同样欢迎。')}
       </p>
 
       <ul class="mt-9 space-y-3" data-reveal>
         {
           [
-            { icon: 'phone', label: isEn ? 'Sales hotline' : '销售热线', value: c.salesPhone, href: tel },
+            { icon: 'phone', label: tx(lang, 'Sales hotline', '销售热线'), value: c.salesPhone, href: tel },
             ...(c.landline
-              ? [{ icon: 'headset', label: isEn ? 'Landline' : '座机', value: c.landline, href: `tel:${c.landline.replace(/[^\d+]/g, '')}` }]
+              ? [{ icon: 'headset', label: tx(lang, 'Landline', '座机'), value: c.landline, href: `tel:${c.landline.replace(/[^\d+]/g, '')}` }]
               : []),
-            { icon: 'wechat', label: isEn ? 'WeChat' : '微信', value: c.wechatId, href: null },
-            { icon: 'whatsapp', label: 'WhatsApp', value: `+${c.whatsapp}`, href: wa },
-            { icon: 'mail', label: isEn ? 'Email' : '邮箱', value: c.email, href: `mailto:${c.email}` },
+            { icon: 'wechat', label: tx(lang, 'WeChat', '微信'), value: c.wechatId, href: null },
+            { icon: 'whatsapp', label: 'WhatsApp', value: c.whatsappDisplay, href: wa },
+            { icon: 'mail', label: tx(lang, 'Email', '邮箱'), value: c.email, href: `mailto:${c.email}` },
           ].map((row) => (
             <li class="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-soft ring-1 ring-ink-100">
               <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">

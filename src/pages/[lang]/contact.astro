@@ -1,0 +1,45 @@
+---
+/** 联系我们（非默认语言） */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import ContactPage from '../../components/pages/ContactPage.astro'
+import siteConfig from '../../../site.config.mjs'
+import { localPageJsonLd } from '../../lib/local-business.mjs'
+import { PREFIXED_LANGS, langMeta, localizePath, t } from '../../i18n/index.mjs'
+import { pageTitle, pageDesc } from '../../i18n/meta.mjs'
+
+export function getStaticPaths() {
+  return PREFIXED_LANGS.map((lang) => ({ params: { lang } }))
+}
+
+const lang = Astro.params.lang as string
+
+const c = siteConfig.contact
+const ctx = {
+  salesPhone: c.salesPhone,
+  mobile: c.mobile,
+  whatsapp: c.whatsappDisplay,
+  wechat: c.wechatId,
+  email: c.email,
+}
+
+const jsonLd = [
+  localPageJsonLd(lang),
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: t(lang, 'contactUs'),
+    url: `${siteConfig.url.replace(/\/+$/, '')}${localizePath('/contact/', lang)}`,
+    inLanguage: langMeta[lang]?.htmlLang ?? lang,
+  },
+]
+---
+
+<BaseLayout
+  {lang}
+  title={pageTitle(lang, 'contact', ctx)}
+  description={pageDesc(lang, 'contact', ctx)}
+  pathname="/contact/"
+  jsonLd={jsonLd}
+>
+  <ContactPage {lang} />
+</BaseLayout>

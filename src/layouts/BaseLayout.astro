@@ -7,7 +7,7 @@
  */
 import '../styles/global.css'
 import siteConfig from '../../site.config.mjs'
-import { langMeta, t, localizePath } from '../i18n/index.mjs'
+import { LANGS, langMeta, t, localizePath, isCjk } from '../i18n/index.mjs'
 import { abs, alternates, organizationJsonLd, websiteJsonLd } from '../lib/seo.mjs'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
@@ -15,7 +15,7 @@ import FloatingContact from '../components/FloatingContact.astro'
 
 interface Props {
   /** 当前语言 */
-  lang: 'zh' | 'en'
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
   /** 页面标题（不含品牌名，组件会自动拼接） */
   title: string
   description: string
@@ -49,7 +49,7 @@ const {
 } = Astro.props
 
 const meta = langMeta[lang]
-const brand = lang === 'en' ? siteConfig.brand.shortNameEn : siteConfig.brand.shortNameZh
+const brand = isCjk(lang) ? siteConfig.brand.shortNameZh : siteConfig.brand.shortNameEn
 const fullTitle = title.includes(brand) ? title : `${title} | ${brand}`
 
 /**
@@ -71,7 +71,7 @@ const robots = noindex || !siteConfig.indexingEnabled ? 'noindex, nofollow' : 'i
 ---
 
 <!doctype html>
-<html lang={meta.htmlLang} class="scroll-smooth">
+<html lang={meta.htmlLang} dir={meta.dir} class="scroll-smooth">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -104,7 +104,9 @@ const robots = noindex || !siteConfig.indexingEnabled ? 'noindex, nofollow' : 'i
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content={meta.ogLocale} />
-    {lang === 'zh' ? <meta property="og:locale:alternate" content="en_US" /> : <meta property="og:locale:alternate" content="zh_CN" />}
+    {LANGS.filter((l) => l !== lang).map((l) => (
+      <meta property="og:locale:alternate" content={langMeta[l].ogLocale} />
+    ))}
 
     {/* Twitter / X */}
     <meta name="twitter:card" content="summary_large_image" />
@@ -124,7 +126,7 @@ const robots = noindex || !siteConfig.indexingEnabled ? 'noindex, nofollow' : 'i
 
     {/* 联系方式的机器可读副本，方便浏览器/爬虫直接取用 */}
     <meta name="format-detection" content="telephone=yes" />
-    <meta name="author" content={siteConfig.brand.legalNameZh} />
+    <meta name="author" content={isCjk(lang) ? siteConfig.brand.legalNameZh : siteConfig.brand.legalNameEn} />
   </head>
 
   <body class={`min-h-screen bg-white antialiased ${bodyClass}`}>
@@ -132,7 +134,7 @@ const robots = noindex || !siteConfig.indexingEnabled ? 'noindex, nofollow' : 'i
       href="#main"
       class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-ink-900 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
     >
-      {t(lang, 'menu') === 'Menu' ? 'Skip to content' : '跳到主要内容'}
+      {isCjk(lang) ? '跳到主要内容' : 'Skip to content'}
     </a>
 
     <Header {lang} {pathname} {darkHeader} {transparentHeader} />

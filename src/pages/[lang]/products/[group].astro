@@ -1,0 +1,44 @@
+---
+/** 产品大类（非默认语言） */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import GroupPage from '../../../components/pages/GroupPage.astro'
+import { groups, groupStats } from '../../../data/products.mjs'
+import { collectionJsonLd, breadcrumbJsonLd } from '../../../lib/seo.mjs'
+import { PREFIXED_LANGS, bi, t } from '../../../i18n/index.mjs'
+
+export function getStaticPaths() {
+  const langs = PREFIXED_LANGS.map((lang) => ({ lang }))
+  return langs.flatMap(({ lang }) =>
+    groups.map((group) => ({ params: { lang, group: group.slug }, props: { group } })),
+  )
+}
+
+const lang = Astro.params.lang as string
+const { group } = Astro.props
+const stat = groupStats[group.slug]
+const gName = bi(lang, group, 'name')
+const gDesc = bi(lang, group, 'desc')
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: gName,
+    description: gDesc,
+    url: `/products/${group.slug}/`,
+  }),
+  breadcrumbJsonLd(lang, [
+    { label: t(lang, 'home'), href: '/' },
+    { label: t(lang, 'productsTitle'), href: '/products/' },
+    { label: gName, href: `/products/${group.slug}/` },
+  ]),
+]
+---
+
+<BaseLayout
+  {lang}
+  title={`${gName} — ${stat?.count ?? 0} ${t(lang, 'productsCount')}`}
+  description={`${gDesc.slice(0, 110)}… ${stat?.count ?? 0} ${t(lang, 'productsCount')}`}
+  pathname={`/products/${group.slug}/`}
+  jsonLd={jsonLd}
+>
+  <GroupPage {lang} {group} />
+</BaseLayout>

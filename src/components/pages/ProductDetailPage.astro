@@ -6,7 +6,7 @@
  * 相关件号 + 结构化数据，避免成为「薄内容」页。
  */
 import siteConfig from '../../../site.config.mjs'
-import { t, localizePath } from '../../i18n/index.mjs'
+import { t, localizePath, bi, isCjk, tx } from '../../i18n/index.mjs'
 import { getRelated, groupBySlug } from '../../data/products.mjs'
 import { applicationBySlug } from '../../data/applications.mjs'
 import { productFeatures, faqs } from '../../data/content.mjs'
@@ -17,7 +17,7 @@ import InquiryForm from '../InquiryForm.astro'
 import FaqList from '../FaqList.astro'
 
 interface Props {
-  lang: 'zh' | 'en'
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
   product: {
     partNo: string
     spec: string
@@ -32,7 +32,7 @@ interface Props {
 }
 
 const { lang, product } = Astro.props
-const isEn = lang === 'en'
+const isEn = !isCjk(lang)
 const p = (path: string) => localizePath(path, lang)
 const c = siteConfig.contact
 const pr = siteConfig.principal
@@ -50,7 +50,7 @@ const relatedApps = (group?.applications ?? []).map((s) => applicationBySlug[s])
 const crumbs = [
   { label: t(lang, 'home'), href: '/' },
   { label: t(lang, 'productsTitle'), href: '/products/' },
-  ...(group ? [{ label: isEn ? group.nameEn : group.nameZh, href: `/products/${group.slug}/` }] : []),
+  ...(group ? [{ label: bi(lang, group, 'name'), href: `/products/${group.slug}/` }] : []),
   { label: product.partNo },
 ]
 
@@ -89,7 +89,7 @@ const quickFaqs = faqs.slice(0, 4).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
               <div class="relative flex aspect-[5/4] flex-col items-center justify-center gap-4 bg-ink-50 text-ink-300">
                 <Icon name={group?.icon ?? 'layers'} class="size-20 opacity-40" strokeWidth={1.1} />
                 <p class="text-[12.5px] text-ink-400">
-                  {isEn ? 'Photo available on request' : '实物图请联系客服索取'}
+                  {tx(lang, 'Photo available on request', '实物图请联系客服索取')}
                 </p>
               </div>
             )
@@ -115,7 +115,7 @@ const quickFaqs = faqs.slice(0, 4).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
       <!-- 信息 -->
       <div class="lg:col-span-7">
         <div class="flex flex-wrap items-center gap-2.5">
-          {group && <span class="chip chip-brand">{isEn ? group.nameEn : group.nameZh}</span>}
+          {group && <span class="chip chip-brand">{bi(lang, group, 'name')}</span>}
           {typeLabel && <span class="chip">{typeLabel}</span>}
         </div>
 
@@ -148,13 +148,13 @@ const quickFaqs = faqs.slice(0, 4).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
             [
               { k: t(lang, 'partNo'), v: product.partNo, mono: true },
               { k: t(lang, 'type'), v: typeLabel },
-              { k: t(lang, 'spec'), v: product.spec || (isEn ? 'Ask us' : '请联系客服'), mono: true },
-              { k: isEn ? 'Category' : '所属品类', v: product.categoryName },
+              { k: t(lang, 'spec'), v: product.spec || (tx(lang, 'Ask us', '请联系客服')), mono: true },
+              { k: tx(lang, 'Category', '所属品类'), v: product.categoryName },
               {
                 k: t(lang, 'oemRef'),
                 v: t(lang, 'oemRefValue'),
               },
-              { k: isEn ? 'Brand' : '品牌', v: 'FILTERSUN' },
+              { k: tx(lang, 'Brand', '品牌'), v: 'FILTERSUN' },
             ].map((row) => (
               <div class="bg-white px-5 py-4">
                 <dt class="text-[11.5px] text-ink-400">{row.k}</dt>
@@ -171,7 +171,7 @@ const quickFaqs = faqs.slice(0, 4).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
           specParts.length > 1 && (
             <div class="mt-6">
               <p class="text-[11.5px] uppercase tracking-[0.14em] text-ink-400">
-                {isEn ? 'Dimensions breakdown' : '尺寸拆解'}
+                {tx(lang, 'Dimensions breakdown', '尺寸拆解')}
               </p>
               <div class="mt-3 flex flex-wrap gap-2">
                 {specParts.map((s, i) => (
@@ -201,9 +201,7 @@ const quickFaqs = faqs.slice(0, 4).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
         </div>
 
         <p class="mt-5 text-[12.5px] leading-relaxed text-ink-400">
-          {isEn
-            ? 'Price on request — volume pricing available. Lead time confirmed when you order.'
-            : '价格面议，支持批量阶梯价；下单时确认货期。'}
+          {tx(lang, 'Price on request — volume pricing available. Lead time confirmed when you order.', '价格面议，支持批量阶梯价；下单时确认货期。')}
         </p>
       </div>
     </div>
@@ -213,9 +211,9 @@ const quickFaqs = faqs.slice(0, 4).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
 <!-- ================= 产品特性 ================= -->
 <section class="section-tight bg-white">
   <div class="shell">
-    <span class="eyebrow">{isEn ? 'Product features' : '产品特性'}</span>
+    <span class="eyebrow">{tx(lang, 'Product features', '产品特性')}</span>
     <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
-      {isEn ? 'What goes into this filter' : '这只滤芯的用料与工艺'}
+      {tx(lang, 'What goes into this filter', '这只滤芯的用料与工艺')}
     </h2>
 
     <div class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -237,9 +235,9 @@ const quickFaqs = faqs.slice(0, 4).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
   relatedApps.length > 0 && (
     <section class="section-tight bg-ink-50">
       <div class="shell">
-        <span class="eyebrow">{isEn ? 'Applications' : '适用领域'}</span>
+        <span class="eyebrow">{tx(lang, 'Applications', '适用领域')}</span>
         <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
-          {isEn ? 'Machines and industries this fits' : '适配的设备与行业'}
+          {tx(lang, 'Machines and industries this fits', '适配的设备与行业')}
         </h2>
 
         <div class="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -250,10 +248,10 @@ const quickFaqs = faqs.slice(0, 4).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
               </span>
               <span class="min-w-0 flex-1">
                 <span class="block truncate text-[14px] font-semibold text-ink-900 group-hover:text-brand-600">
-                  {isEn ? a.nameEn : a.nameZh}
+                  {bi(lang, a, 'name')}
                 </span>
                 <span class="mt-0.5 block truncate text-[12px] text-ink-400">
-                  {isEn ? a.shortEn : a.shortZh}
+                  {bi(lang, a, 'short')}
                 </span>
               </span>
             </a>
@@ -262,9 +260,7 @@ const quickFaqs = faqs.slice(0, 4).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
 
         <p class="mt-6 rounded-2xl bg-white p-5 text-[13px] leading-relaxed text-ink-500 ring-1 ring-ink-100">
           {
-            isEn
-              ? 'Fitment varies by machine year and configuration. Send us your machine model or a photo of the old filter and we will confirm before you order.'
-              : '具体适配随机型年份与配置有所不同。把设备机型或旧滤芯照片发给我们，下单前帮你确认，避免买错。'
+            tx(lang, 'Fitment varies by machine year and configuration. Send us your machine model or a photo of the old filter and we will confirm before you order.', '具体适配随机型年份与配置有所不同。把设备机型或旧滤芯照片发给我们，下单前帮你确认，避免买错。')
           }
         </p>
       </div>
@@ -279,7 +275,7 @@ const quickFaqs = faqs.slice(0, 4).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
       <div class="shell">
         <div class="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <span class="eyebrow">{isEn ? 'Related' : '相关件号'}</span>
+            <span class="eyebrow">{tx(lang, 'Related', '相关件号')}</span>
             <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
               {isEn ? `Other ${typeLabel} numbers` : `同类 ${typeLabel} 件号`}
             </h2>
@@ -287,7 +283,7 @@ const quickFaqs = faqs.slice(0, 4).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
           {group && (
             <a href={p(`/products/${group.slug}/`)} class="btn btn-ghost btn-sm">
               <Icon name="grid" class="size-4" />
-              {isEn ? 'View group' : '查看大类'}
+              {tx(lang, 'View group', '查看大类')}
             </a>
           )}
         </div>
@@ -308,14 +304,12 @@ const quickFaqs = faqs.slice(0, 4).map((f) => ({ q: f.q[lang], a: f.a[lang] }))
 <section class="section bg-ink-50" id="quote">
   <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
     <div class="lg:col-span-5">
-      <span class="eyebrow">{isEn ? 'Enquire' : '询价'}</span>
+      <span class="eyebrow">{tx(lang, 'Enquire', '询价')}</span>
       <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[32px]">
         {isEn ? `Enquire about ${product.partNo}` : `询价 ${product.partNo}`}
       </h2>
       <p class="mt-4 text-[14.5px] leading-relaxed text-ink-500">
-        {isEn
-          ? 'Tell us the quantity and delivery deadline and we will come back with pricing, stock status and lead time within one business day.'
-          : '告诉我们数量和交期要求，一个工作日内回复价格、库存状态与货期。'}
+        {tx(lang, 'Tell us the quantity and delivery deadline and we will come back with pricing, stock status and lead time within one business day.', '告诉我们数量和交期要求，一个工作日内回复价格、库存状态与货期。')}
       </p>
 
       <FaqList items={quickFaqs} {lang} class="mt-8" />

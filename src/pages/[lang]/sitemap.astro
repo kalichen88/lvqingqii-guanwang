@@ -1,0 +1,22 @@
+---
+/** 网站地图（非默认语言） */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import SitemapPage from '../../components/pages/SitemapPage.astro'
+import { PREFIXED_LANGS } from '../../i18n/index.mjs'
+import { pageTitle, pageDesc } from '../../i18n/meta.mjs'
+
+export function getStaticPaths() {
+  return PREFIXED_LANGS.map((lang) => ({ params: { lang } }))
+}
+
+const lang = Astro.params.lang as string
+---
+
+<BaseLayout
+  {lang}
+  title={pageTitle(lang, 'sitemap')}
+  description={pageDesc(lang, 'sitemap')}
+  pathname="/sitemap/"
+>
+  <SitemapPage {lang} />
+</BaseLayout>

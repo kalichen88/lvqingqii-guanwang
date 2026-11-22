@@ -1,0 +1,29 @@
+---
+/** 关于我们（非默认语言） */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AboutPage from '../../components/pages/AboutPage.astro'
+import siteConfig from '../../../site.config.mjs'
+import { PREFIXED_LANGS, isCjk } from '../../i18n/index.mjs'
+import { pageTitle, pageDesc } from '../../i18n/meta.mjs'
+
+export function getStaticPaths() {
+  return PREFIXED_LANGS.map((lang) => ({ params: { lang } }))
+}
+
+const lang = Astro.params.lang as string
+
+const pr = siteConfig.principal
+const ctx = {
+  principalZh: pr.nameZh,
+  principalEn: pr.nameEn,
+}
+---
+
+<BaseLayout
+  {lang}
+  title={pageTitle(lang, 'about', ctx)}
+  description={pageDesc(lang, 'about', ctx)}
+  pathname="/about/"
+>
+  <AboutPage {lang} />
+</BaseLayout>

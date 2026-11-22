@@ -6,8 +6,8 @@
  * 便于搜索引擎抓取每个件号链接）+ 应用领域 + 相关大类。
  */
 import siteConfig from '../../../site.config.mjs'
-import { t, localizePath } from '../../i18n/index.mjs'
-import { getByGroup, getTypesOfGroup, groupStats, groups } from '../../data/products.mjs'
+import { t, localizePath, bi, isCjk, tx } from '../../i18n/index.mjs'
+import { getByGroup, getTypesOfGroup, groupStats, groups, hasPageFor } from '../../data/products.mjs'
 import { applicationBySlug } from '../../data/applications.mjs'
 import Icon from '../Icon.astro'
 import ProductCard from '../ProductCard.astro'
@@ -15,12 +15,12 @@ import PageHero from '../PageHero.astro'
 import InquiryForm from '../InquiryForm.astro'
 
 interface Props {
-  lang: 'zh' | 'en'
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
   group: (typeof groups)[number]
 }
 
 const { lang, group } = Astro.props
-const isEn = lang === 'en'
+const isEn = !isCjk(lang)
 const p = (path: string) => localizePath(path, lang)
 
 const products = getByGroup(group.slug)
@@ -44,7 +44,7 @@ const otherGroups = groups.filter((g) => g.slug !== group.slug).slice(0, 3)
 const crumbs = [
   { label: t(lang, 'home'), href: '/' },
   { label: t(lang, 'productsTitle'), href: '/products/' },
-  { label: isEn ? group.nameEn : group.nameZh },
+  { label: bi(lang, group, 'name') },
 ]
 
 const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g, '-').toLowerCase()
@@ -55,17 +55,17 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
   {lang}
   icon={group.icon}
   eyebrow={isEn ? `Product group ${group.no}` : `产品大类 ${group.no}`}
-  title={isEn ? group.nameEn : group.nameZh}
-  desc={isEn ? group.descEn : group.descZh}
+  title={bi(lang, group, 'name')}
+  desc={bi(lang, group, 'desc')}
   crumbs={crumbs}
 >
   <div slot="below">
     <p class="mt-6 text-[15px] font-medium text-brand-600">
-      {isEn ? group.taglineEn : group.taglineZh}
+      {bi(lang, group, 'tagline')}
     </p>
     <ul class="mt-5 flex flex-wrap gap-x-6 gap-y-3">
       {
-        (isEn ? group.highlightsEn : group.highlightsZh).map((h) => (
+        (bi(lang, group, 'highlights')).map((h) => (
           <li class="inline-flex items-center gap-2 text-[13px] text-ink-600">
             <Icon name="check" class="size-3.5 text-brand-500" strokeWidth={2.4} />
             {h}
@@ -79,7 +79,7 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
     <div class="overflow-hidden rounded-2xl shadow-lift ring-1 ring-ink-100">
       <img
         src={group.image}
-        alt={isEn ? group.nameEn : group.nameZh}
+        alt={bi(lang, group, 'name')}
         width="800"
         height="450"
         class="aspect-[16/9] w-full object-cover"
@@ -110,14 +110,14 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
       <div class="shell">
         <div class="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <span class="eyebrow">{isEn ? 'Featured' : '代表件号'}</span>
+            <span class="eyebrow">{tx(lang, 'Featured', '代表件号')}</span>
             <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
-              {isEn ? 'Popular numbers in this group' : '该大类常用件号'}
+              {tx(lang, 'Popular numbers in this group', '该大类常用件号')}
             </h2>
           </div>
           <a href="#catalog" class="btn btn-ghost btn-sm">
             <Icon name="list" class="size-4" />
-            {isEn ? 'Jump to full list' : '跳到完整清单'}
+            {tx(lang, 'Jump to full list', '跳到完整清单')}
           </a>
         </div>
 
@@ -138,12 +138,12 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
   <div class="shell">
     <div class="flex flex-wrap items-end justify-between gap-6">
       <div>
-        <span class="eyebrow">{isEn ? 'Full catalogue' : '完整件号清单'}</span>
+        <span class="eyebrow">{tx(lang, 'Full catalogue', '完整件号清单')}</span>
         <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
           {isEn ? `${products.length} part numbers` : `共 ${products.length} 个件号`}
         </h2>
         <p class="mt-2 text-[13.5px] text-ink-500">
-          {isEn ? 'Click any number to see full details and enquire.' : '点击任意件号查看详情并直接询价。'}
+          {tx(lang, 'Click any number to see full details and enquire.', '点击任意件号查看详情并直接询价。')}
         </p>
       </div>
 
@@ -153,7 +153,7 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
           <input
             type="search"
             data-table-filter
-            placeholder={isEn ? 'Filter within this group…' : '在本大类内筛选件号 / 规格…'}
+            placeholder={tx(lang, 'Filter within this group…', '在本大类内筛选件号 / 规格…')}
             class="h-11 w-full rounded-xl border-0 bg-white pl-10 pr-3 text-[14px] text-ink-800 ring-1 ring-ink-200 placeholder:text-ink-400 focus:ring-2 focus:ring-brand-500"
           />
         </div>
@@ -216,7 +216,7 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
                           )}
                         </td>
                         <td>
-                          {prod.hasPage ? (
+                          {hasPageFor(prod, lang) ? (
                             <a
                               href={p(`/p/${prod.slug}/`)}
                               class="partno text-[13.5px] font-medium text-ink-900 transition hover:text-brand-600"
@@ -230,7 +230,7 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
                         <td class="tnum text-[12.5px] text-ink-500">{prod.spec || '—'}</td>
                         <td class="text-[12.5px] text-ink-400">{isEn ? prod.typeEn : prod.type}</td>
                         <td>
-                          {prod.hasPage ? (
+                          {hasPageFor(prod, lang) ? (
                             <a
                               href={p(`/p/${prod.slug}/`)}
                               class="inline-flex items-center gap-1 whitespace-nowrap text-[12.5px] font-medium text-brand-600 hover:text-brand-700"
@@ -243,7 +243,7 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
                               href={`${p('/contact/')}?part=${encodeURIComponent(prod.partNo)}#quote`}
                               class="inline-flex items-center gap-1 whitespace-nowrap text-[12.5px] font-medium text-ink-500 hover:text-brand-600"
                             >
-                              {isEn ? 'Enquire' : '询价'}
+                              {tx(lang, 'Enquire', '询价')}
                               <Icon name="mail" class="size-3.5" />
                             </a>
                           )}
@@ -261,13 +261,11 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
 
     <div class="mt-8 rounded-2xl bg-white p-6 text-center ring-1 ring-ink-100">
       <p class="text-[14px] text-ink-500">
-        {isEn
-          ? 'Cannot find the number you need? Send it to us and we will check with the factory.'
-          : '没找到需要的件号？发给我们，我们向厂家核实后回复。'}
+        {tx(lang, 'Cannot find the number you need? Send it to us and we will check with the factory.', '没找到需要的件号？发给我们，我们向厂家核实后回复。')}
       </p>
       <a href={p('/contact/#quote')} class="btn btn-primary mt-5">
         <Icon name="mail" class="size-4" />
-        {isEn ? 'Send an enquiry' : '提交询价'}
+        {tx(lang, 'Send an enquiry', '提交询价')}
       </a>
     </div>
   </div>
@@ -278,9 +276,9 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
   relatedApps.length > 0 && (
     <section class="section bg-white">
       <div class="shell">
-        <span class="eyebrow">{isEn ? 'Applications' : '应用领域'}</span>
+        <span class="eyebrow">{tx(lang, 'Applications', '应用领域')}</span>
         <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
-          {isEn ? 'Where these filters are used' : '这些滤芯用在哪里'}
+          {tx(lang, 'Where these filters are used', '这些滤芯用在哪里')}
         </h2>
 
         <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -291,10 +289,10 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
               </span>
               <span class="min-w-0">
                 <span class="block text-[15px] font-semibold text-ink-900 group-hover:text-brand-600">
-                  {isEn ? a.nameEn : a.nameZh}
+                  {bi(lang, a, 'name')}
                 </span>
                 <span class="mt-1 block line-clamp-2 text-[12.5px] leading-relaxed text-ink-400">
-                  {isEn ? a.leadEn : a.leadZh}
+                  {bi(lang, a, 'lead')}
                 </span>
               </span>
             </a>
@@ -309,9 +307,9 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
 <section class="section bg-ink-50">
   <div class="shell grid gap-12 lg:grid-cols-12 lg:gap-14">
     <div class="lg:col-span-5">
-      <span class="eyebrow">{isEn ? 'Other groups' : '其他大类'}</span>
+      <span class="eyebrow">{tx(lang, 'Other groups', '其他大类')}</span>
       <h2 class="mt-3 text-[24px] font-semibold text-ink-900 md:text-[30px]">
-        {isEn ? 'Keep browsing' : '继续浏览'}
+        {tx(lang, 'Keep browsing', '继续浏览')}
       </h2>
 
       <div class="mt-6 space-y-3">
@@ -323,7 +321,7 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
               </span>
               <span class="min-w-0 flex-1">
                 <span class="block truncate text-[14.5px] font-semibold text-ink-900 group-hover:text-brand-600">
-                  {isEn ? g.nameEn : g.nameZh}
+                  {bi(lang, g, 'name')}
                 </span>
                 <span class="mt-0.5 block truncate text-[12px] text-ink-400">
                   {groupStats[g.slug]?.count ?? 0} {t(lang, 'productsCount')}
@@ -335,7 +333,7 @@ const anchor = (s: string) => 'cat-' + String(s).replace(/[^\w\u4e00-\u9fa5]+/g,
         }
         <a href={p('/products/')} class="btn btn-ghost w-full">
           <Icon name="grid" class="size-4" />
-          {isEn ? 'All product groups' : '查看全部大类'}
+          {tx(lang, 'All product groups', '查看全部大类')}
         </a>
       </div>
     </div>

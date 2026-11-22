@@ -5,16 +5,16 @@
  * 不止告诉用户「找不到」，还把最可能的出口直接给出来，减少跳出。
  */
 import siteConfig from '../../../site.config.mjs'
-import { t, localizePath } from '../../i18n/index.mjs'
+import { t, localizePath, bi, isCjk, tx } from '../../i18n/index.mjs'
 import { groups } from '../../data/products.mjs'
 import { applications } from '../../data/applications.mjs'
 import Icon from '../Icon.astro'
 
 interface Props {
-  lang: 'zh' | 'en'
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
 }
 const { lang } = Astro.props
-const isEn = lang === 'en'
+const isEn = !isCjk(lang)
 const p = (path: string) => localizePath(path, lang)
 const c = siteConfig.contact
 ---
@@ -37,7 +37,7 @@ const c = siteConfig.contact
           <input
             type="search"
             name="q"
-            placeholder={isEn ? 'Search a part number…' : '搜索件号，如 FS641A'}
+            placeholder={tx(lang, 'Search a part number…', '搜索件号，如 FS641A')}
             class="h-11 min-w-0 flex-1 border-0 bg-transparent text-[15px] text-ink-900 placeholder:text-ink-400 focus:outline-none"
             aria-label={t(lang, 'finderTitle')}
           />
@@ -52,7 +52,7 @@ const c = siteConfig.contact
         </a>
         <a href={p('/products/')} class="btn btn-ghost">
           <Icon name="grid" class="size-4" />
-          {isEn ? 'All products' : '全部产品'}
+          {tx(lang, 'All products', '全部产品')}
         </a>
         <a href={`tel:${c.salesPhone.replace(/[^\d+]/g, '')}`} class="btn btn-ghost">
           <Icon name="phone" class="size-4" />
@@ -64,7 +64,7 @@ const c = siteConfig.contact
     <!-- 热门入口 -->
     <div class="mx-auto mt-16 max-w-4xl">
       <p class="text-center text-[11.5px] uppercase tracking-[0.16em] text-ink-400">
-        {isEn ? 'Popular destinations' : '常去的地方'}
+        {tx(lang, 'Popular destinations', '常去的地方')}
       </p>
       <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {
@@ -75,7 +75,7 @@ const c = siteConfig.contact
             >
               <Icon name={g.icon} class="size-4 shrink-0 text-brand-500" />
               <span class="truncate text-[13.5px] font-medium text-ink-700 group-hover:text-brand-700">
-                {isEn ? g.nameEn : g.nameZh}
+                {bi(lang, g, 'name')}
               </span>
             </a>
           ))
@@ -88,7 +88,7 @@ const c = siteConfig.contact
             >
               <Icon name={a.icon} class="size-4 shrink-0 text-brand-500" />
               <span class="truncate text-[13.5px] font-medium text-ink-700 group-hover:text-brand-700">
-                {isEn ? a.nameEn : a.nameZh}
+                {bi(lang, a, 'name')}
               </span>
             </a>
           ))

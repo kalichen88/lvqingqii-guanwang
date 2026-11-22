@@ -3,7 +3,7 @@
  * AboutPage.astro — 关于我们（代理商视角，而非工厂视角）
  */
 import siteConfig from '../../../site.config.mjs'
-import { t, localizePath } from '../../i18n/index.mjs'
+import { t, localizePath, bi, isCjk, tx } from '../../i18n/index.mjs'
 import { groups, groupStats, productCount } from '../../data/products.mjs'
 import { applications } from '../../data/applications.mjs'
 import Icon from '../Icon.astro'
@@ -12,10 +12,10 @@ import SectionHeading from '../SectionHeading.astro'
 import InquiryForm from '../InquiryForm.astro'
 
 interface Props {
-  lang: 'zh' | 'en'
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
 }
 const { lang } = Astro.props
-const isEn = lang === 'en'
+const isEn = !isCjk(lang)
 const p = (path: string) => localizePath(path, lang)
 const c = siteConfig.contact
 const pr = siteConfig.principal
@@ -74,8 +74,8 @@ const values = [
 
 <PageHero
   {lang}
-  eyebrow={isEn ? 'About us' : '关于我们'}
-  title={isEn ? 'We are the distributor, and that is the point' : '我们是代理，而这恰恰是关键'}
+  eyebrow={tx(lang, 'About us', '关于我们')}
+  title={tx(lang, 'We are the distributor, and that is the point', '我们是代理，而这恰恰是关键')}
   desc={isEn
     ? `We are an authorized distributor of ${pr.nameEn}. We do not claim to be the factory — we claim to be the shortest path between the factory and your machine.`
     : `我们是${pr.nameZh}的授权代理服务商。我们不假装自己是工厂——我们的价值是在工厂和你的设备之间，做最短的那条路。`}
@@ -84,7 +84,7 @@ const values = [
   <div slot="aside">
     <div class="rounded-2xl bg-white p-6 shadow-lift ring-1 ring-ink-100">
       <p class="text-[12.5px] uppercase tracking-[0.14em] text-ink-400">
-        {isEn ? 'By the numbers' : '一些数字'}
+        {tx(lang, 'By the numbers', '一些数字')}
       </p>
       <dl class="mt-5 grid grid-cols-2 gap-5">
         {
@@ -109,9 +109,9 @@ const values = [
 <section class="section bg-white">
   <div class="shell grid gap-14 lg:grid-cols-12 lg:gap-12">
     <div class="lg:col-span-7">
-      <span class="eyebrow">{isEn ? 'What we do' : '我们做什么'}</span>
+      <span class="eyebrow">{tx(lang, 'What we do', '我们做什么')}</span>
       <h2 class="mt-3 text-[26px] font-semibold leading-tight text-ink-900 md:text-[34px]" data-reveal>
-        {isEn ? 'A filter distributor that answers the phone' : '一个会接电话的滤芯代理'}
+        {tx(lang, 'A filter distributor that answers the phone', '一个会接电话的滤芯代理')}
       </h2>
 
       <div class="prose-cn mt-6">
@@ -178,8 +178,8 @@ const values = [
 <section class="section bg-ink-50">
   <div class="shell">
     <SectionHeading
-      eyebrow={isEn ? 'Milestones' : '发展历程'}
-      title={isEn ? 'How we got here' : '我们是怎么走到今天的'}
+      eyebrow={tx(lang, 'Milestones', '发展历程')}
+      title={tx(lang, 'How we got here', '我们是怎么走到今天的')}
     />
 
     <ol class="relative mt-12 space-y-8 border-l border-ink-200 pl-8 md:pl-10">
@@ -202,9 +202,9 @@ const values = [
 <section class="section bg-white">
   <div class="shell">
     <div class="mx-auto max-w-3xl text-center">
-      <span class="eyebrow eyebrow-plain justify-center">{isEn ? 'Our relationship with the factory' : '我们与厂家的关系'}</span>
+      <span class="eyebrow eyebrow-plain justify-center">{tx(lang, 'Our relationship with the factory', '我们与厂家的关系')}</span>
       <h2 class="mt-3 text-[26px] font-semibold leading-tight text-ink-900 md:text-[34px]" data-reveal>
-        {isEn ? 'Authorized, and happy to prove it' : '授权代理，随时可以验证'}
+        {tx(lang, 'Authorized, and happy to prove it', '授权代理，随时可以验证')}
       </h2>
       <p class="mt-5 text-[14.5px] leading-[1.9] text-ink-500" data-reveal>
         {
@@ -241,18 +241,18 @@ const values = [
     <div class="lg:col-span-5">
       <span class="eyebrow">{t(lang, 'contactUs')}</span>
       <h2 class="mt-3 text-[26px] font-semibold leading-tight text-ink-900 md:text-[32px]">
-        {isEn ? 'Talk to a person' : '直接找人聊'}
+        {tx(lang, 'Talk to a person', '直接找人聊')}
       </h2>
 
       <ul class="mt-8 space-y-4">
         {
           [
-            { icon: 'phone', label: isEn ? 'Sales hotline' : '销售热线', value: c.salesPhone, href: `tel:${c.salesPhone.replace(/[^\d+]/g, '')}` },
-            { icon: 'wrench', label: isEn ? 'Technical support' : '技术支持', value: c.techPhone, href: `tel:${c.techPhone.replace(/[^\d+]/g, '')}` },
+            { icon: 'phone', label: tx(lang, 'Sales hotline', '销售热线'), value: c.salesPhone, href: `tel:${c.salesPhone.replace(/[^\d+]/g, '')}` },
+            { icon: 'wrench', label: tx(lang, 'Technical support', '技术支持'), value: c.techPhone, href: `tel:${c.techPhone.replace(/[^\d+]/g, '')}` },
             { icon: 'wechat', label: 'WeChat', value: c.wechatId, href: null },
-            { icon: 'mail', label: isEn ? 'Email' : '邮箱', value: c.email, href: `mailto:${c.email}` },
-            { icon: 'location', label: isEn ? 'Address' : '地址', value: isEn ? c.addressEn : c.addressZh, href: null },
-            { icon: 'clock', label: isEn ? 'Business hours' : '工作时间', value: isEn ? c.hoursEn : c.hoursZh, href: null },
+            { icon: 'mail', label: tx(lang, 'Email', '邮箱'), value: c.email, href: `mailto:${c.email}` },
+            { icon: 'location', label: tx(lang, 'Address', '地址'), value: bi(lang, c, 'address'), href: null },
+            { icon: 'clock', label: tx(lang, 'Business hours', '工作时间'), value: bi(lang, c, 'hours'), href: null },
           ].map((row) => (
             <li class="flex items-start gap-4 rounded-2xl bg-white p-4 ring-1 ring-ink-100">
               <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ink-50 text-ink-500">

@@ -107,6 +107,65 @@ export const siteConfig = {
 
 ---
 
+## 2.5 ★ 多语言（6 语言）
+
+| 语言 | URL 前缀 | `<html lang>` | 排版方向 |
+| --- | --- | --- | --- |
+| 简体中文（默认） | `/` | `zh-CN` | LTR |
+| English | `/en/` | `en` | LTR |
+| 繁體中文 | `/zh-hant/` | `zh-Hant` | LTR |
+| 日本語 | `/ja/` | `ja` | LTR |
+| Русский | `/ru/` | `ru` | LTR |
+| العربية | `/ar/` | `ar` | **RTL** |
+
+**目录结构**
+
+```
+src/i18n/
+├─ index.mjs              语言注册表、路径工具、t() / tx() / pick() / bi()、本地化格式
+├─ meta.mjs               各页面 SEO 标题与描述（分语言）
+├─ messages/<lang>.mjs    界面文案（扁平键值，107 个键 × 6 语言）
+└─ copy/<lang>.mjs        页面正文长文案覆盖表（以英文原文为 key，ja / ru / ar）
+src/data/i18n/<lang>.mjs  业务数据覆盖（8 大类 + 18 应用领域 + 10 条 FAQ + 6 条产品特性）
+scripts/integrations/zh-hant.mjs  构建后用 OpenCC 把 /zh-hant/ 全文转繁體（s2twp）
+```
+
+**新增/修改文案的位置**
+
+| 要改的东西 | 改哪里 |
+| --- | --- |
+| 导航、按钮、表单、页脚等界面词 | `src/i18n/messages/<lang>.mjs` |
+| 页面 SEO 标题/描述 | `src/i18n/meta.mjs` |
+| 首页/内页的标题句、段落 | 组件里的 `tx(lang, '英文', '中文')`，译文放 `src/i18n/copy/<lang>.mjs` |
+| 产品大类 / 应用领域 / FAQ 内容 | `src/data/i18n/<lang>.mjs` |
+| 电话、WhatsApp、地址、营业时间 | `site.config.mjs` → `contact` |
+
+**语言与地区的适应处理**
+
+- **阿拉伯语**：`<html dir="rtl">`，阿拉伯字体栈，`.fixed.right-*` / `.text-left` / `.space-x-*` 等在 RTL 下自动镜像；
+  表单与正文的 `letter-spacing` 归零（阿拉伯文不能加字距）。
+- **日语**：优先日文字形栈（Hiragino / Yu Gothic / Meiryo），避免汉字被按简体字形渲染。
+- **繁體中文**：优先台湾/香港字形（PingFang TC / Noto Sans TC / 微软正黑）；
+  简体文案由 OpenCC `s2twp`（含台湾用词转换）自动生成，无需维护两份译稿。
+- **俄语**：西里尔字母走 Inter，字距归零，行高放宽。
+- **数字/日期**：统一用 `Intl` 按语言格式化（`fmtNumber` / `fmtDate` / `fmtCompact`）。
+- **渠道偏好**：`langMeta[lang].contactChannel` 标记该市场首选渠道（中文=微信，其余=WhatsApp）。
+
+**文件数上限（重要）**
+
+Cloudflare Pages 免费版单次部署上限 2 万个文件。因此详情页策略按语言分级
+（见 [`products.mjs`](./src/data/products.mjs) 的 `pageProductsFor`）：
+
+| 语言 | 件号详情页 |
+| --- | --- |
+| zh / en | 全量（3,899 个） |
+| zh-hant / ja / ru / ar | 仅有实物图的件号（1,414 个） |
+
+当前构建：**13,634 页 / 15,127 个文件**，仍在 2 万上限内。若把其他语言也放开到全量，
+会变成约 2.4 万页、逼近或超过上限 —— 需要时先升级 Cloudflare 套餐或改 `productPagePolicy`。
+
+---
+
 ## 3. 站点结构与规模
 
 ```

@@ -1,31 +1,34 @@
 ---
-/** Article detail (English) */
+/** 文章详情（非默认语言） */
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import NewsPostPage from '../../../components/pages/NewsPostPage.astro'
 import { news } from '../../../data/content.mjs'
 import { articleJsonLd, breadcrumbJsonLd } from '../../../lib/seo.mjs'
+import { PREFIXED_LANGS, pick, t } from '../../../i18n/index.mjs'
 
 export function getStaticPaths() {
-  return news.map((post) => ({ params: { slug: post.slug }, props: { post } }))
+  return PREFIXED_LANGS.flatMap((lang) =>
+    news.map((post) => ({ params: { lang, slug: post.slug }, props: { post } })),
+  )
 }
 
+const lang = Astro.params.lang as string
 const { post } = Astro.props
-const lang = 'en' as const
 
 const jsonLd = [
   articleJsonLd(lang, post),
   breadcrumbJsonLd(lang, [
-    { label: 'Home', href: '/' },
-    { label: 'News', href: '/news/' },
-    { label: post.title.en, href: `/news/${post.slug}/` },
+    { label: t(lang, 'home'), href: '/' },
+    { label: t(lang, 'navNews'), href: '/news/' },
+    { label: pick(lang, post.title), href: `/news/${post.slug}/` },
   ]),
 ]
 ---
 
 <BaseLayout
   {lang}
-  title={post.title.en}
-  description={post.summary.en}
+  title={pick(lang, post.title)}
+  description={pick(lang, post.summary)}
   pathname={`/news/${post.slug}/`}
   image={post.cover}
   jsonLd={jsonLd}

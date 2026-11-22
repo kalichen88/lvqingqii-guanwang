@@ -1,0 +1,37 @@
+---
+/** 件号查询（非默认语言） */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import FinderPage from '../../../components/pages/FinderPage.astro'
+import { collectionJsonLd, faqJsonLd } from '../../../lib/seo.mjs'
+import { faqs } from '../../../data/content.mjs'
+import { productCount } from '../../../data/products.mjs'
+import { PREFIXED_LANGS, pick, t } from '../../../i18n/index.mjs'
+import { pageTitle, pageDesc } from '../../../i18n/meta.mjs'
+
+export function getStaticPaths() {
+  return PREFIXED_LANGS.map((lang) => ({ params: { lang } }))
+}
+
+const lang = Astro.params.lang as string
+
+const ctx = { products: productCount }
+
+const jsonLd = [
+  collectionJsonLd(lang, {
+    name: t(lang, 'finderTitle'),
+    description: t(lang, 'finderDesc'),
+    url: '/search/',
+  }),
+  faqJsonLd(faqs.slice(0, 4).map((f) => ({ q: pick(lang, f.q), a: pick(lang, f.a) }))),
+]
+---
+
+<BaseLayout
+  {lang}
+  title={pageTitle(lang, 'finder', ctx)}
+  description={pageDesc(lang, 'finder', ctx)}
+  pathname="/search/"
+  jsonLd={jsonLd}
+>
+  <FinderPage {lang} />
+</BaseLayout>

@@ -1,0 +1,23 @@
+---
+/** 404（非默认语言） */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import NotFoundPage from '../../components/pages/NotFoundPage.astro'
+import { PREFIXED_LANGS } from '../../i18n/index.mjs'
+import { pageTitle, pageDesc } from '../../i18n/meta.mjs'
+
+export function getStaticPaths() {
+  return PREFIXED_LANGS.map((lang) => ({ params: { lang } }))
+}
+
+const lang = Astro.params.lang as string
+---
+
+<BaseLayout
+  {lang}
+  title={pageTitle(lang, 'notFound')}
+  description={pageDesc(lang, 'notFound')}
+  pathname="/404"
+  noindex={true}
+>
+  <NotFoundPage {lang} />
+</BaseLayout>

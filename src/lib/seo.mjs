@@ -6,7 +6,7 @@
  */
 
 import siteConfig from '../../site.config.mjs'
-import { LANGS, langMeta, localizePath, neutralPath } from '../i18n/index.mjs'
+import { LANGS, langMeta, localizePath, neutralPath, bi, isCjk } from '../i18n/index.mjs'
 
 const ORIGIN = siteConfig.url.replace(/\/+$/, '')
 
@@ -18,7 +18,7 @@ export const abs = (path = '/') => {
 
 /** 组合页面标题：页面名 | 品牌名 */
 export function pageTitle(lang, title) {
-  const brand = lang === 'en' ? siteConfig.brand.shortNameEn : siteConfig.brand.shortNameZh
+  const brand = isCjk(lang) ? siteConfig.brand.shortNameZh : siteConfig.brand.shortNameEn
   if (!title) return brand
   // 已经包含品牌名就不再拼接
   if (title.includes(brand) || title.includes(siteConfig.brand.shortNameZh)) return title
@@ -40,7 +40,7 @@ export function clampDesc(text, lang = 'zh') {
 export function alternates(pathname) {
   const neutral = neutralPath(pathname)
   const list = LANGS.map((l) => ({
-    hreflang: langMeta[l].code,
+    hreflang: langMeta[l].htmlLang,
     href: abs(localizePath(neutral, l)),
   }))
   // x-default 指向中文版（主要市场）
@@ -55,20 +55,20 @@ export function alternates(pathname) {
 /** 组织信息（全站注入一次即可） */
 export function organizationJsonLd(lang = 'zh') {
   const contact = siteConfig.contact
-  const isEn = lang === 'en'
+  const isEn = !isCjk(lang)
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     '@id': `${ORIGIN}/#organization`,
-    name: isEn ? siteConfig.brand.legalNameEn : siteConfig.brand.legalNameZh,
-    alternateName: isEn ? siteConfig.brand.shortNameZh : siteConfig.brand.shortNameEn,
+    name: bi(lang, siteConfig.brand, 'legalName'),
+    alternateName: lang === 'en' ? siteConfig.brand.shortNameZh : siteConfig.brand.shortNameEn,
     url: abs(localizePath('/', lang)),
     logo: abs('/brand/logo.svg'),
-    description: isEn ? siteConfig.brand.positioningEn : siteConfig.brand.positioningZh,
+    description: bi(lang, siteConfig.brand, 'positioning'),
     foundingDate: String(siteConfig.compliance.since),
     address: {
       '@type': 'PostalAddress',
-      streetAddress: isEn ? contact.addressEn : contact.addressZh,
+      streetAddress: bi(lang, contact, 'address'),
       addressCountry: 'CN',
       addressRegion: isEn ? 'Guangdong' : '广东省',
       addressLocality: isEn ? 'Dongguan' : '东莞市',
@@ -130,7 +130,7 @@ export function breadcrumbJsonLd(lang, items) {
 
 /** 产品（用于件号详情页，是 B2B 采购搜索的核心结构化数据） */
 export function productJsonLd(lang, product, group) {
-  const isEn = lang === 'en'
+  const isEn = !isCjk(lang)
   const name = isEn
     ? `${product.partNo} ${product.typeEn || product.type} — ${group?.nameEn ?? ''}`
     : `${product.partNo} ${product.type} — ${group?.nameZh ?? ''}`
@@ -147,7 +147,7 @@ export function productJsonLd(lang, product, group) {
     name,
     sku: product.partNo,
     mpn: product.partNo,
-    category: group ? (isEn ? group.nameEn : group.nameZh) : undefined,
+    category: group ? (bi(lang, group, 'name')) : undefined,
     brand: { '@type': 'Brand', name: 'FILTERSUN' },
     manufacturer: { '@type': 'Organization', name: siteConfig.principal.nameEn },
     description: isEn
