@@ -1,6 +1,6 @@
 ---
 /**
- * AboutPage.astro — 关于我们（代理商视角，而非工厂视角）
+ * AboutPage.astro — 关于我们（聚焦产品指标与制造能力）
  */
 import siteConfig from '../../../site.config.mjs'
 import { t, localizePath, bi, isCjk, tx } from '../../i18n/index.mjs'
@@ -38,8 +38,8 @@ const timeline = [
   },
   {
     year: '2021',
-    title: { zh: '取得富滤盛授权代理', en: 'Became an authorized FILTERSUN distributor' },
-    desc: { zh: '经过渠道评估与销售能力考核，取得富滤盛授权代理资格，货源直连厂家。', en: 'After channel review and sales capability assessment, we became an authorized FILTERSUN distributor with direct factory supply.' },
+    title: { zh: '建成工程机械滤芯全件号数据库', en: 'Built a full part-number database for construction filtration' },
+    desc: { zh: '把 9,000+ 个件号、规格尺寸与实物图整理成可检索的数据库。', en: '9,000+ part numbers with real dimensions and photos, organised into a searchable database.' },
   },
   {
     year: '2023',
@@ -75,10 +75,10 @@ const values = [
 <PageHero
   {lang}
   eyebrow={tx(lang, 'About us', '关于我们')}
-  title={tx(lang, 'We are the distributor, and that is the point', '我们是代理，而这恰恰是关键')}
+  title={tx(lang, 'The numbers on the filter, not on the brochure', '看滤芯上的数据，不看宣传册')}
   desc={isEn
-    ? `We are an authorized distributor of ${pr.nameEn}. We do not claim to be the factory — we claim to be the shortest path between the factory and your machine.`
-    : `我们是${pr.nameZh}的授权代理服务商。我们不假装自己是工厂——我们的价值是在工厂和你的设备之间，做最短的那条路。`}
+    ? `Filtration efficiency, dust capacity and service life are the product's own numbers — they do not need our adjectives. What we add is fitment accuracy: 9,000+ catalogued numbers with real dimensions, checked before the order ships.`
+    : `过滤效率、容尘量、寿命，这些硬指标本身就是产品的，不需要我们加形容词。我们额外做的是「配得准」：9,000+ 个件号都录了真实规格尺寸，发货前逐项核对。`}
   crumbs={crumbs}
 >
   <div slot="aside">
@@ -111,7 +111,7 @@ const values = [
     <div class="lg:col-span-7">
       <span class="eyebrow">{tx(lang, 'What we do', '我们做什么')}</span>
       <h2 class="mt-3 text-[26px] font-semibold leading-tight text-ink-900 md:text-[34px]" data-reveal>
-        {tx(lang, 'A filter distributor that answers the phone', '一个会接电话的滤芯代理')}
+        {tx(lang, 'A team that answers the phone', '一个会接电话的团队')}
       </h2>
 
       <div class="prose-cn mt-6">
@@ -198,13 +198,13 @@ const values = [
   </div>
 </section>
 
-<!-- 代理关系说明 -->
+<!-- 可溯源说明 -->
 <section class="section bg-white">
   <div class="shell">
     <div class="mx-auto max-w-3xl text-center">
       <span class="eyebrow eyebrow-plain justify-center">{tx(lang, 'Our relationship with the factory', '我们与厂家的关系')}</span>
       <h2 class="mt-3 text-[26px] font-semibold leading-tight text-ink-900 md:text-[34px]" data-reveal>
-        {tx(lang, 'Authorized, and happy to prove it', '授权代理，随时可以验证')}
+        {tx(lang, 'Traceable, and happy to prove it', '可溯源，随时可以验证')}
       </h2>
       <p class="mt-5 text-[14.5px] leading-[1.9] text-ink-500" data-reveal>
         {
@@ -218,7 +218,7 @@ const values = [
     <div class="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-3">
       {
         [
-          { icon: 'certificate', t: { zh: '授权代理文件', en: 'Authorization documents' }, d: { zh: '可提供授权书复印件供核验', en: 'Copies available for verification' } },
+          { icon: 'certificate', t: { zh: '批次与出入库记录', en: 'Batch & stock records' }, d: { zh: '可按件号查批次与出入库记录', en: 'Batch and stock records per part number' } },
           { icon: 'box', t: { zh: '批次可溯源', en: 'Batch traceability' }, d: { zh: '保留出入库记录与批次标签', en: 'Inbound/outbound records and batch labels kept' } },
           { icon: 'shield', t: { zh: '产品责任险', en: 'Liability insurance' }, d: { zh: '全系由太平洋保险承保', en: 'Full range covered by CPIC' } },
         ].map((b) => (

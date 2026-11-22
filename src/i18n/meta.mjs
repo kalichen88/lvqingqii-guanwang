@@ -14,24 +14,24 @@ import { pick } from './index.mjs'
 export const pageMeta = {
   home: {
     zh: {
-      t: '工程机械滤清器_滤芯件号查询_富滤盛授权代理',
-      d: '富滤盛（FILTERSUN）授权代理，供应工程机械、商用车、空压机、工业滤芯 9000+ 件号，支持件号/机型查询、现货直发、出口报关。',
+      t: '工程机械滤清器_滤芯件号查询_9000+ 件号现货',
+      d: '供应工程机械、商用车、空压机、工业滤芯 9000+ 件号，支持件号/机型查询、规格核对、现货直发与出口报关。',
     },
     en: {
-      t: 'Authorized FILTERSUN Distributor | Filter Part Finder & In-Stock Supply',
-      d: 'Authorized FILTERSUN distributor supplying filters for construction machinery, trucks, air compressors and industry. 9,000+ part numbers catalogued, part finder, engineer-backed selection and export support.',
+      t: 'Construction Machinery Filters & Part Finder | 9,000+ Numbers in Stock',
+      d: 'Filters for construction machinery, trucks, compressors and industry — 9,000+ catalogued part numbers with real dimensions, part finder, same-day dispatch and export support.',
     },
   },
   products: {
     zh: {
       t: '产品中心_滤清器滤芯全品类目录_件号与规格查询',
       d: (c) =>
-        `富滤盛授权代理产品目录，按 ${c.groups ?? 8} 大应用类目整理，已收录 ${(c.products ?? 0).toLocaleString()} 个件号，含规格尺寸与实物图。`,
+        `滤清器产品目录，按 ${c.groups ?? 8} 大应用类目整理，已收录 ${(c.products ?? 0).toLocaleString()} 个件号，含规格尺寸与实物图。`,
     },
     en: {
       t: 'Products — Filter Part Numbers, Dimensions & Stock',
       d: (c) =>
-        `Authorized FILTERSUN catalogue organised into ${c.groups ?? 8} application groups with ${(c.products ?? 0).toLocaleString()} part numbers, real dimensions and product photos.`,
+        `Filtration catalogue organised into ${c.groups ?? 8} application groups with ${(c.products ?? 0).toLocaleString()} part numbers, real dimensions and product photos.`,
     },
   },
   finder: {
@@ -80,14 +80,14 @@ export const pageMeta = {
   },
   about: {
     zh: {
-      t: '关于我们_富滤盛授权代理服务商',
+      t: '关于我们_滤清器供应与选型支持',
       d: (c) =>
-        `我们是${c.principalZh ?? '富滤盛'}的授权代理服务商，专注工程机械、商用车、空压机与工业滤清器的正品供应与选型支持，可提供授权文件与批次溯源。`,
+        `专注${c.principalZh ?? '富滤盛'}滤清器的供应与选型支持，覆盖工程机械、商用车、空压机与工业过滤，规格尺寸与实物图齐全，可提供批次与出入库记录用于溯源。`,
     },
     en: {
-      t: 'About Us — Authorized FILTERSUN Distributor',
+      t: 'About Us — Filtration Supply & Selection Support',
       d: (c) =>
-        `We are an authorized distributor of ${c.principalEn ?? 'FILTERSUN'}, supplying genuine filtration products with part-number matching, standing stock, technical support and export documentation.`,
+        `Supplying ${c.principalEn ?? 'FILTERSUN'} filtration products with part-number matching, standing stock, technical support and export documentation.`,
     },
   },
   contact: {
@@ -105,11 +105,11 @@ export const pageMeta = {
   faq: {
     zh: {
       t: '常见问题_滤清器采购_正品授权_起订量_交期_质保',
-      d: '关于富滤盛授权代理、正品保障、件号查询、起订量与混批、交期与现货、质保与责任险、出口报关、非标定制的常见问题解答。',
+      d: '关于滤清器选型、件号查询、起订量与混批、交期与现货、质保与责任险、出口报关、非标定制的常见问题解答。',
     },
     en: {
       t: 'FAQ — Genuine Parts, MOQ, Lead Time and Warranty',
-      d: 'Answers on authorized distribution, genuine-part guarantees, part number matching, minimum order quantity, lead times and stock, warranty and product liability insurance, export documentation and custom builds.',
+      d: 'Answers on filter selection, part number matching, minimum order quantity, lead times and stock, warranty and product liability insurance, export documentation and custom builds.',
     },
   },
   news: {

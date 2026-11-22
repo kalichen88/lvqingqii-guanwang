@@ -1,0 +1,338 @@
+﻿---
+/**
+ * HeroCarousel.astro — 首页首屏轮播 Banner（3 组素材，3 秒一轮，循环）
+ * ---------------------------------------------------------------------------
+ * 每组素材 = 广告语 + 配图，成组轮换；文案全部走 tx()，
+ * 因此新增语言只需在 src/i18n/copy/<lang>.mjs 里补英文原文对应的译文。
+ *
+ * 交互：
+ *   - 自动播放 3s，循环；鼠标悬停 / 键盘聚焦 / 标签页隐藏时暂停
+ *   - 圆点可点选，点选后重新计时
+ *   - 尊重 prefers-reduced-motion：不自动播放，仅手动切换
+ *   - 无 JS 时只显示第 1 组（其余用 CSS 隐藏），不会闪动
+ */
+import Icon from './Icon.astro'
+import siteConfig from '../../site.config.mjs'
+import { t, tx, localizePath, bi, isCjk } from '../i18n/index.mjs'
+
+interface Props {
+  lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
+}
+
+const { lang } = Astro.props
+const p = (path: string) => localizePath(path, lang)
+const c = siteConfig.contact
+const wa = `https://wa.me/${c.whatsapp}`
+
+/** 三组轮播素材：广告语 + 配图一一对应 */
+const slides = [
+  {
+    key: 'catalogue',
+    eyebrow: tx(lang, '9,000+ part numbers · 8 application groups', '9,000+ 件号 · 8 大应用类目'),
+    titleA: tx(lang, 'Stop guessing the', '滤芯不用猜，'),
+    titleB: tx(lang, 'part number.', '件号一查就到。'),
+    desc: tx(
+      lang,
+      'Construction machinery, trucks, compressors and industrial filtration — 9,000+ catalogued numbers with real dimensions and photos, so you match before you order.',
+      '覆盖工程机械、商用车、空压机与工业过滤 9,000+ 个件号，规格尺寸与实物图一次看清，下单前就能对上号。',
+    ),
+    image: '/media/categories/cp13.jpg',
+    imageAlt: tx(lang, 'Filter product family', '滤清器产品系列'),
+    href: p('/search/'),
+    cta: tx(lang, 'Search a part number', '按件号查询'),
+  },
+  {
+    key: 'media',
+    eyebrow: tx(lang, 'Triple-layer media · High dust capacity', '三层复合滤材 · 高容尘'),
+    titleA: tx(lang, 'Dust stays outside.', '粉尘拦在外面，'),
+    titleB: tx(lang, 'Power stays inside.', '动力留在里面。'),
+    desc: tx(
+      lang,
+      'Coarse outer layer, high-capacity middle layer and fine inner layer. Higher dirt holding, lower restriction and a longer service interval than single-layer media.',
+      '外层粗滤、中层高容尘、内层精滤三层复合结构；纳污量更大、进气阻力更低，换芯周期比单层滤材更长。',
+    ),
+    image: '/media/factory/1bdb5aca568b6db.jpg',
+    imageAlt: tx(lang, 'Filter media production line', '滤材生产线'),
+    href: p('/quality/'),
+    cta: tx(lang, 'See how it is built', '看产品怎么做出来'),
+  },
+  {
+    key: 'stock',
+    eyebrow: tx(lang, '3,000+ numbers in stock · Same-day dispatch', '3,000+ 常备件号 · 当日发出'),
+    titleA: tx(lang, 'Your machine cannot wait.', '设备等不起，'),
+    titleB: tx(lang, 'Neither do we.', '现货等得起。'),
+    desc: tx(
+      lang,
+      'More than 3,000 fast-moving numbers on the shelf. Orders confirmed before 16:00 on a working day ship the same day — downtime is measured in hours, not weeks.',
+      '3,000+ 常用件号常备现货，工作日 16:00 前确认订单当日发出。停机损失按小时算，不该按周等。',
+    ),
+    image: '/media/factory/1258ce5d1737594.jpg',
+    imageAlt: tx(lang, 'Warehouse and dispatch', '仓储与发货'),
+    href: p('/contact/#quote'),
+    cta: tx(lang, 'Check stock & price', '查询库存与价格'),
+  },
+]
+
+const brandLine = bi(lang, siteConfig.brand, 'tagline')
+---
+
+<div
+
+  data-hero-carousel
+  data-interval="3000"
+  aria-roledescription="carousel"
+  aria-label={tx(lang, 'Product highlights', '产品亮点')}>
+  <div class="relative">
+    <!-- 顶部品牌主张（固定不动，不参与轮播） -->
+    <div
+      class="inline-flex items-center gap-2.5 rounded-full bg-white py-1.5 ps-2 pe-4 shadow-soft ring-1 ring-ink-100"
+    >
+      <span class="inline-flex size-6 items-center justify-center rounded-full bg-brand-500">
+        <Icon name="shield" class="size-3.5 text-white" strokeWidth={2} />
+      </span>
+      <span class="text-[12.5px] font-medium tracking-wide text-ink-600">{brandLine}</span>
+    </div>
+
+    <!-- 轮播主体：每组素材 = 文案 + 配图 -->
+    <div class="relative mt-7 grid">
+      {
+        slides.map((s, i) => (
+          <div
+            class="col-start-1 row-start-1 grid items-center gap-10 transition-[opacity,transform] duration-700 ease-out lg:grid-cols-12 lg:gap-12"
+            data-slide
+            data-active={i === 0 ? 'true' : undefined}
+            aria-hidden={i === 0 ? undefined : 'true'}
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`${i + 1} / ${slides.length}`}
+          >
+            <div class="lg:col-span-6 xl:col-span-7">
+              <p class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-[12px] font-semibold tracking-wide text-brand-700 ring-1 ring-brand-100">
+                <span class="size-1.5 rounded-full bg-brand-500" />
+                {s.eyebrow}
+              </p>
+
+              {i === 0 ? (
+                <h1 class="mt-5 text-[34px] font-semibold leading-[1.1] tracking-tight text-ink-900 sm:text-[46px] lg:text-[56px]">
+                  {s.titleA}
+                  <br />
+                  <span class="text-gradient">{s.titleB}</span>
+                </h1>
+              ) : (
+                <h2 class="mt-5 text-[34px] font-semibold leading-[1.1] tracking-tight text-ink-900 sm:text-[46px] lg:text-[56px]">
+                  {s.titleA}
+                  <br />
+                  <span class="text-gradient">{s.titleB}</span>
+                </h2>
+              )}
+
+              <p class="mt-5 max-w-xl text-[15px] leading-[1.85] text-ink-500 md:text-[16.5px]">{s.desc}</p>
+
+              <div class="mt-7 flex flex-wrap items-center gap-3">
+                <a href={s.href} class="btn btn-primary btn-lg">
+                  <Icon name={i === 0 ? 'search' : 'arrow-right'} class="size-[18px]" />
+                  {s.cta}
+                </a>
+                <a href={wa} target="_blank" rel="noopener nofollow" class="btn btn-ghost btn-lg">
+                  <Icon name="whatsapp" class="size-[18px]" />
+                  WhatsApp
+                </a>
+              </div>
+            </div>
+
+            <div class="lg:col-span-6 xl:col-span-5">
+              <div class="relative overflow-hidden rounded-3xl bg-white shadow-deep ring-1 ring-ink-100">
+                <img
+                  src={s.image}
+                  alt={s.imageAlt}
+                  width="900"
+                  height="675"
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  fetchpriority={i === 0 ? 'high' : 'low'}
+                  class="aspect-[4/3] w-full object-cover"
+                />
+                <div class="pointer-events-none absolute inset-0 ring-1 ring-inset ring-black/5" />
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    <!-- 控制器：圆点 + 进度 -->
+    <div class="mt-8 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2.5" role="tablist" aria-label={tx(lang, 'Slides', '轮播')}>
+        {
+          slides.map((s, i) => (
+            <button
+              type="button"
+              class="group relative h-1.5 overflow-hidden rounded-full bg-ink-200 transition-all duration-300 hover:bg-ink-300 data-[active=true]:w-14 data-[active=true]:bg-brand-200"
+              data-dot
+              data-index={i}
+              data-active={i === 0 ? 'true' : undefined}
+              aria-label={`${i + 1} / ${slides.length}`}
+              aria-current={i === 0 ? 'true' : undefined}
+            >
+              <span class="absolute inset-y-0 start-0 w-0 rounded-full bg-brand-500" data-dot-fill />
+            </button>
+          ))
+        }
+      </div>
+      <p class="text-[11.5px] text-ink-400">
+        {tx(lang, 'Auto-plays every 3s', '每 3 秒自动轮播')}
+      </p>
+    </div>
+</div>
+
+</div>
+<style>
+  /* 非当前组：淡出并禁止交互；无 JS 时同样只显示第一组 */
+  [data-hero-carousel] [data-slide]:not([data-active='true']) {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(6px);
+  }
+  [data-hero-carousel] [data-slide][data-active='true'] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  /* 圆点宽度 */
+  [data-hero-carousel] [data-dot] {
+    width: 1.25rem;
+  }
+  [data-hero-carousel] [data-dot][data-active='true'] {
+    width: 3.5rem;
+  }
+
+  /* 圆点进度条 */
+  [data-hero-carousel] [data-dot][data-active='true'] > [data-dot-fill] {
+    animation: hero-dot-progress var(--hero-interval, 3000ms) linear forwards;
+  }
+  [data-hero-carousel][data-paused='true'] [data-dot][data-active='true'] > [data-dot-fill] {
+    animation-play-state: paused;
+  }
+  @keyframes hero-dot-progress {
+    from {
+      width: 0%;
+    }
+    to {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-hero-carousel] [data-slide] {
+      transition: none !important;
+    }
+    [data-hero-carousel] [data-dot][data-active='true'] > [data-dot-fill] {
+      animation: none;
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  /* 3 秒自动轮播，循环；悬停 / 聚焦 / 切走标签页时暂停 */
+  const root = document.querySelector<HTMLElement>('[data-hero-carousel]')
+
+  if (root) {
+    const slides = Array.from(root.querySelectorAll<HTMLElement>('[data-slide]'))
+    const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-dot]'))
+    const interval = Number(root.dataset.interval || 3000)
+    root.style.setProperty('--hero-interval', `${interval}ms`)
+
+    const reduced =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    let index = 0
+    let timer: number | undefined
+
+    const paint = (next: number) => {
+      index = (next + slides.length) % slides.length
+      slides.forEach((el, i) => {
+        if (i === index) {
+          el.setAttribute('data-active', 'true')
+          el.removeAttribute('aria-hidden')
+        } else {
+          el.removeAttribute('data-active')
+          el.setAttribute('aria-hidden', 'true')
+        }
+      })
+      dots.forEach((el, i) => {
+        if (i === index) {
+          el.setAttribute('data-active', 'true')
+          el.setAttribute('aria-current', 'true')
+          // 重启动画：先移除再强制重排
+          const fill = el.querySelector<HTMLElement>('[data-dot-fill]')
+          if (fill) {
+            fill.style.animation = 'none'
+            void fill.offsetWidth
+            fill.style.animation = ''
+          }
+        } else {
+          el.removeAttribute('data-active')
+          el.removeAttribute('aria-current')
+        }
+      })
+    }
+
+    const stop = () => {
+      if (timer !== undefined) {
+        window.clearInterval(timer)
+        timer = undefined
+      }
+      root.setAttribute('data-paused', 'true')
+    }
+
+    const start = () => {
+      if (reduced) return
+      stop()
+      root.removeAttribute('data-paused')
+      timer = window.setInterval(() => paint(index + 1), interval)
+    }
+
+    dots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+        paint(Number(dot.dataset.index || 0))
+        start()
+      })
+    })
+
+    root.addEventListener('mouseenter', stop)
+    root.addEventListener('mouseleave', start)
+    root.addEventListener('focusin', stop)
+    root.addEventListener('focusout', start)
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stop()
+      else start()
+    })
+
+    // 触屏滑动切换
+    let touchX = 0
+    root.addEventListener(
+      'touchstart',
+      (e) => {
+        touchX = e.touches[0]?.clientX ?? 0
+        stop()
+      },
+      { passive: true },
+    )
+    root.addEventListener(
+      'touchend',
+      (e) => {
+        const dx = (e.changedTouches[0]?.clientX ?? 0) - touchX
+        if (Math.abs(dx) > 40) paint(index + (dx < 0 ? 1 : -1))
+        start()
+      },
+      { passive: true },
+    )
+
+    paint(0)
+    start()
+  }
+</script>

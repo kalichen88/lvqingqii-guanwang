@@ -151,8 +151,8 @@ export function productJsonLd(lang, product, group) {
     brand: { '@type': 'Brand', name: 'FILTERSUN' },
     manufacturer: { '@type': 'Organization', name: siteConfig.principal.nameEn },
     description: isEn
-      ? `${product.partNo} ${product.typeEn || product.type}${product.spec ? `, dimensions ${product.spec}` : ''}. Genuine FILTERSUN replacement filter supplied by an authorized distributor.`
-      : `${product.partNo} ${product.type}${product.spec ? `，规格 ${product.spec}` : ''}。富滤盛原厂正品滤芯，授权代理现货供应。`,
+      ? `${product.partNo} ${product.typeEn || product.type}${product.spec ? `, dimensions ${product.spec}` : ''}. Genuine FILTERSUN replacement filter with triple-layer media, verifiable dimensions and traceable batch records.`
+      : `${product.partNo} ${product.type}${product.spec ? `，规格 ${product.spec}` : ''}。三层复合滤材，规格可核对、批次可溯源，现货直发。`,
     image: product.image ? abs(product.image) : undefined,
     additionalProperty: props,
     offers: {

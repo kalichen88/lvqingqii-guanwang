@@ -11,10 +11,10 @@
    ========================================================================== */
 export const faqs = [
   {
-    q: { zh: '你们是富滤盛的授权代理吗？产品是原厂正品吗？', en: 'Are you an authorized FILTERSUN distributor? Are the filters genuine?' },
+    q: { zh: '滤芯的过滤效率和容尘量大概是什么水平？', en: 'What filtration efficiency and dust capacity do these filters offer?' },
     a: {
-      zh: '是。我们是富滤盛（FILTERSUN）授权代理服务商，货源来自厂家正规渠道，可提供授权文件、批次与出入库记录用于溯源。我们不做翻新件、不做来路不明的低价货——因为一旦因为一只滤芯导致发动机拉缸或液压阀卡滞，省下的钱远不够修机器。',
-      en: 'Yes. We are an authorized FILTERSUN distributor buying through the manufacturer’s official channel. We can provide authorization documents and batch records for traceability. We do not sell refurbished or grey-market stock — one failed filter that scores a cylinder or sticks a hydraulic valve costs far more than the money saved.',
+      zh: '看结构：空气滤芯是外层粗滤 + 中层高容尘 + 内层精滤的三层复合滤材，纳污量大、进气阻力低；液压滤芯按 3–25 μm 分级，褶皱均匀、抗压差能力强。实际换芯周期取决于粉尘浓度、负载与油品状况，报价时我们会按你的工况给出建议；同一件号我们也会标明真实规格尺寸，避免装不上。',
+      en: 'By construction: air filters use a coarse outer layer, a high-capacity middle layer and a fine inner layer — high dirt holding and low restriction; hydraulic elements are graded from 3 to 25 μm with even pleating and strong collapse resistance. Real service intervals depend on dust load, duty cycle and oil condition, so we advise per application when quoting, and every part number carries its real dimensions so it actually fits.',
     },
   },
   {

@@ -12,6 +12,7 @@ import SectionHeading from '../SectionHeading.astro'
 import ProductCard from '../ProductCard.astro'
 import FaqList from '../FaqList.astro'
 import InquiryForm from '../InquiryForm.astro'
+import HeroCarousel from '../HeroCarousel.astro'
 
 interface Props {
   lang: 'zh' | 'en' | 'zh-hant' | 'ja' | 'ru' | 'ar'
@@ -52,199 +53,7 @@ const stats = [
   class="home-hero -mt-[68px] pt-[68px] lg:-mt-[var(--header-h)] lg:pt-[var(--header-h)]"
 >
   <div class="shell relative pb-14 pt-14 md:pb-20 md:pt-16 lg:pb-24 lg:pt-20">
-    <div class="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
-      <!-- 左侧主文案 -->
-      <div class="lg:col-span-7">
-        <div
-          class="inline-flex items-center gap-2.5 rounded-full bg-white py-1.5 pl-2 pr-4 shadow-soft ring-1 ring-ink-100"
-          data-reveal
-        >
-          <span class="inline-flex size-6 items-center justify-center rounded-full bg-brand-500">
-            <Icon name="shield" class="size-3.5 text-white" strokeWidth={2} />
-          </span>
-          <span class="text-[12.5px] font-medium tracking-wide text-ink-600">
-            {bi(lang, siteConfig.brand, 'tagline')}
-          </span>
-        </div>
-
-        <h1
-          class="mt-7 text-[38px] font-semibold leading-[1.08] tracking-tight text-ink-900 sm:text-[50px] lg:text-[62px]"
-          data-reveal
-          style="--reveal-delay:60ms"
-        >
-          {
-            isEn ? (
-              <>
-                The right filter,
-                <br />
-                <span class="text-gradient">first time.</span>
-              </>
-            ) : (
-              <>
-                选对滤芯，
-                <br />
-                <span class="text-gradient">让设备少停一天。</span>
-              </>
-            )
-          }
-        </h1>
-
-        <p
-          class="mt-6 max-w-2xl text-[15.5px] leading-[1.85] text-ink-500 md:text-[17px]"
-          data-reveal
-          style="--reveal-delay:120ms"
-        >
-          {
-            isEn
-              ? `${pr.nameEn} authorized distributor. ${productCount.toLocaleString()} catalogued part numbers for construction machinery, commercial vehicles, air compressors and industrial filtration — with part-number lookup, model matching and engineer-backed selection support.`
-              : `${pr.nameZh}授权代理。已收录 ${productCount.toLocaleString()} 个件号，覆盖工程机械、商用车、空压机与工业过滤，提供件号查询、机型匹配与工程师选型支持，常用件号现货直发。`
-          }
-        </p>
-
-        <div class="mt-9 flex flex-wrap items-center gap-3" data-reveal style="--reveal-delay:180ms">
-          <a href={p('/search/')} class="btn btn-primary btn-lg">
-            <Icon name="search" class="size-[18px]" />
-            {tx(lang, 'Find my part number', '查询件号 / 机型')}
-          </a>
-          <a href={p('/contact/#quote')} class="btn btn-ghost btn-lg">
-            <Icon name="mail" class="size-[18px]" />
-            {t(lang, 'getQuote')}
-          </a>
-        </div>
-
-        <!-- 快速搜索条 -->
-        <form
-          action={p('/search/')}
-          method="get"
-          class="mt-8 max-w-xl"
-          data-reveal
-          style="--reveal-delay:220ms"
-        >
-          <div
-            class="flex items-center gap-2 rounded-2xl bg-white p-1.5 shadow-lift ring-1 ring-ink-200 transition focus-within:ring-2 focus-within:ring-brand-500"
-          >
-            <Icon name="search" class="ml-3 size-[18px] shrink-0 text-ink-400" />
-            <input
-              type="search"
-              name="q"
-              class="h-11 min-w-0 flex-1 border-0 bg-transparent text-[14.5px] text-ink-900 placeholder:text-ink-400 focus:outline-none"
-              placeholder={tx(lang, 'Part number, machine model or keyword…', '输入件号、机型或关键词，如 FS641A / 小松 PC200')}
-              aria-label={t(lang, 'finderTitle')}
-            />
-            <button type="submit" class="btn btn-primary btn-sm shrink-0">
-              {t(lang, 'search')}
-            </button>
-          </div>
-        </form>
-
-        <!-- 信任标签 -->
-        <div
-          class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12.5px] text-ink-500"
-          data-reveal
-          style="--reveal-delay:260ms"
-        >
-          {
-            (isEn
-              ? ['Genuine factory channel', '3,000+ numbers in stock', 'Engineer-backed support', 'Export ready']
-              : ['厂家正规渠道', '3000+ 件号现货', '工程师选型支持', '支持出口报关']
-            ).map((item) => (
-              <span class="inline-flex items-center gap-2">
-                <Icon name="check" class="size-3.5 text-brand-500" strokeWidth={2.4} />
-                {item}
-              </span>
-            ))
-          }
-        </div>
-      </div>
-
-      <!-- 右侧：三种查询方式卡片 -->
-      <div class="lg:col-span-5" data-reveal="right" style="--reveal-delay:160ms">
-        <div class="relative overflow-hidden rounded-3xl bg-white p-6 shadow-deep ring-1 ring-ink-100 md:p-7">
-          {/* 顶部渐变细线 */}
-          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-500 via-brand-400 to-aqua-500"></div>
-
-          <div class="flex items-center gap-3">
-            <span class="flex size-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
-              <Icon name="spark" class="size-[18px]" />
-            </span>
-            <div>
-              <p class="text-[15px] font-semibold text-ink-900">
-                {tx(lang, 'Three ways to find it', '三种方式，找到对的滤芯')}
-              </p>
-              <p class="text-[12px] text-ink-400">
-                {tx(lang, 'No part number? No problem.', '没有件号也能配')}
-              </p>
-            </div>
-          </div>
-
-          <ul class="mt-6 space-y-3">
-            {
-              [
-                {
-                  icon: 'database',
-                  title: { zh: '按件号查', en: 'By part number' },
-                  desc: { zh: '输入件号前缀或完整件号，秒级匹配', en: 'Type a prefix or full number for an instant match' },
-                  href: p('/search/'),
-                },
-                {
-                  icon: 'excavator',
-                  title: { zh: '按机型配', en: 'By machine model' },
-                  desc: { zh: '告诉我品牌型号，配齐全车滤芯清单', en: 'Give us brand and model, we build the full list' },
-                  href: p('/applications/'),
-                },
-                {
-                  icon: 'headset',
-                  title: { zh: '发照片人工核对', en: 'Send a photo' },
-                  desc: { zh: '拍旧滤芯或铭牌，工程师帮你对号', en: 'Snap the old filter or data plate — we match it by hand' },
-                  href: wa,
-                  external: true,
-                },
-              ].map((item) => (
-                <li>
-                  <a
-                    href={item.href}
-                    target={item.external ? '_blank' : undefined}
-                    rel={item.external ? 'noopener nofollow' : undefined}
-                    class="group flex items-start gap-3.5 rounded-2xl bg-ink-50 p-3.5 ring-1 ring-ink-100 transition hover:bg-white hover:shadow-soft hover:ring-brand-200"
-                  >
-                    <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-ink-500 shadow-soft ring-1 ring-ink-100 transition group-hover:bg-brand-500 group-hover:text-white group-hover:ring-brand-500">
-                      <Icon name={item.icon} class="size-4" />
-                    </span>
-                    <span class="min-w-0 flex-1">
-                      <span class="block text-[13.5px] font-semibold text-ink-900">{item.title[lang]}</span>
-                      <span class="mt-0.5 block text-[12px] leading-relaxed text-ink-500">{item.desc[lang]}</span>
-                    </span>
-                    <Icon
-                      name="arrow-up-right"
-                      class="mt-1 size-3.5 shrink-0 text-ink-300 transition group-hover:text-brand-500"
-                    />
-                  </a>
-                </li>
-              ))
-            }
-          </ul>
-
-          <div class="mt-6 flex items-center justify-between border-t border-ink-100 pt-5">
-            <div>
-              <p class="text-[11.5px] text-ink-400">{tx(lang, 'Sales hotline', '销售热线')}</p>
-              <a href={tel} class="tnum mt-0.5 block text-[17px] font-semibold text-ink-900 transition hover:text-brand-600">
-                {c.salesPhone}
-              </a>
-              {c.landline && <p class="tnum mt-0.5 text-[12.5px] text-ink-400">{c.landline}</p>}
-            </div>
-            <a
-              href={wa}
-              target="_blank"
-              rel="noopener nofollow"
-              class="inline-flex size-10 items-center justify-center rounded-xl bg-[#25D366]/12 text-[#1faa52] ring-1 ring-[#25D366]/25 transition hover:bg-[#25D366] hover:text-white"
-              aria-label="WhatsApp"
-            >
-              <Icon name="whatsapp" class="size-5" />
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
+    <HeroCarousel {lang} />
 
     <!-- 数据条 -->
     <div
@@ -529,7 +338,7 @@ const stats = [
     <SectionHeading
       eyebrow={tx(lang, 'Why us', '我们的优势')}
       title={tx(lang, 'Why customers choose us', '为什么客户选择我们')}
-      desc={tx(lang, 'A distributor earns its place by what happens after the order — stock, fitment accuracy and technical backup.', '代理商的价值不在于货架上有什么，而在于下单之后：有没有现货、配得准不准、出问题有没有人管。')}
+      desc={tx(lang, 'A filter proves itself after the order — stock, fitment accuracy and backup when something goes wrong.', '一颗滤芯好不好，要看下单之后：有没有现货、配得准不准、出问题有没有人管。')}
       align="center"
     />
 
@@ -621,8 +430,8 @@ const stats = [
       <p class="mt-5 text-[15px] leading-[1.85] text-ink-500" data-reveal>
         {
           isEn
-            ? `We represent ${pr.nameEn}. Founded in ${pr.founded}, the group runs three production bases and is certified to IATF 16949, ISO 9001, ISO 14001 and ISO 45001, with TÜV-verified GMC “China Quality Supplier” status.`
-            : `我们代理的是${pr.nameZh}。集团创立于 ${pr.founded} 年，下设三大生产基地，通过 IATF 16949、ISO 9001、ISO 14001、ISO 45001 体系认证，并取得 TÜV 认证的 GMC 中国出口优质供应商资质。`
+            ? `The filters are made by ${pr.nameEn}. Founded in ${pr.founded}, the group runs three production bases and is certified to IATF 16949, ISO 9001, ISO 14001 and ISO 45001, with TÜV-verified GMC “China Quality Supplier” status.`
+            : `滤芯由${pr.nameZh}生产。集团创立于 ${pr.founded} 年，下设三大生产基地，通过 IATF 16949、ISO 9001、ISO 14001、ISO 45001 体系认证，并取得 TÜV 认证的 GMC 中国出口优质供应商资质。`
         }
       </p>
 

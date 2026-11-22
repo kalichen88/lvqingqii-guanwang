@@ -45,18 +45,22 @@ export const siteConfig = {
     // [必改] Logo 图形文字（1–3 个字符，作为占位 Logo 显示；替换为真实 Logo 后可忽略）
     logoMark: 'XX',
     // 品牌主张（中文）
-    taglineZh: '正品授权 · 现货直供 · 选型无忧',
+    taglineZh: '三层复合滤材 · 高容尘 · 3000+ 件号现货',
+    taglineZhhant: '三層複合濾材 · 高容塵 · 3000+ 件號現貨',
+    taglineJa: '3層複合濾材 · 高集塵容量 · 3,000点以上を在庫',
+    taglineRu: 'Трёхслойная среда · Высокая пылеёмкость · 3000+ в наличии',
+    taglineAr: 'وسط ثلاثي الطبقات · سعة أتربة عالية · أكثر من 3000 قطعة بالمخزون',
     // 品牌主张（英文）
-    taglineEn: 'Authorized Genuine Parts · In-Stock Supply · Expert Fitment',
+    taglineEn: 'Triple-Layer Media · High Dust Capacity · 3,000+ Numbers in Stock',
     // [必改] 一句话定位，用于首页副标题与 meta description
     positioningZh:
-      '富滤盛（FILTERSUN）授权代理服务商，专注工程机械、商用车、空压机与工业滤清器的正品供应与选型支持。',
+      '专注工程机械、商用车、空压机与工业过滤的滤清器供应：9,000+ 件号可查，规格尺寸与实物图齐全，常用件号现货直发。',
     positioningEn:
-      'Authorized distributor of FILTERSUN filtration products for construction machinery, commercial vehicles, air compressors and industrial applications.',
+      'Filtration products for construction machinery, commercial vehicles, air compressors and industrial applications — 9,000+ catalogued numbers with real dimensions, fast movers in stock.',
   },
 
   /* ---------------------------------------------------------------------
-   * 3. 被代理的厂家（用于「授权代理 / 品牌实力」板块）
+   * 3. 工厂与品牌（用于「品牌与工厂」板块）
    * ------------------------------------------------------------------- */
   principal: {
     nameZh: '富滤盛集团 · 富滤盛滤清器（东莞）有限公司',
@@ -64,7 +68,7 @@ export const siteConfig = {
     brands: ['富滤盛', 'FILTERSUN'],
     officialSite: 'https://filtersun.cn',
     founded: 2005,
-    // 下列数字来自厂家公开资料，可保留；如你只代理部分品类请自行删减
+    // 下列数字来自厂家公开资料，可保留；如只供应部分品类请自行删减
     facts: {
       yearsExperience: 20,
       skuCount: 9000,
