@@ -2,6 +2,8 @@
  * نصوص الصفحات · ar (العربية)
  */
 export default {
+  "Media construction · Three layers": 'بنية الوسط · ثلاث طبقات',
+  "Dispatch · Ships the same day": 'الشحن · في اليوم نفسه',
   "Product highlights": 'أبرز مزايا المنتج',
   "Slides": 'الشرائح',
   "Auto-plays every 3s": 'تبديل تلقائي كل 3 ثوانٍ',

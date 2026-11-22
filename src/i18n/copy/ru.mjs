@@ -2,6 +2,8 @@
  * Тексты страниц · ru (Русский)
  */
 export default {
+  "Media construction · Three layers": 'Конструкция среды · три слоя',
+  "Dispatch · Ships the same day": 'Отгрузка · в тот же день',
   "Product highlights": 'Ключевые преимущества',
   "Slides": 'Слайды',
   "Auto-plays every 3s": 'Автопрокрутка каждые 3 с',

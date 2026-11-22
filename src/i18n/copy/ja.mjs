@@ -2,6 +2,8 @@
  * ページ文案 · ja（日本語）
  */
 export default {
+  "Media construction · Three layers": '濾材構造・3層複合',
+  "Dispatch · Ships the same day": '出荷・当日発送',
   "Product highlights": '製品ハイライト',
   "Slides": 'スライド',
   "Auto-plays every 3s": '3秒ごとに自動切替',
@@ -19,7 +21,7 @@ export default {
   "See how it is built": '製造工程を見る',
   "3,000+ numbers in stock · Same-day dispatch": '3,000点以上を在庫・当日出荷',
   "Your machine cannot wait.": '機械は待ってくれない。',
-  "Neither do we.": 'だから、当社も待たせません。',
+  "Neither do we.": '当社も待たせません。',
   "More than 3,000 fast-moving numbers on the shelf. Orders confirmed before 16:00 on a working day ship the same day — downtime is measured in hours, not weeks.": '回転の速い3,000点以上を常時在庫。営業日16:00までのご確認で当日出荷します。停止損失は週ではなく時間で数えるものです。',
   "Warehouse and dispatch": '倉庫と出荷',
   "Hello, I would like to enquire about FILTERSUN filters.": 'FILTERSUNのフィルターについてお問い合わせしたいのですが。',
